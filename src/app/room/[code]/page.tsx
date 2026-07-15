@@ -279,7 +279,7 @@ export default function RoomPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="rounded-3xl border border-[#5c3a21]/40 bg-[#1a1c20]/90 backdrop-blur-2xl p-8 text-center max-w-sm w-full"
+            className="bg-[#1a1a1a] rounded-[2rem] p-8 text-center max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_0_0_4px_#3a2612,inset_0_0_0_8px_#141414]"
           >
             <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-amber-400/10 border border-amber-400/15 flex items-center justify-center">
               <span className="text-3xl">⚠️</span>

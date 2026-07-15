@@ -256,22 +256,22 @@ export default function HUD() {
       {/* WAITING OVERLAY */}
       {room?.status === 'waiting' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-30 flex items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-auto">
-          <div className="bg-[#1a1c20] border-[8px] border-[#8b6508] rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.7)] px-6 py-8 sm:px-8 sm:py-10 text-center max-w-sm w-full mx-4">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 sm:mb-5 rounded-2xl bg-[#8b6508]/10 border border-[#8b6508]/20 flex items-center justify-center">
+          <div className="bg-[#1a1a1a] rounded-[2rem] p-4 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_0_0_4px_#3a2612,inset_0_0_0_8px_#141414] px-6 py-8 sm:px-8 sm:py-10 text-center max-w-sm w-full mx-4">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 sm:mb-5 rounded-2xl bg-gradient-to-br from-[#ffd700]/20 to-[#8b6508]/20 border border-[#8b6508]/30 flex items-center justify-center shadow-[inset_0_2px_4px_rgba(255,255,255,0.1)]">
               <Trophy size={24} className="text-[#d4a853] sm:hidden" />
               <Trophy size={28} className="text-[#d4a853] hidden sm:block" />
             </div>
             <h2 className="text-lg sm:text-xl font-bold text-[#d4a853] mb-2">Waiting for opponent</h2>
             <p className="text-xs sm:text-sm text-white/40 mb-5 sm:mb-6">Share this code with your friend:</p>
-            <div className="rounded-xl bg-[#24150d] border-2 border-[#5c3a21] px-5 py-3 sm:px-6 sm:py-4 mb-3">
+            <div className="rounded-xl bg-gradient-to-b from-[#3b2a1a] to-[#1f150d] border-2 border-[#5c3a21] px-5 py-3 sm:px-6 sm:py-4 mb-3 shadow-[inset_0_2px_4px_rgba(255,255,255,0.05),0_4px_8px_rgba(0,0,0,0.4)]">
               <p className="text-2xl sm:text-3xl font-mono font-bold text-[#d4a853] tracking-[0.3em]">{room?.code}</p>
             </div>
             <div className="flex gap-2 mb-4">
-              <button onClick={handleCopyCode} className="flex-1 h-10 rounded-xl bg-[#8b6508]/10 border border-[#8b6508]/20 text-[#d4a853] text-xs font-medium flex items-center justify-center gap-2 hover:bg-[#8b6508]/20 transition-all">
+              <button onClick={handleCopyCode} className="flex-1 h-10 rounded-xl bg-gradient-to-br from-[#8b6508]/20 to-[#5c4008]/20 border border-[#8b6508]/30 text-[#d4a853] text-xs font-medium flex items-center justify-center gap-2 hover:from-[#8b6508]/30 hover:to-[#5c4008]/30 transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
                 {codeCopied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
                 {codeCopied ? 'Copied!' : 'Copy Code'}
               </button>
-              <button onClick={handleShare} className="flex-1 h-10 rounded-xl bg-[#8b6508]/10 border border-[#8b6508]/20 text-[#d4a853] text-xs font-medium flex items-center justify-center gap-2 hover:bg-[#8b6508]/20 transition-all">
+              <button onClick={handleShare} className="flex-1 h-10 rounded-xl bg-gradient-to-br from-[#8b6508]/20 to-[#5c4008]/20 border border-[#8b6508]/30 text-[#d4a853] text-xs font-medium flex items-center justify-center gap-2 hover:from-[#8b6508]/30 hover:to-[#5c4008]/30 transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
                 {shareCopied ? <Check size={14} className="text-emerald-400" /> : <Share2 size={14} />}
                 {shareCopied ? 'Copied!' : 'Share Link'}
               </button>
@@ -289,7 +289,7 @@ export default function HUD() {
       <AnimatePresence>
         {useGameStore.getState().showResult && (room?.status === 'won' || room?.status === 'tie') && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }} className="fixed inset-0 z-30 flex items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-auto">
-            <div className="bg-[#1a1c20] border-[8px] border-[#8b6508] rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.7)] px-6 py-8 sm:px-8 sm:py-10 text-center max-w-sm w-full mx-4">
+            <div className="bg-[#1a1a1a] rounded-[2rem] p-4 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_0_0_4px_#3a2612,inset_0_0_0_8px_#141414] px-6 py-8 sm:px-8 sm:py-10 text-center max-w-sm w-full mx-4">
               {room?.status === 'tie' ? (
                 <>
                   <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 sm:mb-5 rounded-2xl bg-[#8b6508]/10 border border-[#8b6508]/20 flex items-center justify-center">
