@@ -14,16 +14,16 @@ export default function XPiece({ position, animate = true, highlight = false }: 
   const groupRef = useRef<THREE.Group>(null)
   const time = useRef(0)
   const settled = useRef(!animate)
-  const targetY = useRef(position[1] + (animate ? 1.5 : 0))
 
   useFrame((_, delta) => {
     if (!groupRef.current) return
+    const dt = Math.min(delta, 0.05)
 
     if (highlight) {
-      time.current += delta
+      time.current += dt
       const ty = position[1] + 0.35 + Math.sin(time.current * 2.5) * 0.08
-      groupRef.current.position.y += (ty - groupRef.current.position.y) * 0.15
-      groupRef.current.rotation.y += delta * 3
+      groupRef.current.position.y += (ty - groupRef.current.position.y) * (1 - Math.exp(-8 * dt))
+      groupRef.current.rotation.y += dt * 3
       const s = 1.12 + Math.sin(time.current * 4) * 0.08
       groupRef.current.scale.setScalar(s)
       return
@@ -42,10 +42,11 @@ export default function XPiece({ position, animate = true, highlight = false }: 
       return
     }
 
-    targetY.current += (finalY - targetY.current) * 0.12
-    groupRef.current.position.y += (targetY.current - currentY) * 0.18
-    groupRef.current.rotation.x *= 0.88
-    groupRef.current.rotation.z *= 0.88
+    const dropFactor = 1 - Math.exp(-7 * dt)
+    const rotFactor = 1 - Math.exp(-12 * dt)
+    groupRef.current.position.y += (finalY - currentY) * dropFactor
+    groupRef.current.rotation.x *= Math.pow(0.1, dt)
+    groupRef.current.rotation.z *= Math.pow(0.1, dt)
   })
 
   const startPos: [number, number, number] = [position[0], position[1] + (animate ? 1.5 : 0), position[2]]

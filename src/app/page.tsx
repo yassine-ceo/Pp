@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import { useGameStore } from '@/stores/gameStore'
 import { soundManager } from '@/lib/sound'
 import FloatingDecor from '@/components/3d/FloatingDecor'
-import { Gamepad2, Plus, LogIn, ArrowRight, Settings, X, ClipboardPaste, Check, Zap } from 'lucide-react'
+import { Gamepad2, Plus, LogIn, ArrowRight, Settings, X, ClipboardPaste, Check } from 'lucide-react'
 
 export default function MainMenu() {
   const router = useRouter()
@@ -105,6 +105,9 @@ export default function MainMenu() {
     return (
       <div className="min-h-screen w-full flex flex-col items-center justify-center pointer-events-auto px-6 overflow-hidden bg-gradient-to-b from-[#070a13] via-[#0d1527] to-[#070a13]">
         <FloatingDecor count={4} />
+        <div className="fixed top-0 right-0 w-[600px] h-[600px] rounded-full bg-emerald-500/[0.06] blur-[150px] pointer-events-none" />
+        <div className="fixed bottom-0 left-0 w-[500px] h-[500px] rounded-full bg-cyan-500/[0.05] blur-[140px] pointer-events-none" />
+        <div className="fixed top-[40%] left-[20%] w-[300px] h-[300px] rounded-full bg-amber-500/[0.03] blur-[120px] pointer-events-none" />
         <div className="relative z-10 w-full max-w-sm mx-auto">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="text-center mb-8">
             <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-cyan-400/20 border border-emerald-400/20 flex items-center justify-center shadow-[0_0_30px_rgba(52,211,153,0.15)]">
@@ -141,8 +144,10 @@ export default function MainMenu() {
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center pointer-events-auto overflow-hidden bg-gradient-to-b from-[#070a13] via-[#0d1527] to-[#070a13]">
       <FloatingDecor count={6} />
-      <div className="fixed top-[-15%] left-[-10%] w-[400px] h-[400px] rounded-full bg-emerald-500/[0.03] blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-[-15%] right-[-10%] w-[400px] h-[400px] rounded-full bg-cyan-500/[0.03] blur-[120px] pointer-events-none" />
+      <div className="fixed top-0 right-0 w-[600px] h-[600px] rounded-full bg-emerald-500/[0.06] blur-[150px] pointer-events-none" />
+      <div className="fixed bottom-0 left-0 w-[500px] h-[500px] rounded-full bg-cyan-500/[0.05] blur-[140px] pointer-events-none" />
+      <div className="fixed top-[30%] right-[10%] w-[350px] h-[350px] rounded-full bg-amber-500/[0.03] blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-[20%] left-[5%] w-[250px] h-[250px] rounded-full bg-emerald-400/[0.03] blur-[100px] pointer-events-none" />
 
       <div className="relative z-10 w-full max-w-sm mx-auto px-6 sm:px-8 py-8">
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} className="text-center mb-8">
@@ -229,10 +234,6 @@ export default function MainMenu() {
           )}
         </motion.div>
 
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="flex items-center justify-center gap-1.5 mt-6">
-          <Zap size={10} className="text-emerald-400/40" />
-          <p className="text-[11px] text-white/15">Three.js · Firebase · Next.js</p>
-        </motion.div>
       </div>
 
       {settingsOpen && (
