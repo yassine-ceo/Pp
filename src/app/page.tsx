@@ -103,7 +103,7 @@ export default function MainMenu() {
 
   if (deepLinkRoom && !nameConfirmed) {
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center pointer-events-auto px-6 overflow-hidden bg-gradient-to-b from-[#070a13] via-[#0d1527] to-[#070a13]">
+      <div className="min-h-screen w-full flex flex-col items-center justify-center pointer-events-auto px-6 overflow-hidden">
         <FloatingDecor count={4} />
         <div className="fixed top-0 right-0 w-[600px] h-[600px] rounded-full bg-emerald-500/[0.06] blur-[150px] pointer-events-none" />
         <div className="fixed bottom-0 left-0 w-[500px] h-[500px] rounded-full bg-cyan-500/[0.05] blur-[140px] pointer-events-none" />
@@ -142,7 +142,7 @@ export default function MainMenu() {
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center pointer-events-auto overflow-hidden bg-gradient-to-b from-[#070a13] via-[#0d1527] to-[#070a13]">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center pointer-events-auto overflow-hidden">
       <FloatingDecor count={6} />
       <div className="fixed top-0 right-0 w-[600px] h-[600px] rounded-full bg-emerald-500/[0.06] blur-[150px] pointer-events-none" />
       <div className="fixed bottom-0 left-0 w-[500px] h-[500px] rounded-full bg-cyan-500/[0.05] blur-[140px] pointer-events-none" />
