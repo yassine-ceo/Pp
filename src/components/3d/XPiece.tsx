@@ -18,16 +18,17 @@ export default function XPiece({ position, animate = true, highlight = false }: 
   useFrame((_, delta) => {
     if (!groupRef.current) return
 
-    // Win highlight pulse
     if (highlight) {
       time.current += delta
-      const pulse = 0.8 + Math.sin(time.current * 5) * 0.5
-      const s = 1 + Math.sin(time.current * 3) * 0.06
+      const targetY = position[1] + 0.35 + Math.sin(time.current * 2.5) * 0.08
+      groupRef.current.position.y += (targetY - groupRef.current.position.y) * 0.08
+      groupRef.current.rotation.y += delta * 3
+      const s = 1.12 + Math.sin(time.current * 4) * 0.08
       groupRef.current.scale.setScalar(s)
       groupRef.current.children.forEach((child) => {
         if ((child as THREE.Mesh).material && 'emissiveIntensity' in (child as THREE.Mesh).material) {
           const mat = (child as THREE.Mesh).material as THREE.MeshStandardMaterial
-          mat.emissiveIntensity = pulse
+          mat.emissiveIntensity = 1.2 + Math.sin(time.current * 5) * 0.8
         }
       })
       return
@@ -56,30 +57,14 @@ export default function XPiece({ position, animate = true, highlight = false }: 
 
   return (
     <group ref={groupRef} position={startPos}>
-      <pointLight color="#22d3ee" intensity={highlight ? 5 : 2} distance={highlight ? 5 : 3} decay={2} />
-
-      {/* Bar 1 */}
-      <mesh position={[0, 0.25, 0]} rotation={[0, 0, Math.PI / 4]} castShadow>
-        <boxGeometry args={[0.08, 0.65, 0.08]} />
-        <meshStandardMaterial
-          color="#22d3ee"
-          emissive="#22d3ee"
-          emissiveIntensity={highlight ? 1.5 : 0.8}
-          metalness={0.9}
-          roughness={0.1}
-        />
+      <pointLight color="#22d3ee" intensity={highlight ? 6 : 2} distance={highlight ? 6 : 3} decay={2} />
+      <mesh position={[0, 0.25, 0]} rotation={[0, 0, Math.PI / 4]}>
+        <boxGeometry args={[0.09, 0.65, 0.09]} />
+        <meshStandardMaterial color="#22d3ee" emissive="#22d3ee" emissiveIntensity={highlight ? 1.5 : 0.8} metalness={0.7} roughness={0.2} />
       </mesh>
-
-      {/* Bar 2 */}
-      <mesh position={[0, 0.25, 0]} rotation={[0, 0, -Math.PI / 4]} castShadow>
-        <boxGeometry args={[0.08, 0.65, 0.08]} />
-        <meshStandardMaterial
-          color="#22d3ee"
-          emissive="#22d3ee"
-          emissiveIntensity={highlight ? 1.5 : 0.8}
-          metalness={0.9}
-          roughness={0.1}
-        />
+      <mesh position={[0, 0.25, 0]} rotation={[0, 0, -Math.PI / 4]}>
+        <boxGeometry args={[0.09, 0.65, 0.09]} />
+        <meshStandardMaterial color="#22d3ee" emissive="#22d3ee" emissiveIntensity={highlight ? 1.5 : 0.8} metalness={0.7} roughness={0.2} />
       </mesh>
     </group>
   )

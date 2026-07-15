@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useCallback } from 'react'
+import { useMemo, useCallback, useState, useEffect, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Environment } from '@react-three/drei'
 import Board from './Board'
@@ -32,12 +32,9 @@ function ClickPlane() {
     if (localBoard[index] !== '') return
 
     const symbol = room?.players?.p1?.id === playerId ? 'X' : 'O'
-
     applyOptimisticMove(index, symbol)
-
     if (symbol === 'X') soundManager.playPlaceX()
     else soundManager.playPlaceO()
-
     makeMove(roomId, playerId, index, room.board, room.turn)
   }, [roomId, room, playerId, localBoard, applyOptimisticMove])
 
@@ -52,10 +49,7 @@ function ClickPlane() {
           <mesh
             key={i}
             position={[x, 0, z]}
-            onClick={(e) => {
-              e.stopPropagation()
-              handleClick(i)
-            }}
+            onClick={(e) => { e.stopPropagation(); handleClick(i) }}
             onPointerOver={() => { document.body.style.cursor = 'pointer' }}
             onPointerOut={() => { document.body.style.cursor = 'default' }}
           >
@@ -104,30 +98,34 @@ interface GameSceneProps {
 }
 
 export default function GameScene({ isPlaying }: GameSceneProps) {
+  const room = useGameStore((s) => s.room)
+  const [tieShake, setTieShake] = useState(false)
+  const prevStatusRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (room?.status === 'tie' && prevStatusRef.current === 'playing') {
+      setTieShake(true)
+      const timer = setTimeout(() => setTieShake(false), 600)
+      return () => clearTimeout(timer)
+    }
+    prevStatusRef.current = room?.status ?? null
+  }, [room?.status])
+
+  const isTie = room?.status === 'tie'
+
   return (
-    <div className="fixed inset-0 z-0">
+    <div className={`fixed inset-0 z-0 ${tieShake ? 'animate-board-shake' : ''}`}>
       <Canvas
-        shadows
         camera={{ position: [0, 3.8, 5.5], fov: 40 }}
-        gl={{ antialias: true, alpha: true }}
+        gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+        dpr={[1, 1.5]}
         style={{ background: 'transparent' }}
       >
-        <ambientLight intensity={0.3} />
-        <directionalLight
-          position={[5, 8, 5]}
-          intensity={1}
-          castShadow
-          shadow-mapSize={[1024, 1024]}
-        />
-        <spotLight
-          position={[0, 6, 0]}
-          intensity={0.8}
-          angle={0.5}
-          penumbra={0.5}
-          castShadow
-        />
+        <ambientLight intensity={0.5} />
+        <directionalLight position={[5, 8, 5]} intensity={0.7} />
+        <pointLight position={[0, 4, 0]} intensity={0.4} color="#22d3ee" distance={10} />
 
-        <Board />
+        <Board isTie={isTie} />
         <ClickPlane />
         <Pieces />
         <WinLineOverlay />

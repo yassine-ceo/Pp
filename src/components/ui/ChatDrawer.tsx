@@ -10,6 +10,19 @@ interface ChatDrawerProps {
   onClose: () => void
 }
 
+function ChatAvatar({ symbol }: { symbol: 'X' | 'O' }) {
+  const isX = symbol === 'X'
+  return (
+    <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold shrink-0 ${
+      isX
+        ? 'bg-cyan-400/20 border border-cyan-400/30 text-cyan-400'
+        : 'bg-rose-400/20 border border-rose-400/30 text-rose-400'
+    }`}>
+      {symbol}
+    </div>
+  )
+}
+
 export default function ChatDrawer({ isOpen, onClose }: ChatDrawerProps) {
   const { room, playerId } = useGameStore()
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -27,6 +40,11 @@ export default function ChatDrawer({ isOpen, onClose }: ChatDrawerProps) {
   const formatTime = (ts: number) => {
     const d = new Date(ts)
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }
+
+  const getSymbol = (msgPlayerId: string): 'X' | 'O' => {
+    if (room?.players?.p1?.id === msgPlayerId) return 'X'
+    return 'O'
   }
 
   return (
@@ -70,9 +88,11 @@ export default function ChatDrawer({ isOpen, onClose }: ChatDrawerProps) {
               ) : (
                 messages.map((msg) => {
                   const isMe = msg.playerId === playerId
+                  const symbol = getSymbol(msg.playerId)
                   return (
                     <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <ChatAvatar symbol={symbol} />
                         <p className={`text-[10px] ${isMe ? 'text-cyan-400/60' : 'text-rose-400/60'}`}>
                           {msg.playerName}
                         </p>

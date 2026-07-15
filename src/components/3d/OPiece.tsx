@@ -18,16 +18,17 @@ export default function OPiece({ position, animate = true, highlight = false }: 
   useFrame((_, delta) => {
     if (!groupRef.current) return
 
-    // Win highlight pulse
     if (highlight) {
       time.current += delta
-      const pulse = 0.8 + Math.sin(time.current * 5) * 0.5
-      const s = 1 + Math.sin(time.current * 3) * 0.06
+      const targetY = position[1] + 0.35 + Math.sin(time.current * 2.5) * 0.08
+      groupRef.current.position.y += (targetY - groupRef.current.position.y) * 0.08
+      groupRef.current.rotation.y += delta * 3
+      const s = 1.12 + Math.sin(time.current * 4) * 0.08
       groupRef.current.scale.setScalar(s)
       groupRef.current.children.forEach((child) => {
         if ((child as THREE.Mesh).material && 'emissiveIntensity' in (child as THREE.Mesh).material) {
           const mat = (child as THREE.Mesh).material as THREE.MeshStandardMaterial
-          mat.emissiveIntensity = pulse
+          mat.emissiveIntensity = 1.2 + Math.sin(time.current * 5) * 0.8
         }
       })
       return
@@ -54,30 +55,10 @@ export default function OPiece({ position, animate = true, highlight = false }: 
 
   return (
     <group ref={groupRef} position={startPos}>
-      <pointLight color="#f43f5e" intensity={highlight ? 5 : 2} distance={highlight ? 5 : 3} decay={2} />
-
-      {/* Main torus */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
-        <torusGeometry args={[0.25, 0.06, 24, 48]} />
-        <meshStandardMaterial
-          color="#f43f5e"
-          emissive="#f43f5e"
-          emissiveIntensity={highlight ? 1.5 : 0.8}
-          metalness={0.9}
-          roughness={0.1}
-        />
-      </mesh>
-
-      {/* Inner glow ring */}
+      <pointLight color="#f43f5e" intensity={highlight ? 6 : 2} distance={highlight ? 6 : 3} decay={2} />
       <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.25, 0.09, 16, 48]} />
-        <meshStandardMaterial
-          color="#f43f5e"
-          emissive="#f43f5e"
-          emissiveIntensity={highlight ? 0.8 : 0.3}
-          transparent
-          opacity={highlight ? 0.5 : 0.3}
-        />
+        <torusGeometry args={[0.25, 0.06, 12, 24]} />
+        <meshStandardMaterial color="#f43f5e" emissive="#f43f5e" emissiveIntensity={highlight ? 1.5 : 0.8} metalness={0.7} roughness={0.2} />
       </mesh>
     </group>
   )
