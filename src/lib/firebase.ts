@@ -66,6 +66,20 @@ export async function joinRoom(code: string, playerName: string, playerId: strin
   return updated.val() as Room
 }
 
+export async function reconnectToRoom(code: string, playerId: string): Promise<Room | null> {
+  const roomRef = ref(db, `rooms/${code}`)
+  const snap = await new Promise<import('firebase/database').DataSnapshot>((resolve) => {
+    onValue(roomRef, (s) => resolve(s), { onlyOnce: true })
+  })
+  if (!snap.exists()) return null
+  const data = snap.val() as Room
+  const isP1 = data.players.p1?.id === playerId
+  const isP2 = data.players.p2?.id === playerId
+  if (!isP1 && !isP2) return null
+  setupPresence(code, playerId)
+  return data
+}
+
 function setupPresence(roomCode: string, playerId: string) {
   const connectedRef = ref(db, '.info/connected')
   const playerPresenceRef = ref(db, `rooms/${roomCode}/presence/${playerId}`)
