@@ -57,14 +57,13 @@ export default function XPiece({ position, animate = true, highlight = false }: 
 
   return (
     <group ref={groupRef} position={startPos}>
-      <pointLight color="#22d3ee" intensity={highlight ? 6 : 2} distance={highlight ? 6 : 3} decay={2} />
       <mesh position={[0, 0.25, 0]} rotation={[0, 0, Math.PI / 4]}>
         <boxGeometry args={[0.09, 0.65, 0.09]} />
-        <meshStandardMaterial color="#22d3ee" emissive="#22d3ee" emissiveIntensity={highlight ? 1.5 : 0.8} metalness={0.7} roughness={0.2} />
+        <meshBasicMaterial color="#22d3ee" />
       </mesh>
       <mesh position={[0, 0.25, 0]} rotation={[0, 0, -Math.PI / 4]}>
         <boxGeometry args={[0.09, 0.65, 0.09]} />
-        <meshStandardMaterial color="#22d3ee" emissive="#22d3ee" emissiveIntensity={highlight ? 1.5 : 0.8} metalness={0.7} roughness={0.2} />
+        <meshBasicMaterial color="#22d3ee" />
       </mesh>
     </group>
   )

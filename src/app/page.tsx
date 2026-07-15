@@ -139,12 +139,12 @@ export default function MainMenu() {
   }
 
   return (
-    <div className="h-screen w-full flex flex-col items-center justify-center pointer-events-auto">
+    <div className="h-screen w-full flex flex-col items-center justify-center pointer-events-auto overflow-hidden">
       <FloatingDecor count={6} />
       <div className="fixed top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-cyan-500/[0.04] blur-[100px] pointer-events-none" />
       <div className="fixed bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-rose-500/[0.04] blur-[100px] pointer-events-none" />
 
-      <div className="relative z-10 w-full max-w-sm px-6 sm:px-8 py-8">
+      <div className="relative z-10 w-full max-w-sm mx-auto px-6 sm:px-8 py-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} className="text-center mb-8">
           <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-cyan-400/20 to-rose-400/20 border border-white/[0.08] flex items-center justify-center backdrop-blur-xl">
             <Gamepad2 size={28} className="text-white" />

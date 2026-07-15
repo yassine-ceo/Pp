@@ -50,17 +50,16 @@ export default function WinLine({ cells }: WinLineProps) {
     <group ref={groupRef} position={[mid.x, mid.y, mid.z]} rotation={[0, rotation, 0]}>
       <mesh>
         <boxGeometry args={[0.3, 0.04, length + 0.2]} />
-        <meshStandardMaterial color="#facc15" emissive="#facc15" emissiveIntensity={0.3} transparent opacity={0.2} />
+        <meshBasicMaterial color="#facc15" transparent opacity={0.2} />
       </mesh>
       <mesh>
         <boxGeometry args={[0.18, 0.035, length + 0.1]} />
-        <meshStandardMaterial color="#facc15" emissive="#facc15" emissiveIntensity={0.6} transparent opacity={0.4} />
+        <meshBasicMaterial color="#facc15" transparent opacity={0.4} />
       </mesh>
       <mesh>
         <boxGeometry args={[0.08, 0.03, length]} />
-        <meshStandardMaterial color="#fde68a" emissive="#facc15" emissiveIntensity={1.5} transparent opacity={0.9} />
+        <meshBasicMaterial color="#fde68a" transparent opacity={0.9} />
       </mesh>
-      <pointLight color="#facc15" intensity={4} distance={5} decay={2} />
     </group>
   )
 }

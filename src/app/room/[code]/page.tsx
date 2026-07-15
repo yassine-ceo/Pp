@@ -161,10 +161,11 @@ export default function RoomPage() {
         winDelayRef.current = setTimeout(() => setShowResult(true), WIN_DELAY_MS)
       }
 
-      // Reset on new game
+      // Reset on new game - force fresh board from Firebase (ignore local optimistic board)
       if ((prev === 'won' || prev === 'tie') && newStatus === 'playing') {
         setWinHighlightCells([])
         setShowResult(false)
+        useGameStore.getState().setLocalBoard([...data.board])
       }
 
       // Detect disconnect

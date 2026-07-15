@@ -55,10 +55,9 @@ export default function OPiece({ position, animate = true, highlight = false }: 
 
   return (
     <group ref={groupRef} position={startPos}>
-      <pointLight color="#f43f5e" intensity={highlight ? 6 : 2} distance={highlight ? 6 : 3} decay={2} />
       <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.25, 0.06, 12, 24]} />
-        <meshStandardMaterial color="#f43f5e" emissive="#f43f5e" emissiveIntensity={highlight ? 1.5 : 0.8} metalness={0.7} roughness={0.2} />
+        <torusGeometry args={[0.25, 0.06, 8, 16]} />
+        <meshBasicMaterial color="#f43f5e" />
       </mesh>
     </group>
   )
