@@ -6,11 +6,11 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'XO Arena — 3D Multiplayer Tic Tac Toe',
-  description: 'Challenge friends to a premium 3D multiplayer tic tac toe game with real-time matchmaking, neon-lit pieces, and epic win animations.',
+  title: 'XO Arena — Multiplayer Tic Tac Toe',
+  description: 'Challenge friends to a premium multiplayer tic tac toe game with real-time matchmaking, skeuomorphic design, and instant gameplay.',
   openGraph: {
-    title: 'XO Arena — 3D Multiplayer Tic Tac Toe',
-    description: 'Challenge friends to a premium 3D multiplayer tic tac toe game.',
+    title: 'XO Arena — Multiplayer Tic Tac Toe',
+    description: 'Challenge friends to a premium multiplayer tic tac toe game.',
     type: 'website',
     siteName: 'XO Arena',
   },
