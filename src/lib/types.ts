@@ -7,6 +7,23 @@ export interface Player {
   symbol: PlayerSymbol
 }
 
+export interface ChatMessage {
+  id: string
+  playerId: string
+  playerName: string
+  type: 'emoji' | 'text'
+  content: string
+  timestamp: number
+}
+
+export interface ChatBubble {
+  id: string
+  playerId: string
+  playerName: string
+  content: string
+  timestamp: number
+}
+
 export interface Room {
   code: string
   status: RoomStatus
@@ -22,6 +39,9 @@ export interface Room {
   scores: { p1: number; p2: number }
   ready?: Record<string, boolean>
   rematchTimerStart?: number
+  winLine?: number[] | null
+  chat?: Record<string, ChatMessage>
+  bubbles?: Record<string, ChatBubble>
 }
 
 export const WIN_LINES = [
@@ -31,3 +51,13 @@ export const WIN_LINES = [
 ]
 
 export const EMPTY_BOARD = Array(9).fill('') as string[]
+
+export const CHAT_EMOJIS = [
+  { id: 'laugh', label: 'Laugh', svg: 'laugh' as const },
+  { id: 'clown', label: 'Clown', svg: 'clown' as const },
+  { id: 'angry', label: 'Angry', svg: 'angry' as const },
+  { id: 'cry', label: 'Cry', svg: 'cry' as const },
+  { id: 'shock', label: 'Shocked', svg: 'shock' as const },
+] as const
+
+export type EmojiId = typeof CHAT_EMOJIS[number]['id']

@@ -7,15 +7,33 @@ import * as THREE from 'three'
 interface XPieceProps {
   position: [number, number, number]
   animate?: boolean
+  highlight?: boolean
 }
 
-export default function XPiece({ position, animate = true }: XPieceProps) {
+export default function XPiece({ position, animate = true, highlight = false }: XPieceProps) {
   const groupRef = useRef<THREE.Group>(null)
   const time = useRef(0)
   const settled = useRef(!animate)
 
   useFrame((_, delta) => {
-    if (!groupRef.current || settled.current) return
+    if (!groupRef.current) return
+
+    // Win highlight pulse
+    if (highlight) {
+      time.current += delta
+      const pulse = 0.8 + Math.sin(time.current * 5) * 0.5
+      const s = 1 + Math.sin(time.current * 3) * 0.06
+      groupRef.current.scale.setScalar(s)
+      groupRef.current.children.forEach((child) => {
+        if ((child as THREE.Mesh).material && 'emissiveIntensity' in (child as THREE.Mesh).material) {
+          const mat = (child as THREE.Mesh).material as THREE.MeshStandardMaterial
+          mat.emissiveIntensity = pulse
+        }
+      })
+      return
+    }
+
+    if (settled.current) return
     time.current += delta
     const t = time.current
     if (t < 0.4) {
@@ -38,8 +56,7 @@ export default function XPiece({ position, animate = true }: XPieceProps) {
 
   return (
     <group ref={groupRef} position={startPos}>
-      {/* Neon glow point light */}
-      <pointLight color="#22d3ee" intensity={2} distance={3} decay={2} />
+      <pointLight color="#22d3ee" intensity={highlight ? 5 : 2} distance={highlight ? 5 : 3} decay={2} />
 
       {/* Bar 1 */}
       <mesh position={[0, 0.25, 0]} rotation={[0, 0, Math.PI / 4]} castShadow>
@@ -47,7 +64,7 @@ export default function XPiece({ position, animate = true }: XPieceProps) {
         <meshStandardMaterial
           color="#22d3ee"
           emissive="#22d3ee"
-          emissiveIntensity={0.8}
+          emissiveIntensity={highlight ? 1.5 : 0.8}
           metalness={0.9}
           roughness={0.1}
         />
@@ -59,7 +76,7 @@ export default function XPiece({ position, animate = true }: XPieceProps) {
         <meshStandardMaterial
           color="#22d3ee"
           emissive="#22d3ee"
-          emissiveIntensity={0.8}
+          emissiveIntensity={highlight ? 1.5 : 0.8}
           metalness={0.9}
           roughness={0.1}
         />

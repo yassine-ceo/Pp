@@ -6,6 +6,7 @@ import { Environment } from '@react-three/drei'
 import Board from './Board'
 import XPiece from './XPiece'
 import OPiece from './OPiece'
+import WinLine from './WinLine'
 import CameraController from './CameraController'
 import { useGameStore } from '@/stores/gameStore'
 import { makeMove } from '@/lib/firebase'
@@ -32,13 +33,11 @@ function ClickPlane() {
 
     const symbol = room?.players?.p1?.id === playerId ? 'X' : 'O'
 
-    // Optimistic: render immediately
     applyOptimisticMove(index, symbol)
 
     if (symbol === 'X') soundManager.playPlaceX()
     else soundManager.playPlaceO()
 
-    // Fire-and-forget Firebase update (no await)
     makeMove(roomId, playerId, index, room.board, room.turn)
   }, [roomId, room, playerId, localBoard, applyOptimisticMove])
 
@@ -71,6 +70,7 @@ function ClickPlane() {
 
 function Pieces() {
   const localBoard = useGameStore((s) => s.localBoard)
+  const winHighlightCells = useGameStore((s) => s.winHighlightCells)
 
   const pieces = useMemo(() => {
     return localBoard.map((cell, i) => ({
@@ -80,15 +80,23 @@ function Pieces() {
     })).filter((p) => p.cell !== '')
   }, [localBoard])
 
+  const winSet = useMemo(() => new Set(winHighlightCells), [winHighlightCells])
+
   return (
     <group>
       {pieces.map(({ cell, index, position }) =>
         cell === 'X'
-          ? <XPiece key={`x-${index}`} position={position} />
-          : <OPiece key={`o-${index}`} position={position} />
+          ? <XPiece key={`x-${index}`} position={position} highlight={winSet.has(index)} />
+          : <OPiece key={`o-${index}`} position={position} highlight={winSet.has(index)} />
       )}
     </group>
   )
+}
+
+function WinLineOverlay() {
+  const winHighlightCells = useGameStore((s) => s.winHighlightCells)
+  if (winHighlightCells.length < 2) return null
+  return <WinLine cells={winHighlightCells} />
 }
 
 interface GameSceneProps {
@@ -100,7 +108,7 @@ export default function GameScene({ isPlaying }: GameSceneProps) {
     <div className="fixed inset-0 z-0">
       <Canvas
         shadows
-        camera={{ position: [0, 5, 8], fov: 45 }}
+        camera={{ position: [0, 3.8, 5.5], fov: 40 }}
         gl={{ antialias: true, alpha: true }}
         style={{ background: 'transparent' }}
       >
@@ -122,6 +130,7 @@ export default function GameScene({ isPlaying }: GameSceneProps) {
         <Board />
         <ClickPlane />
         <Pieces />
+        <WinLineOverlay />
         <CameraController isPlaying={isPlaying} />
 
         <Environment preset="night" />

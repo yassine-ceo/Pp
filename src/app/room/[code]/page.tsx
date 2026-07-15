@@ -17,6 +17,7 @@ import GameScene from '@/components/3d/GameScene'
 import HUD from '@/components/ui/HUD'
 
 const REMATCH_TIMEOUT = 30_000
+const WIN_DELAY_MS = 3000
 
 function getOrCreatePlayerId(): string {
   try {
@@ -39,6 +40,7 @@ export default function RoomPage() {
     room, setRoom, setRoomId,
     playerId, setPlayerId, playerName, setPlayerName,
     addWin, addLoss, addTie,
+    setShowResult, setWinHighlightCells,
   } = useGameStore()
 
   const [loading, setLoading] = useState(true)
@@ -49,6 +51,7 @@ export default function RoomPage() {
   const prevStatusRef = useRef<string | null>(null)
   const expiryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const rematchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const winDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const initDoneRef = useRef(false)
 
   const cleanup = useCallback(async () => {
@@ -80,7 +83,6 @@ export default function RoomPage() {
 
     const init = async () => {
       try {
-        // Check for existing session
         let savedRoomId: string | null = null
         let savedSlot: string | null = null
         try {
@@ -90,7 +92,6 @@ export default function RoomPage() {
 
         const targetCode = urlCode === 'create' ? null : urlCode
 
-        // Reconnect existing session
         if (savedRoomId && savedSlot && (savedRoomId === targetCode || urlCode === 'create')) {
           const reconnected = await reconnectToRoom(savedRoomId, playerId)
           if (reconnected) {
@@ -132,7 +133,6 @@ export default function RoomPage() {
             }
           }, 5 * 60 * 1000)
         } else {
-          // Try join as p2 first
           const joined = await joinRoom(urlCode, playerName, playerId)
           if (joined) {
             roomCodeRef.current = urlCode
@@ -142,7 +142,6 @@ export default function RoomPage() {
               localStorage.setItem('xo slot', 'p2')
             } catch {}
           } else {
-            // Maybe already in as p1
             const reconnected = await reconnectToRoom(urlCode, playerId)
             if (reconnected) {
               roomCodeRef.current = urlCode
@@ -169,6 +168,7 @@ export default function RoomPage() {
     return () => {
       if (expiryTimerRef.current) clearTimeout(expiryTimerRef.current)
       if (rematchTimerRef.current) clearTimeout(rematchTimerRef.current)
+      if (winDelayRef.current) clearTimeout(winDelayRef.current)
     }
   }, [playerId, playerName, urlCode, setRoomId, cleanup])
 
@@ -193,8 +193,13 @@ export default function RoomPage() {
       const prev = prevStatusRef.current
       const newStatus = data?.status
 
-      // Detect win/lose/tie
+      // Detect win/lose/tie — with 3s delay for result overlay
       if (prev === 'playing' && (newStatus === 'won' || newStatus === 'tie')) {
+        // Set win highlight cells immediately (from winLine in room data)
+        const winLine = data?.winLine ?? []
+        setWinHighlightCells(winLine)
+
+        // Play win sound immediately
         if (newStatus === 'won') {
           if (data?.winner === playerId) {
             soundManager.playWin()
@@ -207,6 +212,19 @@ export default function RoomPage() {
           soundManager.playTie()
           addTie()
         }
+
+        // Delay showing the result overlay by 3 seconds
+        setShowResult(false)
+        if (winDelayRef.current) clearTimeout(winDelayRef.current)
+        winDelayRef.current = setTimeout(() => {
+          setShowResult(true)
+        }, WIN_DELAY_MS)
+      }
+
+      // When entering playing state from won/tie, clear win highlights and result
+      if ((prev === 'won' || prev === 'tie') && newStatus === 'playing') {
+        setWinHighlightCells([])
+        setShowResult(false)
       }
 
       // Detect disconnect
@@ -236,7 +254,7 @@ export default function RoomPage() {
 
     unsubRef.current = unsub
     return () => { unsub() }
-  }, [roomCodeRef.current, playerId, setRoom, addWin, addLoss, addTie])
+  }, [roomCodeRef.current, playerId, setRoom, addWin, addLoss, addTie, setShowResult, setWinHighlightCells])
 
   // Monitor rematch timer expiry
   useEffect(() => {
@@ -250,7 +268,6 @@ export default function RoomPage() {
 
     const remaining = REMATCH_TIMEOUT - (Date.now() - timerStart)
     if (remaining <= 0) {
-      // Timer already expired
       terminateRoom(roomCodeRef.current).catch(() => {})
       return
     }
@@ -273,8 +290,10 @@ export default function RoomPage() {
     cleanup()
     setRoom(null)
     setRoomId(null)
+    setWinHighlightCells([])
+    setShowResult(false)
     router.push('/')
-  }, [cleanup, setRoom, setRoomId, router])
+  }, [cleanup, setRoom, setRoomId, setWinHighlightCells, setShowResult, router])
 
   const isPlaying = room?.status === 'playing' || room?.status === 'won' || room?.status === 'tie'
 
@@ -299,10 +318,10 @@ export default function RoomPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="rounded-2xl border border-white/[0.08] bg-black/60 backdrop-blur-2xl p-8 text-center max-w-sm w-full"
+            className="rounded-3xl border border-white/[0.08] bg-black/60 backdrop-blur-2xl p-8 text-center max-w-sm w-full"
           >
-            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-rose-400/10 flex items-center justify-center">
-              <span className="text-2xl">⚠️</span>
+            <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-rose-400/10 border border-rose-400/15 flex items-center justify-center">
+              <span className="text-3xl">⚠️</span>
             </div>
             <h2 className="text-lg font-bold text-white mb-2">
               {terminated ? 'Game Ended' : 'Error'}
@@ -320,8 +339,8 @@ export default function RoomPage() {
 
       {!loading && room && <HUD />}
 
-      {/* Back button */}
-      {!loading && (room?.status === 'playing' || room?.status === 'won' || room?.status === 'tie') && (
+      {/* Back button — hidden during 3s win delay so players can see the board */}
+      {!loading && room?.status === 'playing' && (
         <button
           onClick={handleBack}
           className="fixed top-4 left-4 z-30 w-10 h-10 rounded-xl border border-white/[0.08] bg-black/30 backdrop-blur-xl flex items-center justify-center text-white/40 hover:text-white/80 transition-colors pointer-events-auto"

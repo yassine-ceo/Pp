@@ -9,6 +9,11 @@ interface GameState {
   playerId: string | null
   playerName: string
   localBoard: string[]
+  localWins: number
+  localLosses: number
+  localTies: number
+  showResult: boolean
+  winHighlightCells: number[]
   setPlayerName: (name: string) => void
   setPlayerId: (id: string) => void
   setRoom: (room: Room | null) => void
@@ -17,12 +22,11 @@ interface GameState {
   applyOptimisticMove: (index: number, symbol: string) => void
   resetLocalBoard: () => void
   resetGame: () => void
-  localWins: number
-  localLosses: number
-  localTies: number
   addWin: () => void
   addLoss: () => void
   addTie: () => void
+  setShowResult: (show: boolean) => void
+  setWinHighlightCells: (cells: number[]) => void
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -34,10 +38,11 @@ export const useGameStore = create<GameState>((set, get) => ({
   localWins: 0,
   localLosses: 0,
   localTies: 0,
+  showResult: false,
+  winHighlightCells: [],
   setPlayerName: (name) => set({ playerName: name }),
   setPlayerId: (id) => set({ playerId: id }),
   setRoom: (room) => {
-    const prev = get().room
     if (room) {
       set({ room, localBoard: [...room.board] })
     } else {
@@ -58,4 +63,6 @@ export const useGameStore = create<GameState>((set, get) => ({
   addWin: () => set((s) => ({ localWins: s.localWins + 1 })),
   addLoss: () => set((s) => ({ localLosses: s.localLosses + 1 })),
   addTie: () => set((s) => ({ localTies: s.localTies + 1 })),
+  setShowResult: (show) => set({ showResult: show }),
+  setWinHighlightCells: (cells) => set({ winHighlightCells: cells }),
 }))

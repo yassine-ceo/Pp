@@ -39,6 +39,7 @@ export async function createRoom(hostName: string, playerId: string): Promise<st
     createdAt: Date.now(),
     scores: { p1: 0, p2: 0 },
     ready: {},
+    winLine: null,
   }
   await set(roomRef, room)
   setupPresence(code, playerId)
@@ -126,7 +127,7 @@ export async function makeMove(
   index: number,
   board: string[],
   turn: string | null,
-): Promise<{ won: boolean; tie: boolean; symbol: string } | false> {
+): Promise<{ won: boolean; tie: boolean; symbol: string; winLine: number[] | null } | false> {
   if (!board || board[index] !== '' || turn !== playerId) return false
 
   const roomSnap = await new Promise<import('firebase/database').DataSnapshot>((resolve) => {
@@ -164,6 +165,7 @@ export async function makeMove(
     status: newStatus,
     winner: winnerId,
     winnerName,
+    winLine: result.line ?? null,
   }
 
   if (newStatus === 'won' || newStatus === 'tie') {
@@ -178,7 +180,7 @@ export async function makeMove(
   }
 
   await update(ref(db, `rooms/${code}`), updates)
-  return { won: result.won, tie: result.tie, symbol }
+  return { won: result.won, tie: result.tie, symbol, winLine: result.line }
 }
 
 /**
@@ -202,11 +204,9 @@ export async function setReady(code: string, playerId: string): Promise<void> {
 
   await update(ref(db, `rooms/${code}`), updates)
 
-  // Check if both ready
   const p1Id = room?.players?.p1?.id
   const p2Id = room?.players?.p2?.id
   if (p1Id && p2Id && ready[p1Id] && ready[p2Id]) {
-    // Both ready — reset board, flip who goes first
     const lastTurn = room?.turn
     const newFirstTurn = lastTurn === p1Id ? p2Id : p1Id
     await update(ref(db, `rooms/${code}`), {
@@ -215,8 +215,10 @@ export async function setReady(code: string, playerId: string): Promise<void> {
       turn: newFirstTurn,
       winner: null,
       winnerName: null,
+      winLine: null,
       ready: {},
       rematchTimerStart: null,
+      bubbles: {},
     })
   }
 }
@@ -234,4 +236,53 @@ export async function updateRoomStatus(code: string, status: RoomStatus) {
 
 export async function deleteRoom(code: string) {
   await remove(ref(db, `rooms/${code}`))
+}
+
+/**
+ * Send a chat message (emoji or text).
+ */
+export async function sendChatMessage(
+  code: string,
+  playerId: string,
+  playerName: string,
+  type: 'emoji' | 'text',
+  content: string,
+): Promise<void> {
+  const msgId = `${playerId}-${Date.now()}`
+  const message = {
+    id: msgId,
+    playerId,
+    playerName,
+    type,
+    content,
+    timestamp: Date.now(),
+  }
+  await update(ref(db, `rooms/${code}/chat`), { [msgId]: message })
+}
+
+/**
+ * Send a floating chat bubble (auto-clears after 4s).
+ */
+export async function sendChatBubble(
+  code: string,
+  playerId: string,
+  playerName: string,
+  content: string,
+): Promise<void> {
+  const bubbleId = `bub-${playerId}-${Date.now()}`
+  const bubble = {
+    id: bubbleId,
+    playerId,
+    playerName,
+    content,
+    timestamp: Date.now(),
+  }
+  await update(ref(db, `rooms/${code}/bubbles`), { [bubbleId]: bubble })
+
+  // Auto-remove after 5 seconds (allow for network delay)
+  setTimeout(async () => {
+    try {
+      await remove(ref(db, `rooms/${code}/bubbles/${bubbleId}`))
+    } catch {}
+  }, 5000)
 }

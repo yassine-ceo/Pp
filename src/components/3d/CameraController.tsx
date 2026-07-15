@@ -6,7 +6,7 @@ import { OrbitControls } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import * as THREE from 'three'
 
-const DEFAULT_POS = new THREE.Vector3(0, 5, 8)
+const DEFAULT_POS = new THREE.Vector3(0, 3.8, 5.5)
 const DEFAULT_TARGET = new THREE.Vector3(0, 0, 0)
 
 interface CameraControllerProps {

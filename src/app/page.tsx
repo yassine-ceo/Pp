@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useGameStore } from '@/stores/gameStore'
 import { soundManager } from '@/lib/sound'
 import FloatingDecor from '@/components/3d/FloatingDecor'
-import { Gamepad2, Plus, LogIn, ArrowRight } from 'lucide-react'
+import { Gamepad2, Plus, LogIn, ArrowRight, Settings, X } from 'lucide-react'
 
 export default function MainMenu() {
   const router = useRouter()
@@ -14,7 +14,26 @@ export default function MainMenu() {
   const [name, setName] = useState(playerName || '')
   const [joinCode, setJoinCode] = useState('')
   const [mode, setMode] = useState<'home' | 'join'>('home')
-  const [nameConfirmed, setNameConfirmed] = useState(!!playerName)
+  const [nameConfirmed, setNameConfirmed] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsName, setSettingsName] = useState('')
+
+  // Auto-skip name entry if saved
+  useEffect(() => {
+    const saved = localStorage.getItem('xo playerName')
+    if (saved && saved.trim()) {
+      setPlayerName(saved)
+      setName(saved)
+      setNameConfirmed(true)
+    }
+    // Ensure playerId exists
+    let id = localStorage.getItem('xo playerId')
+    if (!id) {
+      try { id = crypto.randomUUID() } catch { id = Math.random().toString(36).slice(2) + Date.now().toString(36) }
+      localStorage.setItem('xo playerId', id)
+    }
+    setPlayerId(id)
+  }, [setPlayerName, setPlayerId])
 
   const handleNameConfirm = () => {
     const trimmed = name.trim()
@@ -22,12 +41,12 @@ export default function MainMenu() {
     soundManager.playClick()
     setPlayerName(trimmed)
     try { localStorage.setItem('xo playerName', trimmed) } catch {}
-    if (!useGameStore.getState().playerId) {
-      try {
-        const id = crypto.randomUUID()
-        setPlayerId(id)
-        localStorage.setItem('xo playerId', id)
-      } catch {}
+    // Ensure playerId
+    let id = localStorage.getItem('xo playerId')
+    if (!id) {
+      try { id = crypto.randomUUID() } catch { id = Math.random().toString(36).slice(2) + Date.now().toString(36) }
+      localStorage.setItem('xo playerId', id)
+      setPlayerId(id)
     }
     setNameConfirmed(true)
   }
@@ -42,6 +61,21 @@ export default function MainMenu() {
     if (!nameConfirmed || joinCode.trim().length < 4) return
     soundManager.playClick()
     router.push(`/room/${joinCode.trim().toUpperCase()}`)
+  }
+
+  const openSettings = () => {
+    setSettingsName(playerName || '')
+    setSettingsOpen(true)
+  }
+
+  const saveSettings = () => {
+    const trimmed = settingsName.trim()
+    if (!trimmed) return
+    soundManager.playClick()
+    setPlayerName(trimmed)
+    setName(trimmed)
+    try { localStorage.setItem('xo playerName', trimmed) } catch {}
+    setSettingsOpen(false)
   }
 
   return (
@@ -75,7 +109,7 @@ export default function MainMenu() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          className="rounded-2xl border border-white/[0.08] bg-black/40 backdrop-blur-2xl p-6"
+          className="rounded-3xl border border-white/[0.08] bg-black/40 backdrop-blur-2xl p-6"
         >
           {!nameConfirmed ? (
             <>
@@ -86,7 +120,7 @@ export default function MainMenu() {
                 onChange={(e) => setName(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleNameConfirm()}
                 placeholder="Your name..."
-                maxLength={16}
+                maxLength={15}
                 autoFocus
                 className="w-full h-11 rounded-xl bg-white/[0.06] border border-white/[0.08] px-4 text-sm text-white placeholder:text-white/20 outline-none focus:border-cyan-400/30 transition-colors mb-4"
               />
@@ -100,7 +134,17 @@ export default function MainMenu() {
             </>
           ) : mode === 'home' ? (
             <div className="flex flex-col gap-3">
-              <p className="text-xs text-white/30 uppercase tracking-wider mb-1">Playing as <span className="text-white/60">{name}</span></p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs text-white/30 uppercase tracking-wider">Playing as</p>
+                <button
+                  onClick={() => { soundManager.playClick(); openSettings() }}
+                  className="flex items-center gap-1.5 text-[11px] text-white/40 hover:text-white/70 transition-colors"
+                >
+                  <Settings size={12} />
+                  Change name
+                </button>
+              </div>
+              <p className="text-sm font-semibold text-white -mt-2 mb-1">{name}</p>
               <button
                 onClick={handleCreate}
                 className="w-full h-12 rounded-xl bg-gradient-to-r from-cyan-400/15 to-cyan-400/5 border border-cyan-400/20 text-cyan-400 text-sm font-semibold flex items-center justify-center gap-2 hover:from-cyan-400/25 hover:to-cyan-400/10 transition-all active:scale-[0.98]"
@@ -161,6 +205,51 @@ export default function MainMenu() {
           Built with Three.js · Firebase · Next.js
         </motion.p>
       </div>
+
+      {/* Settings Modal */}
+      {settingsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-5 pointer-events-auto">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setSettingsOpen(false)}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative rounded-3xl border border-white/[0.08] bg-black/80 backdrop-blur-2xl p-6 text-center max-w-sm w-full"
+          >
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-bold text-white">Settings</h2>
+              <button
+                onClick={() => setSettingsOpen(false)}
+                className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center text-white/40 hover:text-white/80 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+            <p className="text-xs text-white/30 uppercase tracking-wider mb-3 text-left">Display Name</p>
+            <input
+              type="text"
+              value={settingsName}
+              onChange={(e) => setSettingsName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && saveSettings()}
+              placeholder="Your name..."
+              maxLength={15}
+              autoFocus
+              className="w-full h-11 rounded-xl bg-white/[0.06] border border-white/[0.08] px-4 text-sm text-white placeholder:text-white/20 outline-none focus:border-cyan-400/30 transition-colors mb-4"
+            />
+            <button
+              onClick={saveSettings}
+              disabled={!settingsName.trim()}
+              className="w-full h-11 rounded-xl bg-cyan-400/15 border border-cyan-400/20 text-cyan-400 text-sm font-semibold hover:bg-cyan-400/25 transition-all active:scale-[0.98] disabled:opacity-30"
+            >
+              Save
+            </button>
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 }
