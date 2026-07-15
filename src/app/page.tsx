@@ -144,7 +144,7 @@ export default function MainMenu() {
       <div className="fixed top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-cyan-500/[0.04] blur-[100px] pointer-events-none" />
       <div className="fixed bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-rose-500/[0.04] blur-[100px] pointer-events-none" />
 
-      <div className="relative z-10 w-full max-w-sm mx-6 py-8">
+      <div className="relative z-10 w-full max-w-sm px-6 sm:px-8 py-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} className="text-center mb-8">
           <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-cyan-400/20 to-rose-400/20 border border-white/[0.08] flex items-center justify-center backdrop-blur-xl">
             <Gamepad2 size={28} className="text-white" />
@@ -229,9 +229,9 @@ export default function MainMenu() {
       </div>
 
       {settingsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-5 pointer-events-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6 pointer-events-auto">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSettingsOpen(false)} />
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="relative rounded-3xl border border-white/[0.08] bg-black/80 backdrop-blur-2xl p-6 text-center max-w-sm w-full">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="relative rounded-3xl border border-white/[0.08] bg-black/80 backdrop-blur-2xl p-6 text-center max-w-md w-full">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-white">Settings</h2>
               <button onClick={() => setSettingsOpen(false)} className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center text-white/40 hover:text-white/80 transition-colors">

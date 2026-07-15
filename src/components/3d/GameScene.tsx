@@ -2,7 +2,6 @@
 
 import { useMemo, useCallback, useState, useEffect, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { Environment } from '@react-three/drei'
 import Board from './Board'
 import XPiece from './XPiece'
 import OPiece from './OPiece'
@@ -116,7 +115,7 @@ export default function GameScene({ isPlaying }: GameSceneProps) {
   return (
     <div className={`fixed inset-0 z-0 ${tieShake ? 'animate-board-shake' : ''}`}>
       <Canvas
-        camera={{ position: [0, 3.8, 5.5], fov: 40 }}
+        camera={{ position: [0, 4.2, 5.0], fov: 42 }}
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
         dpr={[1, 1.5]}
         style={{ background: 'transparent' }}
@@ -129,10 +128,7 @@ export default function GameScene({ isPlaying }: GameSceneProps) {
         <ClickPlane />
         <Pieces />
         <WinLineOverlay />
-        <CameraController isPlaying={isPlaying} />
-
-        <Environment preset="night" />
-        <fog attach="fog" args={['#0a0a1a', 5, 15]} />
+        <CameraController />
       </Canvas>
     </div>
   )

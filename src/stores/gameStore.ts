@@ -44,9 +44,14 @@ export const useGameStore = create<GameState>((set) => ({
   setPlayerId: (id) => set({ playerId: id }),
   setRoom: (room) => {
     if (room) {
-      set({ room, localBoard: [...room.board] })
+      set((state) => {
+        const mergedBoard = room.board.map((cell, i) =>
+          state.localBoard[i] !== '' ? state.localBoard[i] : cell
+        )
+        return { room, localBoard: mergedBoard }
+      })
     } else {
-      set({ room, localBoard: Array(9).fill('') })
+      set({ room: null, localBoard: Array(9).fill('') })
     }
   },
   setRoomId: (id) => set({ roomId: id }),

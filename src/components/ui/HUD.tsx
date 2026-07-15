@@ -85,8 +85,21 @@ export default function HUD() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const tickPlayedRef = useRef(false)
   const lastOppEmojiRef = useRef<number>(0)
+  const [tick, setTick] = useState(0)
+  const rafRef = useRef<number>(0)
 
   const isMyTurn = room?.turn === playerId && room?.status === 'playing'
+
+  // Smooth tick for timer bar updates (both players see it)
+  useEffect(() => {
+    if (!room?.turnStartTime || room.status !== 'playing') return
+    const animate = () => {
+      setTick((t) => t + 1)
+      rafRef.current = requestAnimationFrame(animate)
+    }
+    rafRef.current = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(rafRef.current)
+  }, [room?.turnStartTime, room?.status])
 
   // Opponent emoji sound sync
   useEffect(() => {
@@ -126,22 +139,23 @@ export default function HUD() {
     }
   }, [room?.code])
 
-  // Turn timer
+  // Turn timer - computed on every tick for smooth bar, both players see it
   const turnTimeLeft = useMemo(() => {
-    if (!isMyTurn || !room?.turnStartTime) return null
+    if (!room?.turnStartTime || room.status !== 'playing') return null
     const elapsed = Date.now() - room.turnStartTime
     return Math.max(0, TURN_TIME_LIMIT - elapsed)
-  }, [isMyTurn, room?.turnStartTime, roomState])
+  }, [room?.turnStartTime, room?.status, roomState, tick])
 
+  // Tick sound - plays once when time drops below 5s for the active player
   useEffect(() => {
-    if (turnTimeLeft !== null && turnTimeLeft <= 5000 && turnTimeLeft > 0 && !tickPlayedRef.current) {
+    if (isMyTurn && turnTimeLeft !== null && turnTimeLeft <= 5000 && turnTimeLeft > 0 && !tickPlayedRef.current) {
       soundManager.playTick()
       tickPlayedRef.current = true
     }
     if (turnTimeLeft === null || (turnTimeLeft !== null && turnTimeLeft > 5000)) {
       tickPlayedRef.current = false
     }
-  }, [turnTimeLeft])
+  }, [turnTimeLeft, isMyTurn])
 
   // Rematch countdown
   useEffect(() => {
@@ -224,10 +238,12 @@ export default function HUD() {
       : 'shadow-[0_0_15px_rgba(244,63,94,0.25)] border-rose-400/40'
     : ''
 
+  const isOppTurn = room?.turn !== playerId && room?.status === 'playing'
+
   return (
     <>
       {/* TOP HUD */}
-      <div className="fixed top-0 inset-x-0 z-20 px-2 pt-10 sm:px-3 pointer-events-none">
+      <div className="fixed top-0 inset-x-0 z-20 px-4 pt-12 sm:px-6 md:px-8 pointer-events-none">
         <div className="mx-auto max-w-md">
           <div className="flex items-start gap-1.5 sm:gap-2">
             {/* ME */}
@@ -247,7 +263,13 @@ export default function HUD() {
                 </div>
                 {isMyTurn && turnTimeLeft !== null && (
                   <div className="mt-1.5 h-1 rounded-full bg-white/[0.06] overflow-hidden">
-                    <motion.div className="h-full rounded-full" style={{ width: `${turnPct}%`, backgroundColor: turnPct > 50 ? (mySymbol === 'X' ? '#22d3ee' : '#f43f5e') : turnPct > 20 ? '#FBBF24' : '#EF4444' }} transition={{ duration: 0.1 }} />
+                    <div
+                      className="h-full rounded-full transition-none"
+                      style={{
+                        width: `${turnPct}%`,
+                        backgroundColor: turnPct > 50 ? (mySymbol === 'X' ? '#22d3ee' : '#f43f5e') : turnPct > 20 ? '#FBBF24' : '#EF4444',
+                      }}
+                    />
                   </div>
                 )}
                 <div className="flex flex-col gap-1 mt-1">
@@ -287,7 +309,7 @@ export default function HUD() {
                         Ready to rematch!
                       </motion.p>
                     )}
-                    {room?.turn !== playerId && room?.status === 'playing' && opponent && room?.turnStartTime && (
+                    {isOppTurn && opponent && room?.turnStartTime && (
                       <TurnTimerBar turnStartTime={room.turnStartTime} symbol={oppSymbol} />
                     )}
                   </div>
@@ -306,7 +328,7 @@ export default function HUD() {
       </div>
 
       {/* BOTTOM BAR */}
-      <div className="fixed bottom-0 inset-x-0 z-20 px-2 pb-2 sm:px-3 sm:pb-3 pointer-events-none">
+      <div className="fixed bottom-0 inset-x-0 z-20 px-4 pb-3 sm:px-6 sm:pb-4 md:px-8 pointer-events-none">
         <div className="mx-auto max-w-md flex items-center justify-between">
           <div className="pointer-events-auto rounded-2xl border border-white/[0.08] bg-black/50 backdrop-blur-xl px-2.5 py-1.5 sm:px-3 sm:py-2 flex items-center gap-2">
             <div>
@@ -343,7 +365,7 @@ export default function HUD() {
       {/* WAITING OVERLAY */}
       {room?.status === 'waiting' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-30 flex items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-auto">
-          <div className="rounded-3xl border border-white/[0.08] bg-black/60 backdrop-blur-2xl px-6 py-8 sm:px-8 sm:py-10 text-center max-w-sm mx-4">
+          <div className="rounded-3xl border border-white/[0.08] bg-black/60 backdrop-blur-2xl px-6 py-8 sm:px-8 sm:py-10 text-center max-w-sm w-full mx-4">
             <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 sm:mb-5 rounded-2xl bg-amber-400/10 border border-amber-400/15 flex items-center justify-center">
               <Trophy size={24} className="text-amber-400 sm:hidden" />
               <Trophy size={28} className="text-amber-400 hidden sm:block" />
@@ -376,7 +398,7 @@ export default function HUD() {
       <AnimatePresence>
         {useGameStore.getState().showResult && (room?.status === 'won' || room?.status === 'tie') && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }} className="fixed inset-0 z-30 flex items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-auto">
-            <div className="rounded-3xl border border-white/[0.08] bg-black/60 backdrop-blur-2xl px-6 py-8 sm:px-8 sm:py-10 text-center max-w-sm mx-4">
+            <div className="rounded-3xl border border-white/[0.08] bg-black/60 backdrop-blur-2xl px-6 py-8 sm:px-8 sm:py-10 text-center max-w-sm w-full mx-4">
               {room?.status === 'tie' ? (
                 <>
                   <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 sm:mb-5 rounded-2xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center">
@@ -447,20 +469,21 @@ function TurnTimerBar({ turnStartTime, symbol }: { turnStartTime: number; symbol
   const [pct, setPct] = useState(100)
 
   useEffect(() => {
+    let raf: number
     const tick = () => {
       const elapsed = Date.now() - turnStartTime
       const remaining = Math.max(0, TURN_TIME_LIMIT - elapsed)
       setPct((remaining / TURN_TIME_LIMIT) * 100)
+      if (remaining > 0) raf = requestAnimationFrame(tick)
     }
-    tick()
-    const id = setInterval(tick, 100)
-    return () => clearInterval(id)
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
   }, [turnStartTime])
 
   return (
     <div className="mt-1.5 h-1 rounded-full bg-white/[0.06] overflow-hidden">
       <div
-        className="h-full rounded-full transition-all duration-100"
+        className="h-full rounded-full transition-none"
         style={{
           width: `${pct}%`,
           backgroundColor: pct > 50 ? (symbol === 'X' ? '#22d3ee' : '#f43f5e')
