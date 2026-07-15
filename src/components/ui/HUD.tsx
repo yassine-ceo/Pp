@@ -4,7 +4,7 @@ import { useGameStore } from '@/stores/gameStore'
 import { soundManager } from '@/lib/sound'
 import { setReady, deleteRoom } from '@/lib/firebase'
 import { TURN_TIME_LIMIT } from '@/lib/types'
-import { Trophy, Volume2, VolumeX, RotateCcw, MessageCircle, LogOut, Copy, Share2, Check } from 'lucide-react'
+import { Trophy, Volume2, VolumeX, RotateCcw, MessageCircle, LogOut, Copy, Share2, Check, Maximize } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
@@ -15,6 +15,16 @@ import type { ChatBubble } from '@/lib/types'
 
 const REMATCH_TIMEOUT = 30_000
 const EMOJI_IDS = ['laugh', 'clown', 'angry', 'cry', 'shock']
+
+function requestFullscreen() {
+  try {
+    const el = document.documentElement
+    if (el.requestFullscreen) el.requestFullscreen()
+    else if ((el as unknown as { webkitRequestFullscreen?: () => void }).webkitRequestFullscreen) (el as unknown as { webkitRequestFullscreen: () => void }).webkitRequestFullscreen()
+    else if ((el as unknown as { mozRequestFullScreen?: () => void }).mozRequestFullScreen) (el as unknown as { mozRequestFullScreen: () => void }).mozRequestFullScreen()
+    else if ((el as unknown as { msRequestFullscreen?: () => void }).msRequestFullscreen) (el as unknown as { msRequestFullscreen: () => void }).msRequestFullscreen()
+  } catch {}
+}
 
 function PlayerAvatar({ symbol, size = 'md' }: { symbol: 'X' | 'O'; size?: 'sm' | 'md' }) {
   const dim = size === 'sm' ? 'w-6 h-6' : 'w-9 h-9'
@@ -90,7 +100,6 @@ export default function HUD() {
 
   const isMyTurn = room?.turn === playerId && room?.status === 'playing'
 
-  // Smooth tick for timer bar updates (both players see it)
   useEffect(() => {
     if (!room?.turnStartTime || room.status !== 'playing') return
     const animate = () => {
@@ -101,7 +110,6 @@ export default function HUD() {
     return () => cancelAnimationFrame(rafRef.current)
   }, [room?.turnStartTime, room?.status])
 
-  // Opponent emoji sound sync
   useEffect(() => {
     if (!room?.bubbles || !playerId) return
     const oppBubbles = Object.values(room.bubbles)
@@ -139,14 +147,12 @@ export default function HUD() {
     }
   }, [room?.code])
 
-  // Turn timer - computed on every tick for smooth bar, both players see it
   const turnTimeLeft = useMemo(() => {
     if (!room?.turnStartTime || room.status !== 'playing') return null
     const elapsed = Date.now() - room.turnStartTime
     return Math.max(0, TURN_TIME_LIMIT - elapsed)
   }, [room?.turnStartTime, room?.status, roomState, tick])
 
-  // Tick sound - plays once when time drops below 5s for the active player
   useEffect(() => {
     if (isMyTurn && turnTimeLeft !== null && turnTimeLeft <= 5000 && turnTimeLeft > 0 && !tickPlayedRef.current) {
       soundManager.playTick()
@@ -157,7 +163,6 @@ export default function HUD() {
     }
   }, [turnTimeLeft, isMyTurn])
 
-  // Rematch countdown
   useEffect(() => {
     if (!room || (room.status !== 'won' && room.status !== 'tie')) {
       setRematchTimeLeft(null)
@@ -194,7 +199,6 @@ export default function HUD() {
     router.push('/')
   }, [roomId, router])
 
-  // Bubble display: latest emoji per player + last 3 text per player
   const myBubbles = useMemo(() => {
     if (!room?.bubbles || !playerId) return []
     const all = Object.values(room.bubbles)
@@ -242,8 +246,17 @@ export default function HUD() {
 
   return (
     <>
-      {/* TOP HUD */}
-      <div className="fixed top-0 inset-x-0 z-20 px-4 pt-14 sm:pt-16 sm:px-6 md:px-8 pointer-events-none" style={{ paddingTop: 'max(3.5rem, env(safe-area-inset-top, 3.5rem))' }}>
+      {/* BACK BUTTON — absolute top-left, separate from score bar */}
+      <button
+        onClick={handleExit}
+        className="fixed top-4 left-4 z-30 pointer-events-auto w-10 h-10 rounded-xl border border-white/[0.1] bg-black/60 backdrop-blur-xl flex items-center justify-center text-white/50 hover:text-white hover:bg-white/[0.1] transition-all"
+        title="Exit to Menu"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+      </button>
+
+      {/* TOP HUD — pushed below back button */}
+      <div className="fixed top-0 inset-x-0 z-20 px-4 sm:px-6 md:px-8 pointer-events-none" style={{ paddingTop: 'max(4.5rem, calc(env(safe-area-inset-top, 0px) + 4.5rem))' }}>
         <div className="mx-auto max-w-md">
           <div className="flex items-start gap-1.5 sm:gap-2">
             {/* ME */}
@@ -328,7 +341,7 @@ export default function HUD() {
       </div>
 
       {/* BOTTOM BAR */}
-      <div className="fixed bottom-0 inset-x-0 z-20 px-4 pb-3 sm:px-6 sm:pb-4 md:px-8 pointer-events-none">
+      <div className="fixed bottom-0 inset-x-0 z-20 px-4 pb-3 sm:px-6 sm:pb-4 md:px-8 pointer-events-none" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}>
         <div className="mx-auto max-w-md flex items-center justify-between">
           <div className="pointer-events-auto rounded-2xl border border-white/[0.08] bg-black/50 backdrop-blur-xl px-2.5 py-1.5 sm:px-3 sm:py-2 flex items-center gap-2">
             <div>
@@ -345,6 +358,9 @@ export default function HUD() {
           <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto">
             <button onClick={() => { soundManager.playClick(); const next = !muted; setMuted(next); soundManager.setMuted(next) }} className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl border border-white/[0.08] bg-black/50 backdrop-blur-xl flex items-center justify-center text-white/40 hover:text-white/80 transition-colors">
               {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+            </button>
+            <button onClick={() => { soundManager.playClick(); requestFullscreen() }} className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl border border-white/[0.08] bg-black/50 backdrop-blur-xl flex items-center justify-center text-white/40 hover:text-white/80 transition-colors" title="Fullscreen">
+              <Maximize size={14} />
             </button>
             <div className="relative">
               <button onClick={() => { soundManager.playClick(); setChatOpen(!chatOpen) }} className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl border border-white/[0.08] bg-black/50 backdrop-blur-xl flex items-center justify-center text-white/40 hover:text-white/80 transition-colors">

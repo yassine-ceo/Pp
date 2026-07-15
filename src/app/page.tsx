@@ -8,6 +8,16 @@ import { soundManager } from '@/lib/sound'
 import FloatingDecor from '@/components/3d/FloatingDecor'
 import { Gamepad2, Plus, LogIn, ArrowRight, Settings, X, ClipboardPaste, Check } from 'lucide-react'
 
+function tryFullscreen() {
+  try {
+    const el = document.documentElement
+    if (el.requestFullscreen) el.requestFullscreen()
+    else if ((el as unknown as { webkitRequestFullscreen?: () => void }).webkitRequestFullscreen) (el as unknown as { webkitRequestFullscreen: () => void }).webkitRequestFullscreen()
+    else if ((el as unknown as { mozRequestFullScreen?: () => void }).mozRequestFullScreen) (el as unknown as { mozRequestFullScreen: () => void }).mozRequestFullScreen()
+    else if ((el as unknown as { msRequestFullscreen?: () => void }).msRequestFullscreen) (el as unknown as { msRequestFullscreen: () => void }).msRequestFullscreen()
+  } catch {}
+}
+
 export default function MainMenu() {
   const router = useRouter()
   const { playerName, setPlayerName, setPlayerId } = useGameStore()
@@ -44,6 +54,7 @@ export default function MainMenu() {
   useEffect(() => {
     if (deepLinkRoom && nameConfirmed) {
       soundManager.playClick()
+      tryFullscreen()
       router.push(`/room/${deepLinkRoom}`)
     }
   }, [deepLinkRoom, nameConfirmed, router])
@@ -66,12 +77,14 @@ export default function MainMenu() {
   const handleCreate = () => {
     if (!nameConfirmed) return
     soundManager.playClick()
+    tryFullscreen()
     router.push('/room/create')
   }
 
   const handleJoin = () => {
     if (!nameConfirmed || joinCode.trim().length < 4) return
     soundManager.playClick()
+    tryFullscreen()
     router.push(`/room/${joinCode.trim().toUpperCase()}`)
   }
 

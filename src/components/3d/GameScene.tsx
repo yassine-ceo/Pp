@@ -49,8 +49,6 @@ function ClickPlane() {
             key={i}
             position={[x, 0, z]}
             onClick={(e) => { e.stopPropagation(); handleClick(i) }}
-            onPointerOver={() => { document.body.style.cursor = 'pointer' }}
-            onPointerOut={() => { document.body.style.cursor = 'default' }}
           >
             <boxGeometry args={[cellSize * 0.95, 0.01, cellSize * 0.95]} />
             <meshBasicMaterial transparent opacity={0} />
@@ -106,11 +104,12 @@ const SceneContent = memo(function SceneContent() {
 })
 
 const MemoizedCanvas = memo(function MemoizedCanvas() {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
   return (
     <Canvas
       camera={{ position: [0, 4.2, 5.0], fov: 42 }}
-      gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-      dpr={[1, 2]}
+      gl={{ antialias: !isMobile, alpha: true, powerPreference: 'high-performance' }}
+      dpr={[1, 1.5]}
       style={{ background: 'transparent' }}
       frameloop="always"
     >
