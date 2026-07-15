@@ -110,7 +110,8 @@ export default function RoomPage() {
           }
         }
         setLoading(false)
-      } catch {
+      } catch (error) {
+        console.error('Room init error:', error)
         setError('Failed to connect. Please try again.')
         setLoading(false)
       }

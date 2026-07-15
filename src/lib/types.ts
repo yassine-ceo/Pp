@@ -40,7 +40,7 @@ export interface Room {
   ready?: Record<string, boolean>
   rematchTimerStart?: number
   winLine?: number[] | null
-  turnStartTime?: number
+  turnStartTime?: number | null
   chat?: Record<string, ChatMessage>
   bubbles?: Record<string, ChatBubble>
 }

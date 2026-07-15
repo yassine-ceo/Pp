@@ -40,7 +40,7 @@ export async function createRoom(hostName: string, playerId: string): Promise<st
     scores: { p1: 0, p2: 0 },
     ready: {},
     winLine: null,
-    turnStartTime: undefined,
+    turnStartTime: null,
   }
   await set(roomRef, room)
   setupPresence(code, playerId)
