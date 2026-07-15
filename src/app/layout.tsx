@@ -1,37 +1,20 @@
-import type { Metadata, Viewport } from 'next'
+import type { ReactNode } from 'react'
+import { Inter } from 'next/font/google'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import './globals.css'
 
-export const metadata: Metadata = {
-  title: 'XO Arena — 3D Multiplayer',
-  description: 'Premium 3D multiplayer Tic-Tac-Toe game. Real-time, zero login.',
-  manifest: '/manifest.json',
+const inter = Inter({ subsets: ['latin'] })
+
+export const metadata = {
+  title: 'XO Arena — 3D Multiplayer Tic Tac Toe',
+  description: 'Premium 3D multiplayer tic tac toe game with real-time matchmaking',
 }
 
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  themeColor: '#0a0a1a',
-}
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" dir="ltr">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="bg-[#0a0a1a] text-white antialiased" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-        {children}
+    <html lang="en">
+      <body className={`${inter.className} bg-[#0a0a1a] text-white overflow-hidden select-none`}>
+        <ErrorBoundary>{children}</ErrorBoundary>
       </body>
     </html>
   )

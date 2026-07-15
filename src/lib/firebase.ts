@@ -38,6 +38,7 @@ export async function createRoom(hostName: string, playerId: string): Promise<st
     winnerName: null,
     createdAt: Date.now(),
     scores: { p1: 0, p2: 0 },
+    ready: {},
   }
   await set(roomRef, room)
   setupPresence(code, playerId)
@@ -51,13 +52,13 @@ export async function joinRoom(code: string, playerName: string, playerId: strin
   })
   if (!snap.exists()) return null
   const data = snap.val() as Room
-  if (data.players.p2) return null
+  if (data?.players?.p2) return null
 
   const joiner: Player = { id: playerId, name: playerName, symbol: 'O' }
   await update(roomRef, {
     'players/p2': joiner,
     status: 'playing',
-    turn: data.players.p1?.id ?? null,
+    turn: data?.players?.p1?.id ?? null,
   })
   setupPresence(code, playerId)
   const updated = await new Promise<import('firebase/database').DataSnapshot>((resolve) => {
@@ -73,8 +74,8 @@ export async function reconnectToRoom(code: string, playerId: string): Promise<R
   })
   if (!snap.exists()) return null
   const data = snap.val() as Room
-  const isP1 = data.players.p1?.id === playerId
-  const isP2 = data.players.p2?.id === playerId
+  const isP1 = data?.players?.p1?.id === playerId
+  const isP2 = data?.players?.p2?.id === playerId
   if (!isP1 && !isP2) return null
   setupPresence(code, playerId)
   return data
@@ -115,14 +116,27 @@ export function checkWin(board: string[]): { won: boolean; line: number[] | null
   return { won: false, line: null, symbol: null, tie }
 }
 
-export async function makeMove(code: string, playerId: string, index: number, board: string[], turn: string | null) {
-  if (board[index] !== '' || turn !== playerId) return false
-  const newBoard = [...board]
+/**
+ * Granular fast move — updates only the specific board cell + turn/status.
+ * Returns the symbol placed and whether it was a win/tie for sound effects.
+ */
+export async function makeMove(
+  code: string,
+  playerId: string,
+  index: number,
+  board: string[],
+  turn: string | null,
+): Promise<{ won: boolean; tie: boolean; symbol: string } | false> {
+  if (!board || board[index] !== '' || turn !== playerId) return false
+
   const roomSnap = await new Promise<import('firebase/database').DataSnapshot>((resolve) => {
     onValue(ref(db, `rooms/${code}`), (s) => resolve(s), { onlyOnce: true })
   })
   const room = roomSnap.val() as Room
-  const symbol = room.players.p1?.id === playerId ? 'X' : 'O'
+  if (!room) return false
+
+  const symbol = room?.players?.p1?.id === playerId ? 'X' : 'O'
+  const newBoard = [...board]
   newBoard[index] = symbol
 
   const result = checkWin(newBoard)
@@ -133,17 +147,19 @@ export async function makeMove(code: string, playerId: string, index: number, bo
   if (result.won) {
     newStatus = 'won'
     winnerId = playerId
-    winnerName = room.players.p1?.id === playerId ? room.players.p1?.name ?? null : room.players.p2?.name ?? null
+    winnerName = room?.players?.p1?.id === playerId
+      ? (room?.players?.p1?.name ?? null)
+      : (room?.players?.p2?.name ?? null)
   } else if (result.tie) {
     newStatus = 'tie'
   }
 
   const nextTurn = newStatus === 'playing'
-    ? (turn === room.players.p1?.id ? room.players.p2?.id : room.players.p1?.id)
+    ? (turn === room?.players?.p1?.id ? room?.players?.p2?.id : room?.players?.p1?.id)
     : turn
 
   const updates: Record<string, unknown> = {
-    board: newBoard,
+    [`board/${index}`]: symbol,
     turn: nextTurn,
     status: newStatus,
     winner: winnerId,
@@ -151,16 +167,65 @@ export async function makeMove(code: string, playerId: string, index: number, bo
   }
 
   if (newStatus === 'won' || newStatus === 'tie') {
-    const scores = { ...room.scores }
+    const scores = { ...(room?.scores ?? { p1: 0, p2: 0 }) }
     if (newStatus === 'won') {
-      if (winnerId === room.players.p1?.id) scores.p1++
+      if (winnerId === room?.players?.p1?.id) scores.p1++
       else scores.p2++
     }
     updates.scores = scores
+    updates.ready = {}
+    updates.rematchTimerStart = null
   }
 
   await update(ref(db, `rooms/${code}`), updates)
   return { won: result.won, tie: result.tie, symbol }
+}
+
+/**
+ * Ready up for rematch. When both players ready, reset board.
+ */
+export async function setReady(code: string, playerId: string): Promise<void> {
+  const roomSnap = await new Promise<import('firebase/database').DataSnapshot>((resolve) => {
+    onValue(ref(db, `rooms/${code}`), (s) => resolve(s), { onlyOnce: true })
+  })
+  const room = roomSnap.val() as Room
+  if (!room) return
+
+  const ready = { ...(room.ready ?? {}), [playerId]: true }
+  const isFirstReady = Object.keys(ready).length === 1 && ready[playerId]
+
+  const updates: Record<string, unknown> = { ready }
+
+  if (isFirstReady) {
+    updates.rematchTimerStart = Date.now()
+  }
+
+  await update(ref(db, `rooms/${code}`), updates)
+
+  // Check if both ready
+  const p1Id = room?.players?.p1?.id
+  const p2Id = room?.players?.p2?.id
+  if (p1Id && p2Id && ready[p1Id] && ready[p2Id]) {
+    // Both ready — reset board, flip who goes first
+    const lastTurn = room?.turn
+    const newFirstTurn = lastTurn === p1Id ? p2Id : p1Id
+    await update(ref(db, `rooms/${code}`), {
+      board: [...EMPTY_BOARD],
+      status: 'playing',
+      turn: newFirstTurn,
+      winner: null,
+      winnerName: null,
+      ready: {},
+      rematchTimerStart: null,
+    })
+  }
+}
+
+/**
+ * Terminate room (timeout or manual).
+ */
+export async function terminateRoom(code: string): Promise<void> {
+  await update(ref(db, `rooms/${code}`), { status: 'terminated' })
 }
 
 export async function updateRoomStatus(code: string, status: RoomStatus) {

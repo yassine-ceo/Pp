@@ -1,168 +1,165 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, LogIn, User, Gamepad2, ArrowLeft } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { useGameStore } from '@/stores/gameStore'
 import { soundManager } from '@/lib/sound'
-import dynamic from 'next/dynamic'
+import FloatingDecor from '@/components/3d/FloatingDecor'
+import { Gamepad2, Plus, LogIn, ArrowRight } from 'lucide-react'
 
-const FloatingDecor = dynamic(() => import('@/components/3d/FloatingDecor'), { ssr: false })
-
-export default function Home() {
+export default function MainMenu() {
   const router = useRouter()
-  const [name, setName] = useState('')
+  const { playerName, setPlayerName, setPlayerId } = useGameStore()
+  const [name, setName] = useState(playerName || '')
   const [joinCode, setJoinCode] = useState('')
-  const [mode, setMode] = useState<'idle' | 'join'>('idle')
-  const [hydrated, setHydrated] = useState(false)
+  const [mode, setMode] = useState<'home' | 'join'>('home')
+  const [nameConfirmed, setNameConfirmed] = useState(!!playerName)
 
-  useEffect(() => {
-    const saved = localStorage.getItem('xo playerName')
-    if (saved) setName(saved)
-
-    // Auto-reconnect: if session exists, redirect to room
-    const savedRoom = localStorage.getItem('xo roomId')
-    const savedSlot = localStorage.getItem('xo slot')
-    if (savedRoom && savedSlot) {
-      router.replace(`/room/${savedRoom}`)
-      return
+  const handleNameConfirm = () => {
+    const trimmed = name.trim()
+    if (!trimmed) return
+    soundManager.playClick()
+    setPlayerName(trimmed)
+    try { localStorage.setItem('xo playerName', trimmed) } catch {}
+    if (!useGameStore.getState().playerId) {
+      try {
+        const id = crypto.randomUUID()
+        setPlayerId(id)
+        localStorage.setItem('xo playerId', id)
+      } catch {}
     }
-    setHydrated(true)
-  }, [router])
+    setNameConfirmed(true)
+  }
 
   const handleCreate = () => {
-    if (!name.trim()) return
+    if (!nameConfirmed) return
     soundManager.playClick()
-    localStorage.setItem('xo playerName', name.trim())
     router.push('/room/create')
   }
 
   const handleJoin = () => {
-    if (!name.trim() || !joinCode.trim()) return
+    if (!nameConfirmed || joinCode.trim().length < 4) return
     soundManager.playClick()
-    localStorage.setItem('xo playerName', name.trim())
     router.push(`/room/${joinCode.trim().toUpperCase()}`)
   }
 
-  if (!hydrated) return null
-
   return (
-    <div className="fixed inset-0 overflow-hidden">
-      {/* Dark background */}
-      <div className="absolute inset-0 bg-[#0a0a1a]" />
+    <div className="fixed inset-0 z-10 flex flex-col items-center justify-center pointer-events-auto">
+      <FloatingDecor count={6} />
 
-      {/* Subtle radial gradient */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(34,211,238,0.06)_0%,transparent_60%)]" />
+      {/* Gradient orbs */}
+      <div className="fixed top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-cyan-500/[0.04] blur-[100px] pointer-events-none" />
+      <div className="fixed bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-rose-500/[0.04] blur-[100px] pointer-events-none" />
 
-      {/* Floating 3D decorations */}
-      <div className="absolute inset-0 z-0">
-        <FloatingDecor />
-      </div>
-
-      {/* Menu overlay — pointer-events-none on wrapper */}
-      <div className="absolute inset-0 z-10 flex items-center justify-center px-5 pointer-events-none">
+      {/* Content */}
+      <div className="relative z-10 w-full max-w-sm mx-4">
+        {/* Title */}
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full max-w-sm pointer-events-auto"
+          className="text-center mb-8"
         >
-          {/* Logo + Title */}
-          <div className="text-center mb-8">
-            <motion.div
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
-              className="inline-flex items-center justify-center w-18 h-18 rounded-2xl bg-gradient-to-br from-cyan-400/20 to-rose-400/10 border border-white/[0.08] mb-5"
-            >
-              <Gamepad2 size={32} className="text-white" />
-            </motion.div>
-            <h1 className="text-4xl font-extrabold text-white tracking-tight bg-gradient-to-r from-cyan-400 via-white to-rose-400 bg-clip-text text-transparent">
-              XO Arena
-            </h1>
-            <p className="text-sm text-white/40 mt-2 font-medium">3D Multiplayer Tic-Tac-Toe</p>
+          <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-cyan-400/20 to-rose-400/20 border border-white/[0.08] flex items-center justify-center backdrop-blur-xl">
+            <Gamepad2 size={28} className="text-white" />
           </div>
+          <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-white/60 mb-2">
+            XO Arena
+          </h1>
+          <p className="text-sm text-white/40">3D Multiplayer Tic Tac Toe</p>
+        </motion.div>
 
-          {/* Main Card */}
-          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-2xl p-6 shadow-2xl shadow-black/20">
-            {/* Name Input */}
-            <div className="mb-5">
-              <label className="text-[11px] font-bold text-white/40 uppercase tracking-wider mb-2 block">
-                Your Name
-              </label>
-              <div className="relative">
-                <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/25" />
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your name"
-                  maxLength={12}
-                  className="w-full h-12 pl-10 pr-4 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder-white/25 outline-none focus:border-cyan-400/40 focus:bg-white/[0.07] transition-all"
-                />
-              </div>
+        {/* Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          className="rounded-2xl border border-white/[0.08] bg-black/40 backdrop-blur-2xl p-6"
+        >
+          {!nameConfirmed ? (
+            <>
+              <p className="text-xs text-white/30 uppercase tracking-wider mb-3">Enter your name</p>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleNameConfirm()}
+                placeholder="Your name..."
+                maxLength={16}
+                autoFocus
+                className="w-full h-11 rounded-xl bg-white/[0.06] border border-white/[0.08] px-4 text-sm text-white placeholder:text-white/20 outline-none focus:border-cyan-400/30 transition-colors mb-4"
+              />
+              <button
+                onClick={handleNameConfirm}
+                disabled={!name.trim()}
+                className="w-full h-11 rounded-xl bg-gradient-to-r from-cyan-400/20 to-cyan-400/10 border border-cyan-400/20 text-cyan-400 text-sm font-semibold hover:from-cyan-400/25 hover:to-cyan-400/15 transition-all active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                Continue
+              </button>
+            </>
+          ) : mode === 'home' ? (
+            <div className="flex flex-col gap-3">
+              <p className="text-xs text-white/30 uppercase tracking-wider mb-1">Playing as <span className="text-white/60">{name}</span></p>
+              <button
+                onClick={handleCreate}
+                className="w-full h-12 rounded-xl bg-gradient-to-r from-cyan-400/15 to-cyan-400/5 border border-cyan-400/20 text-cyan-400 text-sm font-semibold flex items-center justify-center gap-2 hover:from-cyan-400/25 hover:to-cyan-400/10 transition-all active:scale-[0.98]"
+              >
+                <Plus size={16} />
+                Create Room
+                <ArrowRight size={14} className="ml-auto" />
+              </button>
+              <button
+                onClick={() => { soundManager.playClick(); setMode('join') }}
+                className="w-full h-12 rounded-xl bg-white/[0.06] border border-white/[0.08] text-white/70 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-white/[0.09] transition-all active:scale-[0.98]"
+              >
+                <LogIn size={16} />
+                Join Room
+                <ArrowRight size={14} className="ml-auto" />
+              </button>
             </div>
-
-            {/* Buttons */}
-            {mode === 'idle' ? (
-              <div className="flex flex-col gap-3">
+          ) : (
+            <>
+              <p className="text-xs text-white/30 uppercase tracking-wider mb-3">Enter room code</p>
+              <input
+                type="text"
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+                placeholder="e.g. ABCD"
+                maxLength={8}
+                autoFocus
+                className="w-full h-11 rounded-xl bg-white/[0.06] border border-white/[0.08] px-4 text-sm text-white placeholder:text-white/20 outline-none focus:border-cyan-400/30 transition-colors mb-4 font-mono tracking-widest text-center uppercase"
+              />
+              <div className="flex gap-2">
                 <button
-                  onClick={handleCreate}
-                  disabled={!name.trim()}
-                  className="group w-full h-12 rounded-xl bg-cyan-400/15 border border-cyan-400/20 text-cyan-400 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-cyan-400/25 hover:border-cyan-400/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                  onClick={() => { soundManager.playClick(); setMode('home') }}
+                  className="flex-1 h-11 rounded-xl bg-white/[0.06] border border-white/[0.08] text-white/50 text-sm font-semibold hover:bg-white/[0.09] transition-all active:scale-[0.98]"
                 >
-                  <Plus size={16} className="group-hover:rotate-90 transition-transform duration-200" />
-                  Create Room
-                </button>
-                <button
-                  onClick={() => { setMode('join'); soundManager.playClick() }}
-                  disabled={!name.trim()}
-                  className="w-full h-12 rounded-xl bg-white/[0.05] border border-white/[0.08] text-white/70 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-white/[0.08] hover:text-white/90 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
-                >
-                  <LogIn size={16} />
-                  Join Room
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                <div>
-                  <label className="text-[11px] font-bold text-white/40 uppercase tracking-wider mb-2 block">
-                    Room Code
-                  </label>
-                  <input
-                    type="text"
-                    value={joinCode}
-                    onChange={(e) => setJoinCode(e.target.value.toUpperCase().slice(0, 4))}
-                    placeholder="e.g. X7B9"
-                    maxLength={4}
-                    autoFocus
-                    className="w-full h-12 px-4 rounded-xl bg-white/[0.05] border border-white/[0.08] text-base text-white text-center font-mono tracking-[0.35em] placeholder-white/20 outline-none focus:border-cyan-400/40 focus:bg-white/[0.07] transition-all uppercase"
-                  />
-                </div>
-                <button
-                  onClick={handleJoin}
-                  disabled={!name.trim() || joinCode.length < 4}
-                  className="w-full h-12 rounded-xl bg-cyan-400/15 border border-cyan-400/20 text-cyan-400 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-cyan-400/25 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
-                >
-                  <LogIn size={16} />
-                  Join Game
-                </button>
-                <button
-                  onClick={() => { setMode('idle'); setJoinCode(''); soundManager.playClick() }}
-                  className="w-full h-10 flex items-center justify-center gap-1.5 text-white/30 text-xs font-medium hover:text-white/60 transition-colors"
-                >
-                  <ArrowLeft size={12} />
                   Back
                 </button>
+                <button
+                  onClick={handleJoin}
+                  disabled={joinCode.trim().length < 4}
+                  className="flex-1 h-11 rounded-xl bg-gradient-to-r from-cyan-400/15 to-cyan-400/5 border border-cyan-400/20 text-cyan-400 text-sm font-semibold hover:from-cyan-400/25 hover:to-cyan-400/10 transition-all active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  Join
+                  <ArrowRight size={14} />
+                </button>
               </div>
-            )}
-          </div>
-
-          {/* Footer */}
-          <p className="text-center text-[11px] text-white/15 mt-6 font-medium">
-            No login required · Play with a friend
-          </p>
+            </>
+          )}
         </motion.div>
+
+        {/* Footer */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="text-center text-[11px] text-white/20 mt-6"
+        >
+          Built with Three.js · Firebase · Next.js
+        </motion.p>
       </div>
     </div>
   )

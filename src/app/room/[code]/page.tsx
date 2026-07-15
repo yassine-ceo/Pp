@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useGameStore } from '@/stores/gameStore'
 import {
   createRoom,
@@ -10,24 +10,31 @@ import {
   subscribeToRoom,
   deleteRoom,
   reconnectToRoom,
+  terminateRoom,
 } from '@/lib/firebase'
 import { soundManager } from '@/lib/sound'
 import GameScene from '@/components/3d/GameScene'
 import HUD from '@/components/ui/HUD'
 
+const REMATCH_TIMEOUT = 30_000
+
 function getOrCreatePlayerId(): string {
-  let id = localStorage.getItem('xo playerId')
-  if (!id) {
-    id = crypto.randomUUID()
-    localStorage.setItem('xo playerId', id)
+  try {
+    let id = localStorage.getItem('xo playerId')
+    if (!id) {
+      id = crypto.randomUUID()
+      localStorage.setItem('xo playerId', id)
+    }
+    return id
+  } catch {
+    return Math.random().toString(36).slice(2) + Date.now().toString(36)
   }
-  return id
 }
 
 export default function RoomPage() {
   const router = useRouter()
   const params = useParams()
-  const urlCode = params.code as string
+  const urlCode = (params?.code as string) || ''
   const {
     room, setRoom, setRoomId,
     playerId, setPlayerId, playerName, setPlayerName,
@@ -41,11 +48,12 @@ export default function RoomPage() {
   const roomCodeRef = useRef<string | null>(null)
   const prevStatusRef = useRef<string | null>(null)
   const expiryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const rematchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const initDoneRef = useRef(false)
 
   const cleanup = useCallback(async () => {
-    localStorage.removeItem('xo roomId')
-    localStorage.removeItem('xo slot')
+    try { localStorage.removeItem('xo roomId') } catch {}
+    try { localStorage.removeItem('xo slot') } catch {}
     if (roomCodeRef.current) {
       try { await deleteRoom(roomCodeRef.current) } catch {}
       roomCodeRef.current = null
@@ -54,39 +62,50 @@ export default function RoomPage() {
 
   // Initialize player identity
   useEffect(() => {
-    const id = getOrCreatePlayerId()
-    setPlayerId(id)
-    const savedName = localStorage.getItem('xo playerName') || 'Player'
-    setPlayerName(savedName)
+    try {
+      const id = getOrCreatePlayerId()
+      setPlayerId(id)
+      const savedName = localStorage.getItem('xo playerName') || 'Player'
+      setPlayerName(savedName)
+    } catch {
+      setPlayerId(Math.random().toString(36).slice(2))
+      setPlayerName('Player')
+    }
   }, [setPlayerId, setPlayerName])
 
-  // Create, join, or reconnect to room
+  // Create, join, or reconnect
   useEffect(() => {
     if (!playerId || !playerName || !urlCode || initDoneRef.current) return
     initDoneRef.current = true
 
     const init = async () => {
       try {
-        // Check for existing session (auto-reconnect)
-        const savedRoomId = localStorage.getItem('xo roomId')
-        const savedSlot = localStorage.getItem('xo slot')
+        // Check for existing session
+        let savedRoomId: string | null = null
+        let savedSlot: string | null = null
+        try {
+          savedRoomId = localStorage.getItem('xo roomId')
+          savedSlot = localStorage.getItem('xo slot')
+        } catch {}
+
         const targetCode = urlCode === 'create' ? null : urlCode
 
-        // If we have a saved session for this room, reconnect
+        // Reconnect existing session
         if (savedRoomId && savedSlot && (savedRoomId === targetCode || urlCode === 'create')) {
           const reconnected = await reconnectToRoom(savedRoomId, playerId)
           if (reconnected) {
             roomCodeRef.current = savedRoomId
             setRoomId(savedRoomId)
-            if (urlCode === 'create' && savedRoomId !== urlCode) {
+            if (reconnected.status !== 'terminated' && urlCode === 'create' && savedRoomId !== urlCode) {
               window.history.replaceState(null, '', `/room/${savedRoomId}`)
             }
             setLoading(false)
             return
           } else {
-            // Room no longer exists, clear session
-            localStorage.removeItem('xo roomId')
-            localStorage.removeItem('xo slot')
+            try {
+              localStorage.removeItem('xo roomId')
+              localStorage.removeItem('xo slot')
+            } catch {}
           }
         }
 
@@ -94,57 +113,53 @@ export default function RoomPage() {
           const newCode = await createRoom(playerName, playerId)
           roomCodeRef.current = newCode
           setRoomId(newCode)
-          localStorage.setItem('xo roomId', newCode)
-          localStorage.setItem('xo slot', 'p1')
+          try {
+            localStorage.setItem('xo roomId', newCode)
+            localStorage.setItem('xo slot', 'p1')
+          } catch {}
           window.history.replaceState(null, '', `/room/${newCode}`)
 
-          // 5-minute expiry for waiting rooms
           expiryTimerRef.current = setTimeout(async () => {
             const { room: currentRoom } = useGameStore.getState()
             if (currentRoom?.status === 'waiting') {
               setTerminated(true)
               setError('Invite expired. Room was not joined in time.')
               soundManager.playDisconnect()
-              localStorage.removeItem('xo roomId')
-              localStorage.removeItem('xo slot')
+              try {
+                localStorage.removeItem('xo roomId')
+                localStorage.removeItem('xo slot')
+              } catch {}
             }
           }, 5 * 60 * 1000)
         } else {
-          // Check if we are the host (p1) rejoining
-          const savedSlotForRoom = localStorage.getItem('xo slot')
-          const reconnectedAsHost = savedSlotForRoom === 'p1' && await reconnectToRoom(urlCode, playerId)
-
-          if (reconnectedAsHost) {
+          // Try join as p2 first
+          const joined = await joinRoom(urlCode, playerName, playerId)
+          if (joined) {
             roomCodeRef.current = urlCode
             setRoomId(urlCode)
-            setLoading(false)
-            return
-          }
-
-          // Try to join as p2
-          const joined = await joinRoom(urlCode, playerName, playerId)
-          if (!joined) {
-            // Maybe we are already in the room as p1, try reconnect
+            try {
+              localStorage.setItem('xo roomId', urlCode)
+              localStorage.setItem('xo slot', 'p2')
+            } catch {}
+          } else {
+            // Maybe already in as p1
             const reconnected = await reconnectToRoom(urlCode, playerId)
             if (reconnected) {
               roomCodeRef.current = urlCode
               setRoomId(urlCode)
-              localStorage.setItem('xo roomId', urlCode)
-              localStorage.setItem('xo slot', 'p1')
+              try {
+                localStorage.setItem('xo roomId', urlCode)
+                localStorage.setItem('xo slot', 'p1')
+              } catch {}
+            } else {
+              setError('Room not found or already full.')
               setLoading(false)
               return
             }
-            setError('Room not found or already full.')
-            setLoading(false)
-            return
           }
-          roomCodeRef.current = urlCode
-          setRoomId(urlCode)
-          localStorage.setItem('xo roomId', urlCode)
-          localStorage.setItem('xo slot', 'p2')
         }
         setLoading(false)
-      } catch (err) {
+      } catch {
         setError('Failed to connect. Please try again.')
         setLoading(false)
       }
@@ -153,10 +168,11 @@ export default function RoomPage() {
 
     return () => {
       if (expiryTimerRef.current) clearTimeout(expiryTimerRef.current)
+      if (rematchTimerRef.current) clearTimeout(rematchTimerRef.current)
     }
   }, [playerId, playerName, urlCode, setRoomId, cleanup])
 
-  // Subscribe to room changes
+  // Subscribe to room
   useEffect(() => {
     if (!roomCodeRef.current) return
     const code = roomCodeRef.current
@@ -166,19 +182,21 @@ export default function RoomPage() {
         setTerminated(true)
         setError('Room was closed.')
         soundManager.playDisconnect()
-        localStorage.removeItem('xo roomId')
-        localStorage.removeItem('xo slot')
+        try {
+          localStorage.removeItem('xo roomId')
+          localStorage.removeItem('xo slot')
+        } catch {}
         setRoom(null)
         return
       }
 
       const prev = prevStatusRef.current
-      const newStatus = data.status
+      const newStatus = data?.status
 
-      // Detect win/lose/tie transitions
+      // Detect win/lose/tie
       if (prev === 'playing' && (newStatus === 'won' || newStatus === 'tie')) {
         if (newStatus === 'won') {
-          if (data.winner === playerId) {
+          if (data?.winner === playerId) {
             soundManager.playWin()
             addWin()
           } else {
@@ -191,13 +209,25 @@ export default function RoomPage() {
         }
       }
 
-      // Detect opponent disconnect
+      // Detect disconnect
       if (prev === 'playing' && newStatus === 'terminated') {
         setTerminated(true)
         setError('Opponent left the game.')
         soundManager.playDisconnect()
-        localStorage.removeItem('xo roomId')
-        localStorage.removeItem('xo slot')
+        try {
+          localStorage.removeItem('xo roomId')
+          localStorage.removeItem('xo slot')
+        } catch {}
+      }
+
+      // Detect rematch timeout
+      if ((prev === 'won' || prev === 'tie') && newStatus === 'terminated') {
+        setTerminated(true)
+        setError('Rematch timed out!')
+        try {
+          localStorage.removeItem('xo roomId')
+          localStorage.removeItem('xo slot')
+        } catch {}
       }
 
       prevStatusRef.current = newStatus
@@ -208,34 +238,49 @@ export default function RoomPage() {
     return () => { unsub() }
   }, [roomCodeRef.current, playerId, setRoom, addWin, addLoss, addTie])
 
-  // beforeunload — clean session
+  // Monitor rematch timer expiry
   useEffect(() => {
-    const handler = () => {
-      // Don't delete room on reload — only on actual close
-      // The Firebase onDisconnect handles room cleanup
+    if (!room || !roomCodeRef.current) return
+    if (room?.status !== 'won' && room?.status !== 'tie') {
+      if (rematchTimerRef.current) clearTimeout(rematchTimerRef.current)
+      return
     }
-    window.addEventListener('beforeunload', handler)
-    return () => window.removeEventListener('beforeunload', handler)
-  }, [])
+    const timerStart = room?.rematchTimerStart
+    if (!timerStart) return
 
-  const handleBack = () => {
+    const remaining = REMATCH_TIMEOUT - (Date.now() - timerStart)
+    if (remaining <= 0) {
+      // Timer already expired
+      terminateRoom(roomCodeRef.current).catch(() => {})
+      return
+    }
+
+    rematchTimerRef.current = setTimeout(() => {
+      if (roomCodeRef.current) {
+        terminateRoom(roomCodeRef.current).catch(() => {})
+      }
+    }, remaining + 500)
+
+    return () => { if (rematchTimerRef.current) clearTimeout(rematchTimerRef.current) }
+  }, [room?.status, room?.rematchTimerStart])
+
+  const handleBack = useCallback(() => {
     soundManager.playClick()
-    localStorage.removeItem('xo roomId')
-    localStorage.removeItem('xo slot')
+    try {
+      localStorage.removeItem('xo roomId')
+      localStorage.removeItem('xo slot')
+    } catch {}
     cleanup()
     setRoom(null)
     setRoomId(null)
     router.push('/')
-  }
+  }, [cleanup, setRoom, setRoomId, router])
 
   const isPlaying = room?.status === 'playing' || room?.status === 'won' || room?.status === 'tie'
 
   return (
     <>
-      {/* 3D Scene */}
-      <GameScene isPlaying={isPlaying} />
-
-      {/* Dark overlay — pointer-events-none so clicks pass to canvas */}
+      <GameScene isPlaying={!!isPlaying} />
       <div className="fixed inset-0 z-[1] bg-[#0a0a1a]/30 pointer-events-none" />
 
       {/* Loading */}
@@ -273,7 +318,6 @@ export default function RoomPage() {
         </div>
       )}
 
-      {/* HUD overlay — pointer-events-none wrapper, auto on interactive children */}
       {!loading && room && <HUD />}
 
       {/* Back button */}
@@ -286,21 +330,6 @@ export default function RoomPage() {
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </button>
-      )}
-
-      {/* Play Again button */}
-      {(room?.status === 'won' || room?.status === 'tie') && (
-        <div className="fixed bottom-24 inset-x-0 z-30 flex justify-center px-5 pointer-events-none">
-          <motion.button
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1 }}
-            onClick={handleBack}
-            className="pointer-events-auto rounded-xl bg-cyan-400/15 border border-cyan-400/20 text-cyan-400 text-sm font-semibold px-8 py-3 hover:bg-cyan-400/25 transition-all active:scale-[0.98]"
-          >
-            Play Again
-          </motion.button>
-        </div>
       )}
     </>
   )

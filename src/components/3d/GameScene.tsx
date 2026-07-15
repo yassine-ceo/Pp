@@ -22,20 +22,25 @@ function getCellPosition(index: number): [number, number, number] {
 }
 
 function ClickPlane() {
-  const { roomId, room, playerId } = useGameStore()
+  const { roomId, room, playerId, localBoard, applyOptimisticMove } = useGameStore()
 
   const handleClick = useCallback((index: number) => {
     if (!roomId || !room || !playerId) return
     if (room.status !== 'playing') return
     if (room.turn !== playerId) return
-    if (room.board[index] !== '') return
+    if (localBoard[index] !== '') return
 
-    const symbol = room.players.p1?.id === playerId ? 'X' : 'O'
+    const symbol = room?.players?.p1?.id === playerId ? 'X' : 'O'
+
+    // Optimistic: render immediately
+    applyOptimisticMove(index, symbol)
+
     if (symbol === 'X') soundManager.playPlaceX()
     else soundManager.playPlaceO()
 
+    // Fire-and-forget Firebase update (no await)
     makeMove(roomId, playerId, index, room.board, room.turn)
-  }, [roomId, room, playerId])
+  }, [roomId, room, playerId, localBoard, applyOptimisticMove])
 
   return (
     <group position={[0, -0.08, 0]}>
@@ -65,16 +70,15 @@ function ClickPlane() {
 }
 
 function Pieces() {
-  const { room } = useGameStore()
+  const localBoard = useGameStore((s) => s.localBoard)
 
   const pieces = useMemo(() => {
-    if (!room) return []
-    return room.board.map((cell, i) => ({
+    return localBoard.map((cell, i) => ({
       cell,
       index: i,
       position: getCellPosition(i),
     })).filter((p) => p.cell !== '')
-  }, [room?.board?.join('')])
+  }, [localBoard])
 
   return (
     <group>
@@ -96,7 +100,7 @@ export default function GameScene({ isPlaying }: GameSceneProps) {
     <div className="fixed inset-0 z-0">
       <Canvas
         shadows
-        camera={{ position: [0, 4, 4], fov: 45 }}
+        camera={{ position: [0, 5, 8], fov: 45 }}
         gl={{ antialias: true, alpha: true }}
         style={{ background: 'transparent' }}
       >

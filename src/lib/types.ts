@@ -20,6 +20,8 @@ export interface Room {
   winnerName: string | null
   createdAt: number
   scores: { p1: number; p2: number }
+  ready?: Record<string, boolean>
+  rematchTimerStart?: number
 }
 
 export const WIN_LINES = [
