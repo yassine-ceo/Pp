@@ -171,29 +171,16 @@ export default function GameBoard() {
             {/* Player 1 */}
             <div className={`flex-1 min-w-0 transition-opacity duration-200 ${myActive ? 'opacity-100' : 'opacity-40'}`}>
               <div className="flex items-center gap-2">
-                <div className="relative">
-                  <div
-                    className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                      mySymbol === 'X' ? 'text-[#daa520]' : 'text-[#c0c0c0]'
-                    }`}
-                    style={{
-                      background: mySymbol === 'X'
-                        ? 'linear-gradient(135deg, rgba(218,165,32,0.2), rgba(139,101,8,0.15))'
-                        : 'linear-gradient(135deg, rgba(192,192,192,0.2), rgba(128,128,128,0.15))',
-                      border: `1.5px solid ${mySymbol === 'X' ? 'rgba(218,165,32,0.3)' : 'rgba(192,192,192,0.3)'}`,
-                    }}
-                  >
-                    {mySymbol}
-                  </div>
-                  {myActive && (
-                    <div
-                      className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full animate-pulse"
-                      style={{
-                        background: 'radial-gradient(circle, #ffd700, #b8860b)',
-                        boxShadow: '0 0 8px #ffd700, 0 0 4px #ffd700',
-                      }}
-                    />
-                  )}
+                <div
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-sm font-black shrink-0"
+                  style={{
+                    background: 'linear-gradient(135deg, #2e2015, #1c140e)',
+                    border: '1.5px solid rgba(139,101,8,0.4)',
+                    color: '#e1c699',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                  }}
+                >
+                  {mySymbol}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[11px] sm:text-xs font-semibold text-[#c4a35a] truncate">{me?.name ?? 'You'}</p>
@@ -222,33 +209,16 @@ export default function GameBoard() {
                     <TurnTimer turnStartTime={room.turnStartTime} />
                   )}
                 </div>
-                <div className="relative">
-                  <div
-                    className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                      oppSymbol === 'X' ? 'text-[#daa520]' : 'text-[#c0c0c0]'
-                    }`}
-                    style={{
-                      background: oppSymbol === 'X'
-                        ? 'linear-gradient(135deg, rgba(218,165,32,0.2), rgba(139,101,8,0.15))'
-                        : 'linear-gradient(135deg, rgba(192,192,192,0.2), rgba(128,128,128,0.15))',
-                      border: `1.5px solid ${oppSymbol === 'X' ? 'rgba(218,165,32,0.3)' : 'rgba(192,192,192,0.3)'}`,
-                    }}
-                  >
-                    {oppSymbol}
-                  </div>
-                  {oppActive && (
-                    <div
-                      className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full animate-pulse"
-                      style={{
-                        background: oppSymbol === 'X'
-                          ? 'radial-gradient(circle, #ffd700, #b8860b)'
-                          : 'radial-gradient(circle, #e0e0e0, #a0a0a0)',
-                        boxShadow: oppSymbol === 'X'
-                          ? '0 0 8px #ffd700, 0 0 4px #ffd700'
-                          : '0 0 8px #c0c0c0, 0 0 4px #c0c0c0',
-                      }}
-                    />
-                  )}
+                <div
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-sm font-black shrink-0"
+                  style={{
+                    background: 'linear-gradient(135deg, #2e2015, #1c140e)',
+                    border: '1.5px solid rgba(139,101,8,0.4)',
+                    color: '#e1c699',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                  }}
+                >
+                  {oppSymbol}
                 </div>
               </div>
             </div>

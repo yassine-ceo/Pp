@@ -220,63 +220,65 @@ export default function HUD() {
         </div>
       )}
 
-      {/* BOTTOM BAR */}
-      <div className="fixed bottom-0 inset-x-0 z-20 px-4 pb-3 sm:px-6 sm:pb-4 pointer-events-none" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}>
-        <div className="mx-auto max-w-md flex items-center justify-between">
+      {/* BOTTOM BAR — aligned to board width */}
+      <div className="fixed bottom-0 inset-x-0 z-20 px-4 pointer-events-none" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}>
+        <div className="mx-auto max-w-[380px]">
           <div
-            className="pointer-events-auto rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 flex items-center gap-2"
+            className="pointer-events-auto rounded-xl px-3 py-2 flex items-center justify-between"
             style={{
               background: 'linear-gradient(to bottom, #2b1d14, #1a120d)',
               border: '1.5px solid #3a2612',
               boxShadow: '0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)',
             }}
           >
-            <div>
-              <p className="text-[7px] sm:text-[8px] text-[#6b4a1e] uppercase tracking-widest">Room</p>
-              <p className="text-xs sm:text-sm font-bold text-[#c4a35a] tracking-[0.2em]">{room?.code}</p>
-            </div>
-            <button onClick={handleCopyCode} className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[#8b6508]/60 hover:text-[#c4a35a] transition-all" style={{ background: 'rgba(139,101,8,0.1)', border: '1px solid rgba(139,101,8,0.2)' }} title="Copy room code">
-              {codeCopied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
-            </button>
-            <button onClick={handleShare} className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[#8b6508]/60 hover:text-[#c4a35a] transition-all" style={{ background: 'rgba(139,101,8,0.1)', border: '1px solid rgba(139,101,8,0.2)' }} title="Share link">
-              {shareCopied ? <Check size={12} className="text-emerald-400" /> : <Share2 size={12} />}
-            </button>
-          </div>
-          <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto">
-            {[
-              { icon: muted ? <VolumeX size={14} /> : <Volume2 size={14} />, onClick: () => { soundManager.playClick(); const next = !muted; setMuted(next); soundManager.setMuted(next) }, title: 'Sound' },
-              { icon: <Maximize size={14} />, onClick: () => { soundManager.playClick(); requestFullscreen() }, title: 'Fullscreen' },
-              { icon: <MessageCircle size={14} />, onClick: () => { soundManager.playClick(); setChatOpen(!chatOpen) }, title: 'Chat', isChat: true },
-              { icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>, onClick: () => { soundManager.playClick(); setDrawerOpen(true) }, title: 'Messages' },
-            ].map((btn, i) => (
-              <div key={i} className="relative">
-                <button
-                  onClick={btn.onClick}
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-[#8b6508]/50 hover:text-[#c4a35a] transition-colors"
-                  style={{
-                    background: 'linear-gradient(to bottom, #2b1d14, #1a120d)',
-                    border: '1.5px solid #3a2612',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
-                  }}
-                  title={btn.title}
-                >
-                  {btn.icon}
-                </button>
-                {btn.isChat && <QuickChat isOpen={chatOpen} onClose={() => setChatOpen(false)} />}
+            <div className="flex items-center gap-2">
+              <div>
+                <p className="text-[7px] sm:text-[8px] text-[#6b4a1e] uppercase tracking-widest">Room</p>
+                <p className="text-xs sm:text-sm font-bold text-[#c4a35a] tracking-[0.2em]">{room?.code}</p>
               </div>
-            ))}
-            <button
-              onClick={handleExit}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-rose-400/50 hover:text-rose-400 transition-colors"
-              style={{
-                background: 'linear-gradient(to bottom, rgba(120,30,30,0.3), rgba(80,20,20,0.3))',
-                border: '1.5px solid rgba(220,80,80,0.2)',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-              }}
-              title="Exit Game"
-            >
-              <LogOut size={14} />
-            </button>
+              <button onClick={handleCopyCode} className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[#8b6508]/60 hover:text-[#c4a35a] transition-all" style={{ background: 'rgba(139,101,8,0.1)', border: '1px solid rgba(139,101,8,0.2)' }} title="Copy room code">
+                {codeCopied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+              </button>
+              <button onClick={handleShare} className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[#8b6508]/60 hover:text-[#c4a35a] transition-all" style={{ background: 'rgba(139,101,8,0.1)', border: '1px solid rgba(139,101,8,0.2)' }} title="Share link">
+                {shareCopied ? <Check size={12} className="text-emerald-400" /> : <Share2 size={12} />}
+              </button>
+            </div>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              {[
+                { icon: muted ? <VolumeX size={14} /> : <Volume2 size={14} />, onClick: () => { soundManager.playClick(); const next = !muted; setMuted(next); soundManager.setMuted(next) }, title: 'Sound' },
+                { icon: <Maximize size={14} />, onClick: () => { soundManager.playClick(); requestFullscreen() }, title: 'Fullscreen' },
+                { icon: <MessageCircle size={14} />, onClick: () => { soundManager.playClick(); setChatOpen(!chatOpen) }, title: 'Chat', isChat: true },
+                { icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>, onClick: () => { soundManager.playClick(); setDrawerOpen(true) }, title: 'Messages' },
+              ].map((btn, i) => (
+                <div key={i} className="relative">
+                  <button
+                    onClick={btn.onClick}
+                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-[#8b6508]/50 hover:text-[#c4a35a] transition-colors"
+                    style={{
+                      background: 'linear-gradient(to bottom, #2b1d14, #1a120d)',
+                      border: '1.5px solid #3a2612',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
+                    }}
+                    title={btn.title}
+                  >
+                    {btn.icon}
+                  </button>
+                  {btn.isChat && <QuickChat isOpen={chatOpen} onClose={() => setChatOpen(false)} />}
+                </div>
+              ))}
+              <button
+                onClick={handleExit}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-rose-400/50 hover:text-rose-400 transition-colors"
+                style={{
+                  background: 'linear-gradient(to bottom, rgba(120,30,30,0.3), rgba(80,20,20,0.3))',
+                  border: '1.5px solid rgba(220,80,80,0.2)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                }}
+                title="Exit Game"
+              >
+                <LogOut size={14} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
