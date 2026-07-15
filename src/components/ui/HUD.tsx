@@ -195,7 +195,12 @@ export default function HUD() {
       {/* BACK BUTTON */}
       <button
         onClick={handleExit}
-        className="fixed top-4 left-4 z-30 pointer-events-auto w-10 h-10 rounded-xl border border-[#5c3a21]/40 bg-[#1a1c20]/80 backdrop-blur-xl flex items-center justify-center text-[#8b6508] hover:text-[#d4a853] hover:bg-[#1a1c20] transition-all"
+        className="fixed top-4 left-4 z-30 pointer-events-auto w-10 h-10 rounded-xl flex items-center justify-center text-[#8b6508] hover:text-[#c4a35a] transition-all"
+        style={{
+          background: 'linear-gradient(to bottom, #2b1d14, #1a120d)',
+          border: '1.5px solid #3a2612',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)',
+        }}
         title="Exit to Menu"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
@@ -218,35 +223,58 @@ export default function HUD() {
       {/* BOTTOM BAR */}
       <div className="fixed bottom-0 inset-x-0 z-20 px-4 pb-3 sm:px-6 sm:pb-4 pointer-events-none" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}>
         <div className="mx-auto max-w-md flex items-center justify-between">
-          <div className="pointer-events-auto rounded-2xl border border-[#5c3a21]/30 bg-[#1a1c20]/80 backdrop-blur-xl px-2.5 py-1.5 sm:px-3 sm:py-2 flex items-center gap-2">
+          <div
+            className="pointer-events-auto rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 flex items-center gap-2"
+            style={{
+              background: 'linear-gradient(to bottom, #2b1d14, #1a120d)',
+              border: '1.5px solid #3a2612',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)',
+            }}
+          >
             <div>
-              <p className="text-[7px] sm:text-[8px] text-[#8b6508]/60 uppercase tracking-widest">Room</p>
-              <p className="text-xs sm:text-sm font-bold text-[#d4a853] tracking-[0.2em]">{room?.code}</p>
+              <p className="text-[7px] sm:text-[8px] text-[#6b4a1e] uppercase tracking-widest">Room</p>
+              <p className="text-xs sm:text-sm font-bold text-[#c4a35a] tracking-[0.2em]">{room?.code}</p>
             </div>
-            <button onClick={handleCopyCode} className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#8b6508]/10 border border-[#8b6508]/20 flex items-center justify-center text-[#8b6508]/50 hover:text-[#d4a853] transition-all" title="Copy room code">
+            <button onClick={handleCopyCode} className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[#8b6508]/60 hover:text-[#c4a35a] transition-all" style={{ background: 'rgba(139,101,8,0.1)', border: '1px solid rgba(139,101,8,0.2)' }} title="Copy room code">
               {codeCopied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
             </button>
-            <button onClick={handleShare} className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#8b6508]/10 border border-[#8b6508]/20 flex items-center justify-center text-[#8b6508]/50 hover:text-[#d4a853] transition-all" title="Share link">
+            <button onClick={handleShare} className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[#8b6508]/60 hover:text-[#c4a35a] transition-all" style={{ background: 'rgba(139,101,8,0.1)', border: '1px solid rgba(139,101,8,0.2)' }} title="Share link">
               {shareCopied ? <Check size={12} className="text-emerald-400" /> : <Share2 size={12} />}
             </button>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto">
-            <button onClick={() => { soundManager.playClick(); const next = !muted; setMuted(next); soundManager.setMuted(next) }} className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl border border-[#5c3a21]/30 bg-[#1a1c20]/80 backdrop-blur-xl flex items-center justify-center text-[#8b6508]/60 hover:text-[#d4a853] transition-colors">
-              {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-            </button>
-            <button onClick={() => { soundManager.playClick(); requestFullscreen() }} className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl border border-[#5c3a21]/30 bg-[#1a1c20]/80 backdrop-blur-xl flex items-center justify-center text-[#8b6508]/60 hover:text-[#d4a853] transition-colors" title="Fullscreen">
-              <Maximize size={14} />
-            </button>
-            <div className="relative">
-              <button onClick={() => { soundManager.playClick(); setChatOpen(!chatOpen) }} className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl border border-[#5c3a21]/30 bg-[#1a1c20]/80 backdrop-blur-xl flex items-center justify-center text-[#8b6508]/60 hover:text-[#d4a853] transition-colors">
-                <MessageCircle size={14} />
-              </button>
-              <QuickChat isOpen={chatOpen} onClose={() => setChatOpen(false)} />
-            </div>
-            <button onClick={() => { soundManager.playClick(); setDrawerOpen(true) }} className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl border border-[#5c3a21]/30 bg-[#1a1c20]/80 backdrop-blur-xl flex items-center justify-center text-[#8b6508]/60 hover:text-[#d4a853] transition-colors">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
-            </button>
-            <button onClick={handleExit} className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl border border-rose-400/20 bg-rose-400/10 backdrop-blur-xl flex items-center justify-center text-rose-400/60 hover:text-rose-400 hover:bg-rose-400/20 transition-colors" title="Exit Game">
+            {[
+              { icon: muted ? <VolumeX size={14} /> : <Volume2 size={14} />, onClick: () => { soundManager.playClick(); const next = !muted; setMuted(next); soundManager.setMuted(next) }, title: 'Sound' },
+              { icon: <Maximize size={14} />, onClick: () => { soundManager.playClick(); requestFullscreen() }, title: 'Fullscreen' },
+              { icon: <MessageCircle size={14} />, onClick: () => { soundManager.playClick(); setChatOpen(!chatOpen) }, title: 'Chat', isChat: true },
+              { icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>, onClick: () => { soundManager.playClick(); setDrawerOpen(true) }, title: 'Messages' },
+            ].map((btn, i) => (
+              <div key={i} className="relative">
+                <button
+                  onClick={btn.onClick}
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-[#8b6508]/50 hover:text-[#c4a35a] transition-colors"
+                  style={{
+                    background: 'linear-gradient(to bottom, #2b1d14, #1a120d)',
+                    border: '1.5px solid #3a2612',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
+                  }}
+                  title={btn.title}
+                >
+                  {btn.icon}
+                </button>
+                {btn.isChat && <QuickChat isOpen={chatOpen} onClose={() => setChatOpen(false)} />}
+              </div>
+            ))}
+            <button
+              onClick={handleExit}
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-rose-400/50 hover:text-rose-400 transition-colors"
+              style={{
+                background: 'linear-gradient(to bottom, rgba(120,30,30,0.3), rgba(80,20,20,0.3))',
+                border: '1.5px solid rgba(220,80,80,0.2)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+              }}
+              title="Exit Game"
+            >
               <LogOut size={14} />
             </button>
           </div>
@@ -256,28 +284,42 @@ export default function HUD() {
       {/* WAITING OVERLAY */}
       {room?.status === 'waiting' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-30 flex items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-auto">
-          <div className="bg-[#1a1a1a] rounded-[2rem] p-4 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_0_0_4px_#3a2612,inset_0_0_0_8px_#141414] px-6 py-8 sm:px-8 sm:py-10 text-center max-w-sm w-full mx-4">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 sm:mb-5 rounded-2xl bg-gradient-to-br from-[#ffd700]/20 to-[#8b6508]/20 border border-[#8b6508]/30 flex items-center justify-center shadow-[inset_0_2px_4px_rgba(255,255,255,0.1)]">
-              <Trophy size={24} className="text-[#d4a853] sm:hidden" />
-              <Trophy size={28} className="text-[#d4a853] hidden sm:block" />
+          <div
+            className="rounded-[1.5rem] overflow-hidden px-6 py-8 sm:px-8 sm:py-10 text-center max-w-sm w-full mx-4"
+            style={{
+              background: 'linear-gradient(to bottom, #2b1d14, #1a120d)',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -2px 0 rgba(0,0,0,0.3)',
+              border: '3px solid #3a2612',
+            }}
+          >
+            <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 sm:mb-5 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(218,165,32,0.15), rgba(139,101,8,0.1))', border: '1.5px solid rgba(139,101,8,0.25)' }}>
+              <Trophy size={24} className="text-[#c4a35a] sm:hidden" />
+              <Trophy size={28} className="text-[#c4a35a] hidden sm:block" />
             </div>
-            <h2 className="text-lg sm:text-xl font-bold text-[#d4a853] mb-2">Waiting for opponent</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-[#c4a35a] mb-2">Waiting for opponent</h2>
             <p className="text-xs sm:text-sm text-white/40 mb-5 sm:mb-6">Share this code with your friend:</p>
-            <div className="rounded-xl bg-gradient-to-b from-[#3b2a1a] to-[#1f150d] border-2 border-[#5c3a21] px-5 py-3 sm:px-6 sm:py-4 mb-3 shadow-[inset_0_2px_4px_rgba(255,255,255,0.05),0_4px_8px_rgba(0,0,0,0.4)]">
-              <p className="text-2xl sm:text-3xl font-mono font-bold text-[#d4a853] tracking-[0.3em]">{room?.code}</p>
+            <div
+              className="rounded-xl px-5 py-3 sm:px-6 sm:py-4 mb-3"
+              style={{
+                background: 'linear-gradient(to bottom, #3b2a1a, #1f150d)',
+                border: '1.5px solid #5c3a21',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.4)',
+              }}
+            >
+              <p className="text-2xl sm:text-3xl font-mono font-bold text-[#c4a35a] tracking-[0.3em]">{room?.code}</p>
             </div>
             <div className="flex gap-2 mb-4">
-              <button onClick={handleCopyCode} className="flex-1 h-10 rounded-xl bg-gradient-to-br from-[#8b6508]/20 to-[#5c4008]/20 border border-[#8b6508]/30 text-[#d4a853] text-xs font-medium flex items-center justify-center gap-2 hover:from-[#8b6508]/30 hover:to-[#5c4008]/30 transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+              <button onClick={handleCopyCode} className="flex-1 h-10 rounded-xl text-[#c4a35a] text-xs font-medium flex items-center justify-center gap-2 transition-all" style={{ background: 'linear-gradient(135deg, rgba(139,101,8,0.2), rgba(92,64,8,0.15))', border: '1px solid rgba(139,101,8,0.25)', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                 {codeCopied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
                 {codeCopied ? 'Copied!' : 'Copy Code'}
               </button>
-              <button onClick={handleShare} className="flex-1 h-10 rounded-xl bg-gradient-to-br from-[#8b6508]/20 to-[#5c4008]/20 border border-[#8b6508]/30 text-[#d4a853] text-xs font-medium flex items-center justify-center gap-2 hover:from-[#8b6508]/30 hover:to-[#5c4008]/30 transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+              <button onClick={handleShare} className="flex-1 h-10 rounded-xl text-[#c4a35a] text-xs font-medium flex items-center justify-center gap-2 transition-all" style={{ background: 'linear-gradient(135deg, rgba(139,101,8,0.2), rgba(92,64,8,0.15))', border: '1px solid rgba(139,101,8,0.25)', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                 {shareCopied ? <Check size={14} className="text-emerald-400" /> : <Share2 size={14} />}
                 {shareCopied ? 'Copied!' : 'Share Link'}
               </button>
             </div>
             <p className="text-[10px] sm:text-xs text-white/25 mb-4">Expires in 5 minutes if not joined</p>
-            <button onClick={handleExit} className="w-full h-11 rounded-xl border border-rose-400/20 bg-rose-400/10 text-rose-400 text-sm font-semibold hover:bg-rose-400/20 transition-all flex items-center justify-center gap-2">
+            <button onClick={handleExit} className="w-full h-11 rounded-xl text-rose-400 text-sm font-semibold hover:bg-rose-400/20 transition-all flex items-center justify-center gap-2" style={{ background: 'rgba(220,60,60,0.1)', border: '1px solid rgba(220,60,60,0.2)' }}>
               <LogOut size={15} />
               Cancel & Exit
             </button>
@@ -289,7 +331,14 @@ export default function HUD() {
       <AnimatePresence>
         {useGameStore.getState().showResult && (room?.status === 'won' || room?.status === 'tie') && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }} className="fixed inset-0 z-30 flex items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-auto">
-            <div className="bg-[#1a1a1a] rounded-[2rem] p-4 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_0_0_4px_#3a2612,inset_0_0_0_8px_#141414] px-6 py-8 sm:px-8 sm:py-10 text-center max-w-sm w-full mx-4">
+            <div
+              className="rounded-[1.5rem] overflow-hidden px-6 py-8 sm:px-8 sm:py-10 text-center max-w-sm w-full mx-4"
+              style={{
+                background: 'linear-gradient(to bottom, #2b1d14, #1a120d)',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -2px 0 rgba(0,0,0,0.3)',
+                border: '3px solid #3a2612',
+              }}
+            >
               {room?.status === 'tie' ? (
                 <>
                   <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 sm:mb-5 rounded-2xl bg-[#8b6508]/10 border border-[#8b6508]/20 flex items-center justify-center">

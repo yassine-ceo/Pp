@@ -279,7 +279,12 @@ export default function RoomPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-[#1a1a1a] rounded-[2rem] p-8 text-center max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_0_0_4px_#3a2612,inset_0_0_0_8px_#141414]"
+            className="rounded-[1.5rem] overflow-hidden p-8 text-center max-w-sm w-full"
+            style={{
+              background: 'linear-gradient(to bottom, #2b1d14, #1a120d)',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -2px 0 rgba(0,0,0,0.3)',
+              border: '3px solid #3a2612',
+            }}
           >
             <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-amber-400/10 border border-amber-400/15 flex items-center justify-center">
               <span className="text-3xl">⚠️</span>
