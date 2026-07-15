@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useGameStore } from '@/stores/gameStore'
 import { soundManager } from '@/lib/sound'
-import FloatingDecor from '@/components/3d/FloatingDecor'
 import { Gamepad2, Plus, LogIn, ArrowRight, Settings, X, ClipboardPaste, Check } from 'lucide-react'
 
 function tryFullscreen() {
@@ -117,10 +116,8 @@ export default function MainMenu() {
   if (deepLinkRoom && !nameConfirmed) {
     return (
       <div className="min-h-screen w-full flex flex-col items-center justify-center pointer-events-auto px-6 overflow-hidden">
-        <FloatingDecor count={4} />
         <div className="fixed top-0 right-0 w-[600px] h-[600px] rounded-full bg-emerald-500/[0.06] blur-[150px] pointer-events-none" />
         <div className="fixed bottom-0 left-0 w-[500px] h-[500px] rounded-full bg-cyan-500/[0.05] blur-[140px] pointer-events-none" />
-        <div className="fixed top-[40%] left-[20%] w-[300px] h-[300px] rounded-full bg-amber-500/[0.03] blur-[120px] pointer-events-none" />
         <div className="relative z-10 w-full max-w-md mx-auto">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="text-center mb-8">
             <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-cyan-400/20 border border-emerald-400/20 flex items-center justify-center shadow-[0_0_30px_rgba(52,211,153,0.15)]">
@@ -156,7 +153,6 @@ export default function MainMenu() {
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center pointer-events-auto overflow-hidden">
-      <FloatingDecor count={6} />
       <div className="fixed top-0 right-0 w-[600px] h-[600px] rounded-full bg-emerald-500/[0.06] blur-[150px] pointer-events-none" />
       <div className="fixed bottom-0 left-0 w-[500px] h-[500px] rounded-full bg-cyan-500/[0.05] blur-[140px] pointer-events-none" />
       <div className="fixed top-[30%] right-[10%] w-[350px] h-[350px] rounded-full bg-amber-500/[0.03] blur-[120px] pointer-events-none" />
@@ -168,7 +164,7 @@ export default function MainMenu() {
             <Gamepad2 size={28} className="text-emerald-400" />
           </div>
           <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-emerald-100 to-white/60 mb-2">XO Arena</h1>
-          <p className="text-sm text-white/40">3D Multiplayer Tic Tac Toe</p>
+          <p className="text-sm text-white/40">Multiplayer Tic Tac Toe</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="max-w-md w-full bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl mx-auto">

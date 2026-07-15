@@ -14,7 +14,7 @@ import {
 } from '@/lib/firebase'
 import { TURN_TIME_LIMIT } from '@/lib/types'
 import { soundManager } from '@/lib/sound'
-import GameScene from '@/components/3d/GameScene'
+import GameBoard from '@/components/ui/GameBoard'
 import HUD from '@/components/ui/HUD'
 
 const REMATCH_TIMEOUT = 30_000
@@ -64,7 +64,6 @@ export default function RoomPage() {
     }
   }, [])
 
-  // Initialize player identity (name only from localStorage)
   useEffect(() => {
     try {
       const id = getOrCreatePlayerId()
@@ -77,7 +76,6 @@ export default function RoomPage() {
     }
   }, [setPlayerId, setPlayerName])
 
-  // Create or join (NO reconnect)
   useEffect(() => {
     if (!playerId || !playerName || !urlCode || initDoneRef.current) return
     initDoneRef.current = true
@@ -126,7 +124,6 @@ export default function RoomPage() {
     }
   }, [playerId, playerName, urlCode, setRoomId, cleanup])
 
-  // Subscribe to room
   useEffect(() => {
     if (!roomCodeRef.current) return
     const code = roomCodeRef.current
@@ -143,7 +140,6 @@ export default function RoomPage() {
       const prev = prevStatusRef.current
       const newStatus = data?.status
 
-      // Detect win/lose/tie with 3s delay
       if (prev === 'playing' && (newStatus === 'won' || newStatus === 'tie')) {
         if (autoPlayRef.current) { clearTimeout(autoPlayRef.current); autoPlayRef.current = null }
         const winLine = data?.winLine ?? []
@@ -161,14 +157,12 @@ export default function RoomPage() {
         winDelayRef.current = setTimeout(() => setShowResult(true), WIN_DELAY_MS)
       }
 
-      // Reset on new game - force fresh board from Firebase (ignore local optimistic board)
       if ((prev === 'won' || prev === 'tie') && newStatus === 'playing') {
         setWinHighlightCells([])
         setShowResult(false)
         useGameStore.getState().setLocalBoard([...data.board])
       }
 
-      // Detect disconnect
       if (prev === 'playing' && newStatus === 'terminated') {
         if (autoPlayRef.current) { clearTimeout(autoPlayRef.current); autoPlayRef.current = null }
         setTerminated(true)
@@ -176,7 +170,6 @@ export default function RoomPage() {
         soundManager.playDisconnect()
       }
 
-      // Detect rematch timeout
       if ((prev === 'won' || prev === 'tie') && newStatus === 'terminated') {
         setTerminated(true)
         setError('Rematch timed out!')
@@ -190,7 +183,6 @@ export default function RoomPage() {
     return () => { unsub() }
   }, [roomCodeRef.current, playerId, setRoom, addWin, addLoss, addTie, setShowResult, setWinHighlightCells])
 
-  // Auto-play timer (20s turn timeout)
   useEffect(() => {
     if (autoPlayRef.current) { clearTimeout(autoPlayRef.current); autoPlayRef.current = null }
 
@@ -201,7 +193,6 @@ export default function RoomPage() {
     const remaining = Math.max(0, TURN_TIME_LIMIT - elapsed)
 
     if (remaining <= 0) {
-      // Already expired, auto-play immediately
       autoPlayRandom()
       return
     }
@@ -231,7 +222,6 @@ export default function RoomPage() {
     await makeMove(roomCodeRef.current, pid, randomIndex, currentRoom.board, currentRoom.turn)
   }, [])
 
-  // Monitor rematch timer expiry
   useEffect(() => {
     if (!room || !roomCodeRef.current) return
     if (room?.status !== 'won' && room?.status !== 'tie') {
@@ -268,13 +258,17 @@ export default function RoomPage() {
 
   return (
     <>
-      <GameScene />
-      <div className="fixed inset-0 z-[1] bg-[#0a0a1a]/30 pointer-events-none" />
+      {/* 2D Game Board */}
+      <div className="fixed inset-0 z-0 flex items-center justify-center overflow-hidden">
+        <div className="w-full max-w-lg mx-auto px-4 pt-20 pb-28 sm:pt-24 sm:pb-32">
+          {!loading && room && <GameBoard />}
+        </div>
+      </div>
 
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a0a1a]">
           <div className="flex flex-col items-center gap-4">
-            <div className="w-10 h-10 border-2 border-white/10 border-t-cyan-400 rounded-full animate-spin" />
+            <div className="w-10 h-10 border-2 border-white/10 border-t-amber-400 rounded-full animate-spin" />
             <p className="text-sm text-white/50">Connecting...</p>
           </div>
         </div>
@@ -285,18 +279,18 @@ export default function RoomPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="rounded-3xl border border-white/[0.08] bg-black/60 backdrop-blur-2xl p-8 text-center max-w-sm w-full"
+            className="rounded-3xl border border-[#5c3a21]/40 bg-[#1a1c20]/90 backdrop-blur-2xl p-8 text-center max-w-sm w-full"
           >
-            <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-rose-400/10 border border-rose-400/15 flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-amber-400/10 border border-amber-400/15 flex items-center justify-center">
               <span className="text-3xl">⚠️</span>
             </div>
-            <h2 className="text-lg font-bold text-white mb-2">
+            <h2 className="text-lg font-bold text-[#d4a853] mb-2">
               {terminated ? 'Game Ended' : 'Error'}
             </h2>
             <p className="text-sm text-white/50 mb-6">{error || 'Something went wrong.'}</p>
             <button
               onClick={handleBack}
-              className="w-full h-11 rounded-xl bg-cyan-400/15 border border-cyan-400/20 text-cyan-400 text-sm font-semibold hover:bg-cyan-400/25 transition-all"
+              className="w-full h-11 rounded-xl bg-[#8b6508]/20 border border-[#8b6508]/30 text-[#d4a853] text-sm font-semibold hover:bg-[#8b6508]/30 transition-all"
             >
               Back to Menu
             </button>

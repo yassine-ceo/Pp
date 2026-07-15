@@ -15,7 +15,9 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: radial-gradient(circle at 50% -20%, #1e293b 0%, #020617 80%);
+  background: #0e0e12;
+  background-image:
+    radial-gradient(circle at 50% 0%, #1a1510 0%, #0e0e12 70%);
   color: #fff;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
