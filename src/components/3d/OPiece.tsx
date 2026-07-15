@@ -14,41 +14,36 @@ export default function OPiece({ position, animate = true, highlight = false }: 
   const groupRef = useRef<THREE.Group>(null)
   const time = useRef(0)
   const settled = useRef(!animate)
+  const targetY = useRef(position[1] + (animate ? 1.5 : 0))
 
   useFrame((_, delta) => {
     if (!groupRef.current) return
 
     if (highlight) {
       time.current += delta
-      const targetY = position[1] + 0.35 + Math.sin(time.current * 2.5) * 0.08
-      groupRef.current.position.y += (targetY - groupRef.current.position.y) * 0.08
+      const ty = position[1] + 0.35 + Math.sin(time.current * 2.5) * 0.08
+      groupRef.current.position.y += (ty - groupRef.current.position.y) * 0.15
       groupRef.current.rotation.y += delta * 3
       const s = 1.12 + Math.sin(time.current * 4) * 0.08
       groupRef.current.scale.setScalar(s)
-      groupRef.current.children.forEach((child) => {
-        if ((child as THREE.Mesh).material && 'emissiveIntensity' in (child as THREE.Mesh).material) {
-          const mat = (child as THREE.Mesh).material as THREE.MeshStandardMaterial
-          mat.emissiveIntensity = 1.2 + Math.sin(time.current * 5) * 0.8
-        }
-      })
       return
     }
 
     if (settled.current) return
-    time.current += delta
-    const t = time.current
-    if (t < 0.4) {
-      const progress = t / 0.4
-      const bounce = progress < 0.7
-        ? 1 - Math.pow(1 - progress / 0.7, 3) * 1.5
-        : 1 + Math.sin((progress - 0.7) / 0.3 * Math.PI) * 0.08
-      groupRef.current.position.y = position[1] + (1 - bounce) * 1.5
-      groupRef.current.rotation.x = (1 - progress) * Math.PI * 0.4
-    } else {
-      groupRef.current.position.y = position[1]
+
+    const currentY = groupRef.current.position.y
+    const finalY = position[1]
+
+    if (Math.abs(currentY - finalY) < 0.005) {
+      groupRef.current.position.y = finalY
       groupRef.current.rotation.x = Math.PI / 2
       settled.current = true
+      return
     }
+
+    targetY.current += (finalY - targetY.current) * 0.12
+    groupRef.current.position.y += (targetY.current - currentY) * 0.18
+    groupRef.current.rotation.x += (Math.PI / 2 - groupRef.current.rotation.x) * 0.1
   })
 
   const startPos: [number, number, number] = [position[0], position[1] + (animate ? 1.5 : 0), position[2]]
@@ -56,7 +51,7 @@ export default function OPiece({ position, animate = true, highlight = false }: 
   return (
     <group ref={groupRef} position={startPos}>
       <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.25, 0.06, 8, 16]} />
+        <torusGeometry args={[0.25, 0.06, 6, 12]} />
         <meshBasicMaterial color="#f43f5e" />
       </mesh>
     </group>

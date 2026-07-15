@@ -15,7 +15,7 @@ export default function Board({ isTie = false }: BoardProps) {
   return (
     <group>
       <mesh position={[0, boardY - 0.3, 0]}>
-        <cylinderGeometry args={[3.8, 4, 0.3, 32]} />
+        <cylinderGeometry args={[3.8, 4, 0.3, 24]} />
         <meshBasicMaterial color="#080818" transparent opacity={dim} />
       </mesh>
 
@@ -46,7 +46,7 @@ export default function Board({ isTie = false }: BoardProps) {
       ))}
 
       <mesh position={[0, boardY + 0.065, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[boardSize * 0.72, 0.02, 8, 32]} />
+        <torusGeometry args={[boardSize * 0.72, 0.02, 6, 24]} />
         <meshBasicMaterial color="#22d3ee" transparent opacity={0.3 * dim} />
       </mesh>
     </group>

@@ -266,11 +266,9 @@ export default function RoomPage() {
     router.push('/')
   }, [setRoom, setRoomId, setWinHighlightCells, setShowResult, router])
 
-  const isPlaying = room?.status === 'playing' || room?.status === 'won' || room?.status === 'tie'
-
   return (
     <>
-      <GameScene isPlaying={!!isPlaying} />
+      <GameScene />
       <div className="fixed inset-0 z-[1] bg-[#0a0a1a]/30 pointer-events-none" />
 
       {loading && (

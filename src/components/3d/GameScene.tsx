@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useCallback, useState, useEffect, useRef } from 'react'
+import { useMemo, useCallback, useState, useEffect, useRef, memo } from 'react'
 import { Canvas } from '@react-three/fiber'
 import Board from './Board'
 import XPiece from './XPiece'
@@ -92,44 +92,55 @@ function WinLineOverlay() {
   return <WinLine cells={winHighlightCells} />
 }
 
-interface GameSceneProps {
-  isPlaying: boolean
-}
+const SceneContent = memo(function SceneContent() {
+  const isTie = useGameStore((s) => s.room?.status === 'tie')
+  return (
+    <>
+      <ambientLight intensity={0.6} />
+      <Board isTie={isTie} />
+      <ClickPlane />
+      <Pieces />
+      <WinLineOverlay />
+      <CameraController />
+    </>
+  )
+})
 
-export default function GameScene({ isPlaying }: GameSceneProps) {
-  const room = useGameStore((s) => s.room)
+const MemoizedCanvas = memo(function MemoizedCanvas() {
+  return (
+    <Canvas
+      camera={{ position: [0, 4.2, 5.0], fov: 42 }}
+      gl={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
+      dpr={[1, 1.2]}
+      style={{ background: 'transparent' }}
+      frameloop="always"
+    >
+      <SceneContent />
+    </Canvas>
+  )
+})
+
+function TieShakeWrapper() {
+  const status = useGameStore((s) => s.room?.status)
   const [tieShake, setTieShake] = useState(false)
   const prevStatusRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (room?.status === 'tie' && prevStatusRef.current === 'playing') {
+    if (status === 'tie' && prevStatusRef.current === 'playing') {
       setTieShake(true)
       const timer = setTimeout(() => setTieShake(false), 600)
       return () => clearTimeout(timer)
     }
-    prevStatusRef.current = room?.status ?? null
-  }, [room?.status])
-
-  const isTie = room?.status === 'tie'
+    prevStatusRef.current = status ?? null
+  }, [status])
 
   return (
     <div className={`fixed inset-0 z-0 ${tieShake ? 'animate-board-shake' : ''}`}>
-      <Canvas
-        camera={{ position: [0, 4.2, 5.0], fov: 42 }}
-        gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-        dpr={[1, 1.5]}
-        style={{ background: 'transparent' }}
-      >
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[5, 8, 5]} intensity={0.7} />
-        <pointLight position={[0, 4, 0]} intensity={0.4} color="#22d3ee" distance={10} />
-
-        <Board isTie={isTie} />
-        <ClickPlane />
-        <Pieces />
-        <WinLineOverlay />
-        <CameraController />
-      </Canvas>
+      <MemoizedCanvas />
     </div>
   )
 }
+
+export default memo(function GameScene() {
+  return <TieShakeWrapper />
+})
