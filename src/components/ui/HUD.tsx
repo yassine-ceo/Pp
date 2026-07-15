@@ -2,15 +2,19 @@
 
 import { useGameStore } from '@/stores/gameStore'
 import { soundManager } from '@/lib/sound'
-import { setReady } from '@/lib/firebase'
-import { Trophy, Volume2, VolumeX, RotateCcw, MessageCircle, Settings } from 'lucide-react'
+import { setReady, deleteRoom } from '@/lib/firebase'
+import { TURN_TIME_LIMIT } from '@/lib/types'
+import { Trophy, Volume2, VolumeX, RotateCcw, MessageCircle, LogOut } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import QuickChat from './QuickChat'
 import ChatDrawer from './ChatDrawer'
+import { EmojiIcon } from './QuickChat'
 import type { ChatBubble } from '@/lib/types'
 
 const REMATCH_TIMEOUT = 30_000
+const EMOJI_IDS = ['laugh', 'clown', 'angry', 'cry', 'shock']
 
 function PlayerAvatar({ symbol, size = 'md' }: { symbol: 'X' | 'O'; size?: 'sm' | 'md' }) {
   const dim = size === 'sm' ? 'w-8 h-8' : 'w-10 h-10'
@@ -27,48 +31,62 @@ function PlayerAvatar({ symbol, size = 'md' }: { symbol: 'X' | 'O'; size?: 'sm' 
   )
 }
 
-function FloatingBubble({ bubble, align }: { bubble: ChatBubble; align: 'left' | 'right' }) {
-  const isEmoji = bubble.content.length <= 6 && ['laugh', 'clown', 'angry', 'cry', 'shock'].includes(bubble.content)
-
+function StackedBubble({ bubble, align }: { bubble: ChatBubble; align: 'left' | 'right' }) {
+  const isEmoji = EMOJI_IDS.includes(bubble.content)
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10, scale: 0.8 }}
+      initial={{ opacity: 0, y: 8, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -10, scale: 0.8 }}
-      transition={{ duration: 0.25 }}
-      className={`absolute ${align === 'left' ? 'left-0' : 'right-0'} top-full mt-2 z-30 pointer-events-none`}
+      exit={{ opacity: 0, y: -8, scale: 0.9 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+      className={`flex ${align === 'right' ? 'justify-end' : 'justify-start'}`}
     >
-      <div className={`rounded-xl px-3 py-2 backdrop-blur-xl border max-w-[180px] ${
+      <div className={`rounded-xl px-2.5 py-1.5 max-w-[150px] backdrop-blur-xl border ${
         align === 'right'
           ? 'bg-cyan-400/15 border-cyan-400/20'
           : 'bg-white/[0.08] border-white/[0.1]'
       }`}>
-        <p className="text-[11px] text-white/50 mb-0.5">{bubble.playerName}</p>
-        <p className="text-sm text-white/90">{isEmoji ? getEmojiLabel(bubble.content) : bubble.content}</p>
+        {isEmoji ? (
+          <div className="flex items-center justify-center">
+            <EmojiIcon type={bubble.content} size={24} />
+          </div>
+        ) : (
+          <p className="text-[11px] text-white/80 break-words leading-tight">{bubble.content}</p>
+        )}
       </div>
     </motion.div>
   )
 }
 
-function getEmojiLabel(id: string): string {
-  switch (id) {
-    case 'laugh': return '😂'
-    case 'clown': return '🤡'
-    case 'angry': return '😡'
-    case 'cry': return '😭'
-    case 'shock': return '🤯'
-    default: return id
-  }
-}
-
 export default function HUD() {
-  const { room, roomId, playerId } = useGameStore()
+  const router = useRouter()
+  const { room, roomId, playerId, room: roomState } = useGameStore()
   const [muted, setMuted] = useState(false)
   const [rematchTimeLeft, setRematchTimeLeft] = useState<number | null>(null)
   const [chatOpen, setChatOpen] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [settingsOpen, setSettingsOpen] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const tickPlayedRef = useRef(false)
+
+  const isMyTurn = room?.turn === playerId && room?.status === 'playing'
+
+  // Turn timer
+  const turnTimeLeft = useMemo(() => {
+    if (!isMyTurn || !room?.turnStartTime) return null
+    const elapsed = Date.now() - room.turnStartTime
+    return Math.max(0, TURN_TIME_LIMIT - elapsed)
+  }, [isMyTurn, room?.turnStartTime, roomState])
+
+  // Tick sound at 5s
+  useEffect(() => {
+    if (turnTimeLeft !== null && turnTimeLeft <= 5000 && turnTimeLeft > 0 && !tickPlayedRef.current) {
+      soundManager.playTick()
+      tickPlayedRef.current = true
+    }
+    if (turnTimeLeft === null || (turnTimeLeft !== null && turnTimeLeft > 5000)) {
+      tickPlayedRef.current = false
+    }
+  }, [turnTimeLeft])
 
   // Rematch countdown
   useEffect(() => {
@@ -77,22 +95,13 @@ export default function HUD() {
       if (timerRef.current) clearInterval(timerRef.current)
       return
     }
-
     const timerStart = room.rematchTimerStart
-    if (!timerStart) {
-      setRematchTimeLeft(null)
-      return
-    }
-
+    if (!timerStart) { setRematchTimeLeft(null); return }
     const tick = () => {
-      const elapsed = Date.now() - timerStart
-      const remaining = Math.max(0, REMATCH_TIMEOUT - elapsed)
+      const remaining = Math.max(0, REMATCH_TIMEOUT - (Date.now() - timerStart))
       setRematchTimeLeft(remaining)
-      if (remaining <= 0 && timerRef.current) {
-        clearInterval(timerRef.current)
-      }
+      if (remaining <= 0 && timerRef.current) clearInterval(timerRef.current)
     }
-
     tick()
     timerRef.current = setInterval(tick, 100)
     return () => { if (timerRef.current) clearInterval(timerRef.current) }
@@ -104,41 +113,78 @@ export default function HUD() {
     setReady(roomId, playerId)
   }
 
-  // Floating bubbles
-  const bubbles = useMemo(() => {
-    if (!room?.bubbles) return []
-    return Object.values(room.bubbles).sort((a, b) => a.timestamp - b.timestamp)
-  }, [room?.bubbles])
+  const handleExit = useCallback(async () => {
+    soundManager.playClick()
+    if (roomId) {
+      try { await deleteRoom(roomId) } catch {}
+    }
+    try {
+      localStorage.removeItem('xo roomId')
+      localStorage.removeItem('xo slot')
+    } catch {}
+    useGameStore.getState().setRoom(null)
+    useGameStore.getState().setRoomId(null)
+    useGameStore.getState().setWinHighlightCells([])
+    useGameStore.getState().setShowResult(false)
+    router.push('/')
+  }, [roomId, router])
+
+  // Stacked bubbles
+  const myBubbles = useMemo(() => {
+    if (!room?.bubbles || !playerId) return []
+    return Object.values(room.bubbles)
+      .filter((b) => b.playerId === playerId)
+      .sort((a, b) => a.timestamp - b.timestamp)
+      .slice(-3)
+  }, [room?.bubbles, playerId])
+
+  const oppBubbles = useMemo(() => {
+    if (!room?.bubbles || !playerId) return []
+    return Object.values(room.bubbles)
+      .filter((b) => b.playerId !== playerId)
+      .sort((a, b) => a.timestamp - b.timestamp)
+      .slice(-3)
+  }, [room?.bubbles, playerId])
 
   if (!room || !playerId) return null
 
   const me = room?.players?.p1?.id === playerId ? room?.players?.p1 : room?.players?.p2
   const opponent = room?.players?.p1?.id === playerId ? room?.players?.p2 : room?.players?.p1
-  const isMyTurn = room?.turn === playerId
   const mySymbol = me?.symbol ?? 'X'
   const oppSymbol = mySymbol === 'X' ? 'O' : 'X'
   const amReady = !!(room?.ready && room.ready[playerId])
   const oppReady = !!(room?.ready && playerId && room.ready[Object.keys(room.ready).find((k) => k !== playerId) ?? ''])
   const timerPct = rematchTimeLeft !== null ? (rematchTimeLeft / REMATCH_TIMEOUT) * 100 : 0
 
-  const myBubbles = bubbles.filter((b) => b.playerId === playerId)
-  const oppBubbles = bubbles.filter((b) => b.playerId !== playerId)
+  const turnPct = turnTimeLeft !== null ? (turnTimeLeft / TURN_TIME_LIMIT) * 100 : 0
+
+  const myGlow = isMyTurn
+    ? mySymbol === 'X'
+      ? 'shadow-[0_0_15px_rgba(34,211,238,0.25)] border-cyan-400/40'
+      : 'shadow-[0_0_15px_rgba(244,63,94,0.25)] border-rose-400/40'
+    : ''
+
+  const oppGlow = room?.turn === playerId && room?.status !== 'playing' ? ''
+    : (room?.turn !== playerId && isMyTurn !== true && room?.status === 'playing' && opponent)
+      ? oppSymbol === 'X'
+        ? 'shadow-[0_0_15px_rgba(34,211,238,0.25)] border-cyan-400/40'
+        : 'shadow-[0_0_15px_rgba(244,63,94,0.25)] border-rose-400/40'
+      : ''
 
   return (
     <>
       {/* === TOP HUD === */}
-      <div className="fixed top-0 inset-x-0 z-20 px-3 pt-3 pointer-events-none">
+      <div className="fixed top-0 inset-x-0 z-20 px-3 pt-10 pointer-events-none">
         <div className="mx-auto max-w-md">
-          {/* Player row */}
           <div className="flex items-start gap-2">
             {/* === ME === */}
             <div className="flex-1 min-w-0 pointer-events-auto">
-              <div className="rounded-2xl border border-white/[0.08] bg-black/50 backdrop-blur-xl px-3 py-2.5 relative">
+              <div className={`rounded-2xl border border-white/[0.08] bg-black/50 backdrop-blur-xl px-3 py-2.5 relative transition-all duration-300 ${myGlow}`}>
                 <div className="flex items-center gap-2.5">
                   <PlayerAvatar symbol={mySymbol} />
                   <div className="min-w-0 flex-1">
                     <p className="text-[12px] font-semibold text-white truncate">{me?.name ?? 'You'}</p>
-                    {isMyTurn && room?.status === 'playing' && (
+                    {isMyTurn && (
                       <motion.div
                         initial={{ opacity: 0, x: -5 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -147,19 +193,36 @@ export default function HUD() {
                         <motion.div
                           animate={{ opacity: [0.4, 1, 0.4] }}
                           transition={{ duration: 1.5, repeat: Infinity }}
-                          className="w-1.5 h-1.5 rounded-full bg-cyan-400"
+                          className={`w-1.5 h-1.5 rounded-full ${mySymbol === 'X' ? 'bg-cyan-400' : 'bg-rose-400'}`}
                         />
-                        <span className="text-[10px] text-cyan-400 font-medium">Your turn</span>
+                        <span className={`text-[10px] font-medium ${mySymbol === 'X' ? 'text-cyan-400' : 'text-rose-400'}`}>Your turn</span>
                       </motion.div>
                     )}
                   </div>
                 </div>
-                {/* Floating bubbles - me */}
-                <AnimatePresence>
-                  {myBubbles.map((b) => (
-                    <FloatingBubble key={b.id} bubble={b} align="right" />
-                  ))}
-                </AnimatePresence>
+                {/* Turn timer bar */}
+                {isMyTurn && turnTimeLeft !== null && (
+                  <div className="mt-2 h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${turnPct}%`,
+                        backgroundColor: turnPct > 50 ? (mySymbol === 'X' ? '#22d3ee' : '#f43f5e')
+                          : turnPct > 20 ? '#FBBF24'
+                          : '#EF4444',
+                      }}
+                      transition={{ duration: 0.1 }}
+                    />
+                  </div>
+                )}
+                {/* Stacked bubbles - me */}
+                <div className="flex flex-col gap-1 mt-1">
+                  <AnimatePresence>
+                    {myBubbles.map((b) => (
+                      <StackedBubble key={b.id} bubble={b} align="right" />
+                    ))}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
 
@@ -177,7 +240,7 @@ export default function HUD() {
 
             {/* === OPPONENT === */}
             <div className="flex-1 min-w-0 pointer-events-auto">
-              <div className="rounded-2xl border border-white/[0.08] bg-black/50 backdrop-blur-xl px-3 py-2.5 relative">
+              <div className={`rounded-2xl border border-white/[0.08] bg-black/50 backdrop-blur-xl px-3 py-2.5 relative transition-all duration-300 ${oppGlow}`}>
                 <div className="flex items-center gap-2.5 flex-row-reverse">
                   <PlayerAvatar symbol={oppSymbol} />
                   <div className="min-w-0 flex-1 text-right">
@@ -195,14 +258,20 @@ export default function HUD() {
                         Ready to rematch!
                       </motion.p>
                     )}
+                    {/* Opponent turn timer bar */}
+                    {room?.turn !== playerId && room?.status === 'playing' && opponent && room?.turnStartTime && (
+                      <TurnTimerBar turnStartTime={room.turnStartTime} symbol={oppSymbol} />
+                    )}
                   </div>
                 </div>
-                {/* Floating bubbles - opponent */}
-                <AnimatePresence>
-                  {oppBubbles.map((b) => (
-                    <FloatingBubble key={b.id} bubble={b} align="left" />
-                  ))}
-                </AnimatePresence>
+                {/* Stacked bubbles - opponent */}
+                <div className="flex flex-col gap-1 mt-1">
+                  <AnimatePresence>
+                    {oppBubbles.map((b) => (
+                      <StackedBubble key={b.id} bubble={b} align="left" />
+                    ))}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
           </div>
@@ -212,14 +281,11 @@ export default function HUD() {
       {/* === BOTTOM BAR === */}
       <div className="fixed bottom-0 inset-x-0 z-20 px-3 pb-3 pointer-events-none">
         <div className="mx-auto max-w-md flex items-center justify-between">
-          {/* Room code */}
           <div className="pointer-events-auto rounded-2xl border border-white/[0.08] bg-black/50 backdrop-blur-xl px-3 py-2">
             <p className="text-[8px] text-white/25 uppercase tracking-widest">Room</p>
             <p className="text-sm font-bold text-white tracking-[0.2em]">{room?.code}</p>
           </div>
-
           <div className="flex items-center gap-2 pointer-events-auto">
-            {/* Sound */}
             <button
               onClick={() => {
                 soundManager.playClick()
@@ -231,8 +297,6 @@ export default function HUD() {
             >
               {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
             </button>
-
-            {/* Chat */}
             <div className="relative">
               <button
                 onClick={() => { soundManager.playClick(); setChatOpen(!chatOpen) }}
@@ -242,8 +306,6 @@ export default function HUD() {
               </button>
               <QuickChat isOpen={chatOpen} onClose={() => setChatOpen(false)} />
             </div>
-
-            {/* Chat History */}
             <button
               onClick={() => { soundManager.playClick(); setDrawerOpen(true) }}
               className="w-10 h-10 rounded-2xl border border-white/[0.08] bg-black/50 backdrop-blur-xl flex items-center justify-center text-white/40 hover:text-white/80 transition-colors"
@@ -251,6 +313,13 @@ export default function HUD() {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
               </svg>
+            </button>
+            <button
+              onClick={handleExit}
+              className="w-10 h-10 rounded-2xl border border-rose-400/20 bg-rose-400/10 backdrop-blur-xl flex items-center justify-center text-rose-400/60 hover:text-rose-400 hover:bg-rose-400/20 transition-colors"
+              title="Exit Game"
+            >
+              <LogOut size={16} />
             </button>
           </div>
         </div>
@@ -272,7 +341,14 @@ export default function HUD() {
             <div className="rounded-xl bg-white/[0.06] border border-white/[0.08] px-6 py-4 mb-4">
               <p className="text-3xl font-mono font-bold text-white tracking-[0.3em]">{room?.code}</p>
             </div>
-            <p className="text-xs text-white/25">Expires in 5 minutes if not joined</p>
+            <p className="text-xs text-white/25 mb-4">Expires in 5 minutes if not joined</p>
+            <button
+              onClick={handleExit}
+              className="w-full h-11 rounded-xl border border-rose-400/20 bg-rose-400/10 text-rose-400 text-sm font-semibold hover:bg-rose-400/20 transition-all flex items-center justify-center gap-2"
+            >
+              <LogOut size={15} />
+              Cancel & Exit
+            </button>
           </div>
         </motion.div>
       )}
@@ -311,7 +387,6 @@ export default function HUD() {
                 </>
               )}
 
-              {/* Rematch section */}
               <div className="mt-6">
                 {rematchTimeLeft !== null && rematchTimeLeft > 0 && (
                   <div className="mb-4">
@@ -342,7 +417,7 @@ export default function HUD() {
                 <button
                   onClick={handleReady}
                   disabled={amReady}
-                  className={`w-full h-12 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
+                  className={`w-full h-12 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98] mb-2 ${
                     amReady
                       ? 'bg-cyan-400/10 border border-cyan-400/20 text-cyan-400/50 cursor-default'
                       : 'bg-cyan-400/15 border border-cyan-400/20 text-cyan-400 hover:bg-cyan-400/25'
@@ -353,16 +428,52 @@ export default function HUD() {
                 </button>
 
                 {amReady && !oppReady && rematchTimeLeft !== null && rematchTimeLeft <= 0 && (
-                  <p className="text-xs text-amber-400 mt-3">Rematch timed out!</p>
+                  <p className="text-xs text-amber-400 mt-2">Rematch timed out!</p>
                 )}
+
+                <button
+                  onClick={handleExit}
+                  className="w-full h-10 rounded-xl border border-white/[0.06] bg-white/[0.04] text-white/40 text-xs font-medium hover:bg-white/[0.08] hover:text-white/60 transition-all flex items-center justify-center gap-2 mt-2"
+                >
+                  <LogOut size={13} />
+                  Exit to Menu
+                </button>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Chat Drawer */}
       <ChatDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </>
+  )
+}
+
+function TurnTimerBar({ turnStartTime, symbol }: { turnStartTime: number; symbol: 'X' | 'O' }) {
+  const [pct, setPct] = useState(100)
+
+  useEffect(() => {
+    const tick = () => {
+      const elapsed = Date.now() - turnStartTime
+      const remaining = Math.max(0, TURN_TIME_LIMIT - elapsed)
+      setPct((remaining / TURN_TIME_LIMIT) * 100)
+    }
+    tick()
+    const id = setInterval(tick, 100)
+    return () => clearInterval(id)
+  }, [turnStartTime])
+
+  return (
+    <div className="mt-1.5 h-1 rounded-full bg-white/[0.06] overflow-hidden">
+      <div
+        className="h-full rounded-full transition-all duration-100"
+        style={{
+          width: `${pct}%`,
+          backgroundColor: pct > 50 ? (symbol === 'X' ? '#22d3ee' : '#f43f5e')
+            : pct > 20 ? '#FBBF24'
+            : '#EF4444',
+        }}
+      />
+    </div>
   )
 }

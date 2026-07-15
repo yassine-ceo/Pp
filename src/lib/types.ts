@@ -40,6 +40,7 @@ export interface Room {
   ready?: Record<string, boolean>
   rematchTimerStart?: number
   winLine?: number[] | null
+  turnStartTime?: number
   chat?: Record<string, ChatMessage>
   bubbles?: Record<string, ChatBubble>
 }
@@ -53,11 +54,13 @@ export const WIN_LINES = [
 export const EMPTY_BOARD = Array(9).fill('') as string[]
 
 export const CHAT_EMOJIS = [
-  { id: 'laugh', label: 'Laugh', svg: 'laugh' as const },
-  { id: 'clown', label: 'Clown', svg: 'clown' as const },
-  { id: 'angry', label: 'Angry', svg: 'angry' as const },
-  { id: 'cry', label: 'Cry', svg: 'cry' as const },
-  { id: 'shock', label: 'Shocked', svg: 'shock' as const },
+  { id: 'laugh', label: 'Laugh' },
+  { id: 'clown', label: 'Clown' },
+  { id: 'angry', label: 'Angry' },
+  { id: 'cry', label: 'Cry' },
+  { id: 'shock', label: 'Shocked' },
 ] as const
 
 export type EmojiId = typeof CHAT_EMOJIS[number]['id']
+
+export const TURN_TIME_LIMIT = 20_000

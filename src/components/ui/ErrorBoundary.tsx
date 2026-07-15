@@ -39,11 +39,7 @@ export class ErrorBoundary extends Component<Props, State> {
               The game encountered an unexpected error. Your session is safe.
             </p>
             <button
-              onClick={() => {
-                localStorage.removeItem('xo roomId')
-                localStorage.removeItem('xo slot')
-                window.location.href = '/'
-              }}
+              onClick={() => { window.location.href = '/' }}
               className="w-full h-11 rounded-xl bg-cyan-400/15 border border-cyan-400/20 text-cyan-400 text-sm font-semibold hover:bg-cyan-400/25 transition-all"
             >
               Back to Menu

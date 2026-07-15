@@ -120,57 +120,74 @@ export class SoundManager {
     osc.stop(ctx.currentTime + 0.4)
   }
 
-  // === Chat Emoji Sounds ===
+  playTick() {
+    if (this.muted) return
+    const ctx = this.getCtx()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(1200, ctx.currentTime)
+    gain.gain.setValueAtTime(0.12, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05)
+    osc.connect(gain).connect(ctx.destination)
+    osc.start(ctx.currentTime)
+    osc.stop(ctx.currentTime + 0.05)
+  }
 
   playEmojiLaugh() {
     if (this.muted) return
     const ctx = this.getCtx()
-    // Rapid ascending wobble — comedic laugh
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
       osc.type = 'sine'
-      const t = ctx.currentTime + i * 0.08
-      osc.frequency.setValueAtTime(400 + i * 150, t)
-      osc.frequency.exponentialRampToValueAtTime(600 + i * 100, t + 0.06)
-      gain.gain.setValueAtTime(0.18, t)
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08)
+      const t = ctx.currentTime + i * 0.07
+      const baseFreq = i % 2 === 0 ? 500 : 700
+      osc.frequency.setValueAtTime(baseFreq, t)
+      osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.3, t + 0.05)
+      gain.gain.setValueAtTime(0.15, t)
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06)
       osc.connect(gain).connect(ctx.destination)
       osc.start(t)
-      osc.stop(t + 0.09)
+      osc.stop(t + 0.07)
     }
   }
 
   playEmojiClown() {
     if (this.muted) return
     const ctx = this.getCtx()
-    // Silly honk — low then high
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
     osc.type = 'sawtooth'
-    osc.frequency.setValueAtTime(200, ctx.currentTime)
-    osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.1)
-    osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.25)
+    osc.frequency.setValueAtTime(180, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.08)
+    osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.3)
     gain.gain.setValueAtTime(0.2, ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35)
     osc.connect(gain).connect(ctx.destination)
     osc.start(ctx.currentTime)
-    osc.stop(ctx.currentTime + 0.3)
+    osc.stop(ctx.currentTime + 0.35)
   }
 
   playEmojiAngry() {
     if (this.muted) return
     const ctx = this.getCtx()
-    // Deep buzzing rumble
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
     osc.type = 'sawtooth'
-    osc.frequency.setValueAtTime(80, ctx.currentTime)
-    osc.frequency.linearRampToValueAtTime(120, ctx.currentTime + 0.15)
-    osc.frequency.linearRampToValueAtTime(60, ctx.currentTime + 0.3)
+    osc.frequency.setValueAtTime(70, ctx.currentTime)
+    osc.frequency.linearRampToValueAtTime(140, ctx.currentTime + 0.12)
+    osc.frequency.linearRampToValueAtTime(55, ctx.currentTime + 0.3)
     gain.gain.setValueAtTime(0.25, ctx.currentTime)
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35)
-    osc.connect(gain).connect(ctx.destination)
+    const distortion = ctx.createWaveShaper()
+    const curve = new Float32Array(256)
+    for (let i = 0; i < 256; i++) {
+      const x = (i * 2) / 256 - 1
+      curve[i] = (Math.PI + 50) * x / (Math.PI + 50 * Math.abs(x))
+    }
+    distortion.curve = curve
+    osc.connect(distortion).connect(gain).connect(ctx.destination)
     osc.start(ctx.currentTime)
     osc.stop(ctx.currentTime + 0.35)
   }
@@ -178,34 +195,43 @@ export class SoundManager {
   playEmojiCry() {
     if (this.muted) return
     const ctx = this.getCtx()
-    // Descending whine
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
     osc.type = 'sine'
-    osc.frequency.setValueAtTime(600, ctx.currentTime)
-    osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.4)
-    gain.gain.setValueAtTime(0.2, ctx.currentTime)
-    gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.2)
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45)
+    osc.frequency.setValueAtTime(700, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(250, ctx.currentTime + 0.35)
+    gain.gain.setValueAtTime(0.18, ctx.currentTime)
+    gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.15)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
     osc.connect(gain).connect(ctx.destination)
     osc.start(ctx.currentTime)
-    osc.stop(ctx.currentTime + 0.45)
+    osc.stop(ctx.currentTime + 0.4)
+    const osc2 = ctx.createOscillator()
+    const gain2 = ctx.createGain()
+    osc2.type = 'sine'
+    osc2.frequency.setValueAtTime(400, ctx.currentTime + 0.15)
+    osc2.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.45)
+    gain2.gain.setValueAtTime(0.1, ctx.currentTime + 0.15)
+    gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5)
+    osc2.connect(gain2).connect(ctx.destination)
+    osc2.start(ctx.currentTime + 0.15)
+    osc2.stop(ctx.currentTime + 0.5)
   }
 
   playEmojiShock() {
     if (this.muted) return
     const ctx = this.getCtx()
-    // Quick zap — rising burst
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
     osc.type = 'square'
-    osc.frequency.setValueAtTime(300, ctx.currentTime)
-    osc.frequency.exponentialRampToValueAtTime(2000, ctx.currentTime + 0.08)
-    gain.gain.setValueAtTime(0.2, ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15)
+    osc.frequency.setValueAtTime(200, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(2500, ctx.currentTime + 0.06)
+    osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.15)
+    gain.gain.setValueAtTime(0.18, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2)
     osc.connect(gain).connect(ctx.destination)
     osc.start(ctx.currentTime)
-    osc.stop(ctx.currentTime + 0.15)
+    osc.stop(ctx.currentTime + 0.2)
   }
 
   playEmoji(id: string) {

@@ -40,6 +40,7 @@ export async function createRoom(hostName: string, playerId: string): Promise<st
     scores: { p1: 0, p2: 0 },
     ready: {},
     winLine: null,
+    turnStartTime: undefined,
   }
   await set(roomRef, room)
   setupPresence(code, playerId)
@@ -60,26 +61,13 @@ export async function joinRoom(code: string, playerName: string, playerId: strin
     'players/p2': joiner,
     status: 'playing',
     turn: data?.players?.p1?.id ?? null,
+    turnStartTime: Date.now(),
   })
   setupPresence(code, playerId)
   const updated = await new Promise<import('firebase/database').DataSnapshot>((resolve) => {
     onValue(roomRef, (s) => resolve(s), { onlyOnce: true })
   })
   return updated.val() as Room
-}
-
-export async function reconnectToRoom(code: string, playerId: string): Promise<Room | null> {
-  const roomRef = ref(db, `rooms/${code}`)
-  const snap = await new Promise<import('firebase/database').DataSnapshot>((resolve) => {
-    onValue(roomRef, (s) => resolve(s), { onlyOnce: true })
-  })
-  if (!snap.exists()) return null
-  const data = snap.val() as Room
-  const isP1 = data?.players?.p1?.id === playerId
-  const isP2 = data?.players?.p2?.id === playerId
-  if (!isP1 && !isP2) return null
-  setupPresence(code, playerId)
-  return data
 }
 
 function setupPresence(roomCode: string, playerId: string) {
@@ -117,10 +105,6 @@ export function checkWin(board: string[]): { won: boolean; line: number[] | null
   return { won: false, line: null, symbol: null, tie }
 }
 
-/**
- * Granular fast move — updates only the specific board cell + turn/status.
- * Returns the symbol placed and whether it was a win/tie for sound effects.
- */
 export async function makeMove(
   code: string,
   playerId: string,
@@ -166,6 +150,7 @@ export async function makeMove(
     winner: winnerId,
     winnerName,
     winLine: result.line ?? null,
+    turnStartTime: newStatus === 'playing' ? Date.now() : null,
   }
 
   if (newStatus === 'won' || newStatus === 'tie') {
@@ -183,9 +168,6 @@ export async function makeMove(
   return { won: result.won, tie: result.tie, symbol, winLine: result.line }
 }
 
-/**
- * Ready up for rematch. When both players ready, reset board.
- */
 export async function setReady(code: string, playerId: string): Promise<void> {
   const roomSnap = await new Promise<import('firebase/database').DataSnapshot>((resolve) => {
     onValue(ref(db, `rooms/${code}`), (s) => resolve(s), { onlyOnce: true })
@@ -216,6 +198,7 @@ export async function setReady(code: string, playerId: string): Promise<void> {
       winner: null,
       winnerName: null,
       winLine: null,
+      turnStartTime: Date.now(),
       ready: {},
       rematchTimerStart: null,
       bubbles: {},
@@ -223,9 +206,6 @@ export async function setReady(code: string, playerId: string): Promise<void> {
   }
 }
 
-/**
- * Terminate room (timeout or manual).
- */
 export async function terminateRoom(code: string): Promise<void> {
   await update(ref(db, `rooms/${code}`), { status: 'terminated' })
 }
@@ -238,9 +218,6 @@ export async function deleteRoom(code: string) {
   await remove(ref(db, `rooms/${code}`))
 }
 
-/**
- * Send a chat message (emoji or text).
- */
 export async function sendChatMessage(
   code: string,
   playerId: string,
@@ -260,9 +237,6 @@ export async function sendChatMessage(
   await update(ref(db, `rooms/${code}/chat`), { [msgId]: message })
 }
 
-/**
- * Send a floating chat bubble (auto-clears after 4s).
- */
 export async function sendChatBubble(
   code: string,
   playerId: string,
@@ -279,7 +253,6 @@ export async function sendChatBubble(
   }
   await update(ref(db, `rooms/${code}/bubbles`), { [bubbleId]: bubble })
 
-  // Auto-remove after 5 seconds (allow for network delay)
   setTimeout(async () => {
     try {
       await remove(ref(db, `rooms/${code}/bubbles/${bubbleId}`))

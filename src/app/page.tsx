@@ -18,7 +18,6 @@ export default function MainMenu() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settingsName, setSettingsName] = useState('')
 
-  // Auto-skip name entry if saved
   useEffect(() => {
     const saved = localStorage.getItem('xo playerName')
     if (saved && saved.trim()) {
@@ -26,7 +25,6 @@ export default function MainMenu() {
       setName(saved)
       setNameConfirmed(true)
     }
-    // Ensure playerId exists
     let id = localStorage.getItem('xo playerId')
     if (!id) {
       try { id = crypto.randomUUID() } catch { id = Math.random().toString(36).slice(2) + Date.now().toString(36) }
@@ -41,7 +39,6 @@ export default function MainMenu() {
     soundManager.playClick()
     setPlayerName(trimmed)
     try { localStorage.setItem('xo playerName', trimmed) } catch {}
-    // Ensure playerId
     let id = localStorage.getItem('xo playerId')
     if (!id) {
       try { id = crypto.randomUUID() } catch { id = Math.random().toString(36).slice(2) + Date.now().toString(36) }
@@ -81,14 +78,10 @@ export default function MainMenu() {
   return (
     <div className="fixed inset-0 z-10 flex flex-col items-center justify-center pointer-events-auto">
       <FloatingDecor count={6} />
-
-      {/* Gradient orbs */}
       <div className="fixed top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-cyan-500/[0.04] blur-[100px] pointer-events-none" />
       <div className="fixed bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-rose-500/[0.04] blur-[100px] pointer-events-none" />
 
-      {/* Content */}
       <div className="relative z-10 w-full max-w-sm mx-4">
-        {/* Title */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -104,7 +97,6 @@ export default function MainMenu() {
           <p className="text-sm text-white/40">3D Multiplayer Tic Tac Toe</p>
         </motion.div>
 
-        {/* Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -195,7 +187,6 @@ export default function MainMenu() {
           )}
         </motion.div>
 
-        {/* Footer */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -206,7 +197,6 @@ export default function MainMenu() {
         </motion.p>
       </div>
 
-      {/* Settings Modal */}
       {settingsOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-5 pointer-events-auto">
           <motion.div

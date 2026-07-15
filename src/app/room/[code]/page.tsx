@@ -9,9 +9,10 @@ import {
   joinRoom,
   subscribeToRoom,
   deleteRoom,
-  reconnectToRoom,
   terminateRoom,
+  makeMove,
 } from '@/lib/firebase'
+import { TURN_TIME_LIMIT } from '@/lib/types'
 import { soundManager } from '@/lib/sound'
 import GameScene from '@/components/3d/GameScene'
 import HUD from '@/components/ui/HUD'
@@ -39,31 +40,31 @@ export default function RoomPage() {
   const {
     room, setRoom, setRoomId,
     playerId, setPlayerId, playerName, setPlayerName,
+    localBoard,
     addWin, addLoss, addTie,
-    setShowResult, setWinHighlightCells,
+    setShowResult, setWinHighlightCells, applyOptimisticMove,
   } = useGameStore()
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [terminated, setTerminated] = useState(false)
-  const unsubRef = useRef<(() => void) | null>(null)
+  const unsubRef = useRef<() => void | null>(null)
   const roomCodeRef = useRef<string | null>(null)
   const prevStatusRef = useRef<string | null>(null)
   const expiryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const rematchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const winDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const autoPlayRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const initDoneRef = useRef(false)
 
   const cleanup = useCallback(async () => {
-    try { localStorage.removeItem('xo roomId') } catch {}
-    try { localStorage.removeItem('xo slot') } catch {}
     if (roomCodeRef.current) {
       try { await deleteRoom(roomCodeRef.current) } catch {}
       roomCodeRef.current = null
     }
   }, [])
 
-  // Initialize player identity
+  // Initialize player identity (name only from localStorage)
   useEffect(() => {
     try {
       const id = getOrCreatePlayerId()
@@ -76,48 +77,17 @@ export default function RoomPage() {
     }
   }, [setPlayerId, setPlayerName])
 
-  // Create, join, or reconnect
+  // Create or join (NO reconnect)
   useEffect(() => {
     if (!playerId || !playerName || !urlCode || initDoneRef.current) return
     initDoneRef.current = true
 
     const init = async () => {
       try {
-        let savedRoomId: string | null = null
-        let savedSlot: string | null = null
-        try {
-          savedRoomId = localStorage.getItem('xo roomId')
-          savedSlot = localStorage.getItem('xo slot')
-        } catch {}
-
-        const targetCode = urlCode === 'create' ? null : urlCode
-
-        if (savedRoomId && savedSlot && (savedRoomId === targetCode || urlCode === 'create')) {
-          const reconnected = await reconnectToRoom(savedRoomId, playerId)
-          if (reconnected) {
-            roomCodeRef.current = savedRoomId
-            setRoomId(savedRoomId)
-            if (reconnected.status !== 'terminated' && urlCode === 'create' && savedRoomId !== urlCode) {
-              window.history.replaceState(null, '', `/room/${savedRoomId}`)
-            }
-            setLoading(false)
-            return
-          } else {
-            try {
-              localStorage.removeItem('xo roomId')
-              localStorage.removeItem('xo slot')
-            } catch {}
-          }
-        }
-
         if (urlCode === 'create') {
           const newCode = await createRoom(playerName, playerId)
           roomCodeRef.current = newCode
           setRoomId(newCode)
-          try {
-            localStorage.setItem('xo roomId', newCode)
-            localStorage.setItem('xo slot', 'p1')
-          } catch {}
           window.history.replaceState(null, '', `/room/${newCode}`)
 
           expiryTimerRef.current = setTimeout(async () => {
@@ -126,10 +96,6 @@ export default function RoomPage() {
               setTerminated(true)
               setError('Invite expired. Room was not joined in time.')
               soundManager.playDisconnect()
-              try {
-                localStorage.removeItem('xo roomId')
-                localStorage.removeItem('xo slot')
-              } catch {}
             }
           }, 5 * 60 * 1000)
         } else {
@@ -137,24 +103,10 @@ export default function RoomPage() {
           if (joined) {
             roomCodeRef.current = urlCode
             setRoomId(urlCode)
-            try {
-              localStorage.setItem('xo roomId', urlCode)
-              localStorage.setItem('xo slot', 'p2')
-            } catch {}
           } else {
-            const reconnected = await reconnectToRoom(urlCode, playerId)
-            if (reconnected) {
-              roomCodeRef.current = urlCode
-              setRoomId(urlCode)
-              try {
-                localStorage.setItem('xo roomId', urlCode)
-                localStorage.setItem('xo slot', 'p1')
-              } catch {}
-            } else {
-              setError('Room not found or already full.')
-              setLoading(false)
-              return
-            }
+            setError('Room not found or already full.')
+            setLoading(false)
+            return
           }
         }
         setLoading(false)
@@ -169,6 +121,7 @@ export default function RoomPage() {
       if (expiryTimerRef.current) clearTimeout(expiryTimerRef.current)
       if (rematchTimerRef.current) clearTimeout(rematchTimerRef.current)
       if (winDelayRef.current) clearTimeout(winDelayRef.current)
+      if (autoPlayRef.current) clearTimeout(autoPlayRef.current)
     }
   }, [playerId, playerName, urlCode, setRoomId, cleanup])
 
@@ -182,10 +135,6 @@ export default function RoomPage() {
         setTerminated(true)
         setError('Room was closed.')
         soundManager.playDisconnect()
-        try {
-          localStorage.removeItem('xo roomId')
-          localStorage.removeItem('xo slot')
-        } catch {}
         setRoom(null)
         return
       }
@@ -193,35 +142,25 @@ export default function RoomPage() {
       const prev = prevStatusRef.current
       const newStatus = data?.status
 
-      // Detect win/lose/tie — with 3s delay for result overlay
+      // Detect win/lose/tie with 3s delay
       if (prev === 'playing' && (newStatus === 'won' || newStatus === 'tie')) {
-        // Set win highlight cells immediately (from winLine in room data)
+        if (autoPlayRef.current) { clearTimeout(autoPlayRef.current); autoPlayRef.current = null }
         const winLine = data?.winLine ?? []
         setWinHighlightCells(winLine)
 
-        // Play win sound immediately
         if (newStatus === 'won') {
-          if (data?.winner === playerId) {
-            soundManager.playWin()
-            addWin()
-          } else {
-            soundManager.playTie()
-            addLoss()
-          }
+          if (data?.winner === playerId) { soundManager.playWin(); addWin() }
+          else { soundManager.playTie(); addLoss() }
         } else {
-          soundManager.playTie()
-          addTie()
+          soundManager.playTie(); addTie()
         }
 
-        // Delay showing the result overlay by 3 seconds
         setShowResult(false)
         if (winDelayRef.current) clearTimeout(winDelayRef.current)
-        winDelayRef.current = setTimeout(() => {
-          setShowResult(true)
-        }, WIN_DELAY_MS)
+        winDelayRef.current = setTimeout(() => setShowResult(true), WIN_DELAY_MS)
       }
 
-      // When entering playing state from won/tie, clear win highlights and result
+      // Reset on new game
       if ((prev === 'won' || prev === 'tie') && newStatus === 'playing') {
         setWinHighlightCells([])
         setShowResult(false)
@@ -229,23 +168,16 @@ export default function RoomPage() {
 
       // Detect disconnect
       if (prev === 'playing' && newStatus === 'terminated') {
+        if (autoPlayRef.current) { clearTimeout(autoPlayRef.current); autoPlayRef.current = null }
         setTerminated(true)
         setError('Opponent left the game.')
         soundManager.playDisconnect()
-        try {
-          localStorage.removeItem('xo roomId')
-          localStorage.removeItem('xo slot')
-        } catch {}
       }
 
       // Detect rematch timeout
       if ((prev === 'won' || prev === 'tie') && newStatus === 'terminated') {
         setTerminated(true)
         setError('Rematch timed out!')
-        try {
-          localStorage.removeItem('xo roomId')
-          localStorage.removeItem('xo slot')
-        } catch {}
       }
 
       prevStatusRef.current = newStatus
@@ -255,6 +187,47 @@ export default function RoomPage() {
     unsubRef.current = unsub
     return () => { unsub() }
   }, [roomCodeRef.current, playerId, setRoom, addWin, addLoss, addTie, setShowResult, setWinHighlightCells])
+
+  // Auto-play timer (20s turn timeout)
+  useEffect(() => {
+    if (autoPlayRef.current) { clearTimeout(autoPlayRef.current); autoPlayRef.current = null }
+
+    if (!room || room.status !== 'playing' || !room.turn || !room.turnStartTime) return
+    if (room.turn !== playerId) return
+
+    const elapsed = Date.now() - room.turnStartTime
+    const remaining = Math.max(0, TURN_TIME_LIMIT - elapsed)
+
+    if (remaining <= 0) {
+      // Already expired, auto-play immediately
+      autoPlayRandom()
+      return
+    }
+
+    autoPlayRef.current = setTimeout(() => {
+      autoPlayRandom()
+    }, remaining)
+
+    return () => { if (autoPlayRef.current) clearTimeout(autoPlayRef.current) }
+  }, [room?.turn, room?.turnStartTime, room?.status, playerId])
+
+  const autoPlayRandom = useCallback(async () => {
+    const { room: currentRoom, playerId: pid, localBoard: lb, applyOptimisticMove: apply } = useGameStore.getState()
+    if (!currentRoom || !pid || currentRoom.status !== 'playing' || currentRoom.turn !== pid) return
+    if (!roomCodeRef.current) return
+
+    const emptyCells = lb.map((cell, i) => cell === '' ? i : -1).filter((i) => i >= 0)
+    if (emptyCells.length === 0) return
+
+    const randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)]
+    const symbol = currentRoom.players?.p1?.id === pid ? 'X' : 'O'
+
+    apply(randomIndex, symbol)
+    if (symbol === 'X') soundManager.playPlaceX()
+    else soundManager.playPlaceO()
+
+    await makeMove(roomCodeRef.current, pid, randomIndex, currentRoom.board, currentRoom.turn)
+  }, [])
 
   // Monitor rematch timer expiry
   useEffect(() => {
@@ -273,27 +246,23 @@ export default function RoomPage() {
     }
 
     rematchTimerRef.current = setTimeout(() => {
-      if (roomCodeRef.current) {
-        terminateRoom(roomCodeRef.current).catch(() => {})
-      }
+      if (roomCodeRef.current) terminateRoom(roomCodeRef.current).catch(() => {})
     }, remaining + 500)
 
     return () => { if (rematchTimerRef.current) clearTimeout(rematchTimerRef.current) }
   }, [room?.status, room?.rematchTimerStart])
 
-  const handleBack = useCallback(() => {
+  const handleBack = useCallback(async () => {
     soundManager.playClick()
-    try {
-      localStorage.removeItem('xo roomId')
-      localStorage.removeItem('xo slot')
-    } catch {}
-    cleanup()
+    if (roomCodeRef.current) {
+      try { await deleteRoom(roomCodeRef.current) } catch {}
+    }
     setRoom(null)
     setRoomId(null)
     setWinHighlightCells([])
     setShowResult(false)
     router.push('/')
-  }, [cleanup, setRoom, setRoomId, setWinHighlightCells, setShowResult, router])
+  }, [setRoom, setRoomId, setWinHighlightCells, setShowResult, router])
 
   const isPlaying = room?.status === 'playing' || room?.status === 'won' || room?.status === 'tie'
 
@@ -302,7 +271,6 @@ export default function RoomPage() {
       <GameScene isPlaying={!!isPlaying} />
       <div className="fixed inset-0 z-[1] bg-[#0a0a1a]/30 pointer-events-none" />
 
-      {/* Loading */}
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a0a1a]">
           <div className="flex flex-col items-center gap-4">
@@ -312,7 +280,6 @@ export default function RoomPage() {
         </div>
       )}
 
-      {/* Error / Terminated */}
       {(error || terminated) && !room && (
         <div className="fixed inset-0 z-40 flex items-center justify-center px-5 pointer-events-auto">
           <motion.div
@@ -339,11 +306,10 @@ export default function RoomPage() {
 
       {!loading && room && <HUD />}
 
-      {/* Back button — hidden during 3s win delay so players can see the board */}
       {!loading && room?.status === 'playing' && (
         <button
           onClick={handleBack}
-          className="fixed top-4 left-4 z-30 w-10 h-10 rounded-xl border border-white/[0.08] bg-black/30 backdrop-blur-xl flex items-center justify-center text-white/40 hover:text-white/80 transition-colors pointer-events-auto"
+          className="fixed top-10 left-4 z-30 w-10 h-10 rounded-xl border border-white/[0.08] bg-black/30 backdrop-blur-xl flex items-center justify-center text-white/40 hover:text-white/80 transition-colors pointer-events-auto"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7" />

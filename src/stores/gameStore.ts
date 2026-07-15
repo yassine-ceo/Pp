@@ -29,7 +29,7 @@ interface GameState {
   setWinHighlightCells: (cells: number[]) => void
 }
 
-export const useGameStore = create<GameState>((set, get) => ({
+export const useGameStore = create<GameState>((set) => ({
   roomId: null,
   room: null,
   playerId: null,
