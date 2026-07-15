@@ -43,17 +43,20 @@ export default function WinLine({ cells }: WinLineProps) {
 
   return (
     <group ref={groupRef} position={[mid.x, mid.y, mid.z]} rotation={[0, rotation, 0]}>
+      {/* Outer glow */}
       <mesh>
         <boxGeometry args={[0.3, 0.04, length + 0.2]} />
-        <meshBasicMaterial color="#4d3f06" />
+        <meshStandardMaterial color="#9a7e0c" roughness={0.5} metalness={0.4} emissive="#facc15" emissiveIntensity={0.3} />
       </mesh>
+      {/* Middle layer */}
       <mesh>
         <boxGeometry args={[0.18, 0.035, length + 0.1]} />
-        <meshBasicMaterial color="#9a7e0c" />
+        <meshStandardMaterial color="#facc15" roughness={0.3} metalness={0.6} emissive="#facc15" emissiveIntensity={0.8} />
       </mesh>
+      {/* Bright core */}
       <mesh>
         <boxGeometry args={[0.08, 0.03, length]} />
-        <meshBasicMaterial color="#f4de7c" />
+        <meshStandardMaterial color="#fde68a" roughness={0.2} metalness={0.7} emissive="#fde68a" emissiveIntensity={1.5} />
       </mesh>
     </group>
   )

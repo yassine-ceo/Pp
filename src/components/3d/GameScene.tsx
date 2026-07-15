@@ -94,6 +94,9 @@ const SceneContent = memo(function SceneContent() {
   const isTie = useGameStore((s) => s.room?.status === 'tie')
   return (
     <>
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[3, 8, 4]} intensity={0.8} color="#e0f0ff" />
+      <pointLight position={[0, 3, 0]} intensity={0.4} color="#67e8f9" distance={12} />
       <Board isTie={isTie} />
       <ClickPlane />
       <Pieces />
@@ -104,12 +107,11 @@ const SceneContent = memo(function SceneContent() {
 })
 
 const MemoizedCanvas = memo(function MemoizedCanvas() {
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
   return (
     <Canvas
       camera={{ position: [0, 4.2, 5.0], fov: 42 }}
-      gl={{ antialias: !isMobile, alpha: true, powerPreference: 'high-performance' }}
-      dpr={[1, 1.5]}
+      gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+      dpr={[1, 2]}
       style={{ background: 'transparent' }}
       frameloop="always"
     >
