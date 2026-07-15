@@ -34,15 +34,9 @@ export default function WinLine({ cells }: WinLineProps) {
 
   useFrame((_, delta) => {
     if (!groupRef.current) return
-    const dt = Math.min(delta, 0.05)
-    time.current += dt
-    const pulse = 0.7 + Math.sin(time.current * 4) * 0.5
-    groupRef.current.children.forEach((child) => {
-      if ((child as THREE.Mesh).material && 'emissiveIntensity' in (child as THREE.Mesh).material) {
-        const mat = (child as THREE.Mesh).material as THREE.MeshStandardMaterial
-        mat.emissiveIntensity = pulse * (mat.userData.baseIntensity ?? 1)
-      }
-    })
+    time.current += Math.min(delta, 0.05)
+    const scale = 0.85 + Math.sin(time.current * 3) * 0.15
+    groupRef.current.scale.set(1, 1, scale)
   })
 
   if (cells.length < 2) return null

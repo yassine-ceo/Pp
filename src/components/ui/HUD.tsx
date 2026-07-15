@@ -243,12 +243,12 @@ export default function HUD() {
   return (
     <>
       {/* TOP HUD */}
-      <div className="fixed top-0 inset-x-0 z-20 px-4 pt-12 sm:px-6 md:px-8 pointer-events-none">
+      <div className="fixed top-0 inset-x-0 z-20 px-4 pt-14 sm:pt-16 sm:px-6 md:px-8 pointer-events-none" style={{ paddingTop: 'max(3.5rem, env(safe-area-inset-top, 3.5rem))' }}>
         <div className="mx-auto max-w-md">
           <div className="flex items-start gap-1.5 sm:gap-2">
             {/* ME */}
             <div className="flex-1 min-w-0 pointer-events-auto">
-              <div className={`rounded-2xl border border-white/[0.08] bg-black/50 backdrop-blur-xl px-2.5 py-2 sm:px-3 sm:py-2.5 relative transition-all duration-300 ${myGlow}`}>
+              <div className={`rounded-2xl border border-white/[0.08] bg-black/50 backdrop-blur-xl px-2.5 py-2 sm:px-3 sm:py-2.5 relative transition-all duration-300 overflow-hidden ${myGlow}`}>
                 <div className="flex items-center gap-2">
                   <PlayerAvatar symbol={mySymbol} />
                   <div className="min-w-0 flex-1">
@@ -262,7 +262,7 @@ export default function HUD() {
                   </div>
                 </div>
                 {isMyTurn && turnTimeLeft !== null && (
-                  <div className="mt-1.5 h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                  <div className="mt-1.5 h-1 rounded-full bg-white/[0.06] overflow-hidden w-full">
                     <div
                       className="h-full rounded-full transition-none"
                       style={{
@@ -296,7 +296,7 @@ export default function HUD() {
 
             {/* OPPONENT */}
             <div className="flex-1 min-w-0 pointer-events-auto">
-              <div className={`rounded-2xl border border-white/[0.08] bg-black/50 backdrop-blur-xl px-2.5 py-2 sm:px-3 sm:py-2.5 relative transition-all duration-300 ${oppGlow}`}>
+              <div className={`rounded-2xl border border-white/[0.08] bg-black/50 backdrop-blur-xl px-2.5 py-2 sm:px-3 sm:py-2.5 relative transition-all duration-300 overflow-hidden ${oppGlow}`}>
                 <div className="flex items-center gap-2 flex-row-reverse">
                   <PlayerAvatar symbol={oppSymbol} />
                   <div className="min-w-0 flex-1 text-right">
@@ -481,7 +481,7 @@ function TurnTimerBar({ turnStartTime, symbol }: { turnStartTime: number; symbol
   }, [turnStartTime])
 
   return (
-    <div className="mt-1.5 h-1 rounded-full bg-white/[0.06] overflow-hidden">
+    <div className="mt-1.5 h-1 rounded-full bg-white/[0.06] overflow-hidden w-full">
       <div
         className="h-full rounded-full transition-none"
         style={{

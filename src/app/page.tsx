@@ -108,7 +108,7 @@ export default function MainMenu() {
         <div className="fixed top-0 right-0 w-[600px] h-[600px] rounded-full bg-emerald-500/[0.06] blur-[150px] pointer-events-none" />
         <div className="fixed bottom-0 left-0 w-[500px] h-[500px] rounded-full bg-cyan-500/[0.05] blur-[140px] pointer-events-none" />
         <div className="fixed top-[40%] left-[20%] w-[300px] h-[300px] rounded-full bg-amber-500/[0.03] blur-[120px] pointer-events-none" />
-        <div className="relative z-10 w-full max-w-sm mx-auto">
+        <div className="relative z-10 w-full max-w-md mx-auto">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="text-center mb-8">
             <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-cyan-400/20 border border-emerald-400/20 flex items-center justify-center shadow-[0_0_30px_rgba(52,211,153,0.15)]">
               <Gamepad2 size={28} className="text-emerald-400" />
@@ -116,7 +116,7 @@ export default function MainMenu() {
             <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-emerald-100 to-white/60 mb-2">XO Arena</h1>
             <p className="text-sm text-white/40">Join room <span className="text-emerald-400 font-mono font-bold">{deepLinkRoom}</span></p>
           </motion.div>
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="rounded-3xl border border-white/[0.06] bg-slate-900/40 backdrop-blur-xl p-6 sm:p-8 shadow-[0_0_40px_rgba(0,0,0,0.4)]">
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="max-w-md w-full bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl">
             <p className="text-xs text-white/30 uppercase tracking-wider mb-4">Enter your name to join</p>
             <input
               type="text"
@@ -126,12 +126,12 @@ export default function MainMenu() {
               placeholder="Your name..."
               maxLength={15}
               autoFocus
-              className="w-full h-12 rounded-xl bg-white/[0.04] border border-white/[0.06] px-4 text-sm text-white placeholder:text-white/20 outline-none focus:border-emerald-400/30 transition-colors mb-4"
+              className="w-full h-14 rounded-xl bg-black/50 border border-white/10 px-5 text-base text-white placeholder:text-white/20 outline-none focus:ring-2 focus:ring-emerald-400/60 transition-all mb-5"
             />
             <button
               onClick={handleNameConfirm}
               disabled={!name.trim()}
-              className="w-full h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-black text-sm font-bold hover:from-emerald-400 hover:to-cyan-400 transition-all active:scale-[0.97] disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(52,211,153,0.25)]"
+              className="w-full h-14 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-black text-sm font-bold hover:from-emerald-400 hover:to-cyan-400 hover:scale-[1.02] transition-all active:scale-[0.97] disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_30px_rgba(52,211,153,0.35)]"
             >
               Join Game
             </button>
@@ -149,7 +149,7 @@ export default function MainMenu() {
       <div className="fixed top-[30%] right-[10%] w-[350px] h-[350px] rounded-full bg-amber-500/[0.03] blur-[120px] pointer-events-none" />
       <div className="fixed bottom-[20%] left-[5%] w-[250px] h-[250px] rounded-full bg-emerald-400/[0.03] blur-[100px] pointer-events-none" />
 
-      <div className="relative z-10 w-full max-w-sm mx-auto px-6 sm:px-8 py-8">
+      <div className="relative z-10 w-full max-w-md mx-auto px-6 sm:px-8 py-8">
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} className="text-center mb-8">
           <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-cyan-400/20 border border-emerald-400/20 flex items-center justify-center shadow-[0_0_30px_rgba(52,211,153,0.15)]">
             <Gamepad2 size={28} className="text-emerald-400" />
@@ -158,7 +158,7 @@ export default function MainMenu() {
           <p className="text-sm text-white/40">3D Multiplayer Tic Tac Toe</p>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="rounded-3xl border border-white/[0.06] bg-slate-900/40 backdrop-blur-xl p-6 sm:p-8 shadow-[0_0_40px_rgba(0,0,0,0.4)]">
+        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="max-w-md w-full bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl mx-auto">
           {!nameConfirmed ? (
             <>
               <p className="text-xs text-white/30 uppercase tracking-wider mb-4">Enter your name</p>
@@ -170,9 +170,9 @@ export default function MainMenu() {
                 placeholder="Your name..."
                 maxLength={15}
                 autoFocus
-                className="w-full h-12 rounded-xl bg-white/[0.04] border border-white/[0.06] px-4 text-sm text-white placeholder:text-white/20 outline-none focus:border-emerald-400/30 transition-colors mb-4"
+                className="w-full h-14 rounded-xl bg-black/50 border border-white/10 px-5 text-base text-white placeholder:text-white/20 outline-none focus:ring-2 focus:ring-emerald-400/60 transition-all mb-5"
               />
-              <button onClick={handleNameConfirm} disabled={!name.trim()} className="w-full h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-black text-sm font-bold hover:from-emerald-400 hover:to-cyan-400 transition-all active:scale-[0.97] disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(52,211,153,0.25)]">
+              <button onClick={handleNameConfirm} disabled={!name.trim()} className="w-full h-14 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-black text-sm font-bold hover:from-emerald-400 hover:to-cyan-400 hover:scale-[1.02] transition-all active:scale-[0.97] disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_30px_rgba(52,211,153,0.35)]">
                 Continue
               </button>
             </>
@@ -215,7 +215,7 @@ export default function MainMenu() {
                   placeholder="ABCD"
                   maxLength={8}
                   autoFocus
-                  className="w-full h-12 rounded-xl bg-white/[0.04] border border-white/[0.06] px-4 pr-12 text-sm text-white placeholder:text-white/20 outline-none focus:border-emerald-400/30 transition-colors font-mono tracking-widest text-center uppercase"
+                  className="w-full h-14 rounded-xl bg-black/50 border border-white/10 px-5 pr-14 text-base text-white placeholder:text-white/20 outline-none focus:ring-2 focus:ring-emerald-400/60 transition-all font-mono tracking-widest text-center uppercase"
                 />
                 <button onClick={handlePaste} className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-white/25 hover:text-emerald-400 hover:bg-white/[0.08] transition-all" title="Paste from clipboard">
                   {pasteSuccess ? <Check size={14} className="text-emerald-400" /> : <ClipboardPaste size={14} />}
@@ -247,7 +247,7 @@ export default function MainMenu() {
               </button>
             </div>
             <p className="text-xs text-white/30 uppercase tracking-wider mb-3 text-left">Display Name</p>
-            <input type="text" value={settingsName} onChange={(e) => setSettingsName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveSettings()} placeholder="Your name..." maxLength={15} autoFocus className="w-full h-11 rounded-xl bg-white/[0.04] border border-white/[0.06] px-4 text-sm text-white placeholder:text-white/20 outline-none focus:border-emerald-400/30 transition-colors mb-4" />
+            <input type="text" value={settingsName} onChange={(e) => setSettingsName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveSettings()} placeholder="Your name..." maxLength={15} autoFocus className="w-full h-14 rounded-xl bg-black/50 border border-white/10 px-5 text-base text-white placeholder:text-white/20 outline-none focus:ring-2 focus:ring-emerald-400/60 transition-all mb-4" />
             <button onClick={saveSettings} disabled={!settingsName.trim()} className="w-full h-11 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-black text-sm font-bold hover:from-emerald-400 hover:to-cyan-400 transition-all active:scale-[0.97] disabled:opacity-30 shadow-[0_0_20px_rgba(52,211,153,0.2)]">
               Save
             </button>
