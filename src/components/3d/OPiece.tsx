@@ -52,13 +52,21 @@ export default function OPiece({ position, animate = true, highlight = false }: 
     }
   })
 
-  const emissiveBoost = highlight ? 1.5 : 0.6
+  const emissiveBoost = highlight ? 2.0 : 0.8
 
   return (
     <group ref={groupRef} position={[position[0], startY, position[2]]}>
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.25, 0.065, 12, 24]} />
-        <meshStandardMaterial color="#f43f5e" roughness={0.2} metalness={0.8} emissive="#f43f5e" emissiveIntensity={emissiveBoost} />
+      <mesh rotation={[Math.PI / 2, 0, 0]} castShadow receiveShadow>
+        <torusGeometry args={[0.25, 0.07, 16, 48]} />
+        <meshPhysicalMaterial
+          color="#f43f5e"
+          roughness={0.1}
+          metalness={0.8}
+          clearcoat={1}
+          clearcoatRoughness={0.05}
+          emissive="#f43f5e"
+          emissiveIntensity={emissiveBoost}
+        />
       </mesh>
     </group>
   )

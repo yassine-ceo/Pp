@@ -8,59 +8,96 @@ export default function Board({ isTie = false }: BoardProps) {
   const gridSize = 3
   const cellSize = 1.2
   const boardSize = gridSize * cellSize
-  const lineThickness = 0.06
-  const boardY = -0.15
+  const lineThickness = 0.08
 
-  const baseColor = isTie ? '#050510' : '#080818'
-  const topColor = isTie ? '#070714' : '#0c0c24'
-  const lineCoreColor = isTie ? '#1a2c30' : '#22d3ee'
-  const lineGlowColor = isTie ? '#0c1518' : '#0a3a42'
-  const torusColor = isTie ? '#0c1518' : '#22d3ee'
+  const gridColor = isTie ? '#2a3a3e' : '#b0e0e8'
+  const gridEmissive = isTie ? '#1a2c30' : '#22d3ee'
+  const emissivePower = isTie ? 0.3 : 2.0
 
   return (
     <group>
-      {/* Base cylinder */}
-      <mesh position={[0, boardY - 0.3, 0]}>
-        <cylinderGeometry args={[3.8, 4, 0.3, 24]} />
-        <meshStandardMaterial color={baseColor} roughness={0.7} metalness={0.3} />
+      {/* === DESK / FLOOR === */}
+      <mesh position={[0, -1, 0]} receiveShadow>
+        <boxGeometry args={[20, 1, 20]} />
+        <meshPhysicalMaterial
+          color="#1a1008"
+          roughness={0.15}
+          metalness={0.1}
+          clearcoat={0.5}
+          clearcoatRoughness={0.3}
+        />
       </mesh>
 
-      {/* Top platform */}
-      <mesh position={[0, boardY, 0]}>
-        <boxGeometry args={[boardSize + 0.4, 0.1, boardSize + 0.4]} />
-        <meshStandardMaterial color={topColor} roughness={0.5} metalness={0.4} />
+      {/* === BOARD BASE === */}
+      <mesh position={[0, -0.3, 0]} castShadow receiveShadow>
+        <boxGeometry args={[boardSize + 0.6, 0.4, boardSize + 0.6]} />
+        <meshPhysicalMaterial
+          color="#e8e4e0"
+          roughness={0.1}
+          metalness={0.4}
+          transmission={0.15}
+          thickness={0.5}
+          clearcoat={0.8}
+          clearcoatRoughness={0.1}
+        />
       </mesh>
 
-      {/* Grid lines */}
+      {/* Board edge trim */}
+      <mesh position={[0, -0.09, 0]} receiveShadow>
+        <boxGeometry args={[boardSize + 0.65, 0.02, boardSize + 0.65]} />
+        <meshPhysicalMaterial
+          color="#c0c0c0"
+          roughness={0.05}
+          metalness={0.9}
+          clearcoat={1}
+          clearcoatRoughness={0.05}
+        />
+      </mesh>
+
+      {/* === GRID LINES (Physical metallic rods) === */}
       {[1, 2].map((i) => (
         <group key={`lines-${i}`}>
-          {/* Outer glow line (vertical) */}
-          <mesh position={[(i - 1.5) * cellSize, boardY + 0.06, 0]}>
-            <boxGeometry args={[lineThickness * 2.5, 0.015, boardSize - 0.2]} />
-            <meshStandardMaterial color={lineGlowColor} roughness={0.6} metalness={0.2} />
+          {/* Vertical rod */}
+          <mesh position={[(i - 1.5) * cellSize, -0.075, 0]} castShadow>
+            <boxGeometry args={[lineThickness, 0.03, boardSize - 0.3]} />
+            <meshPhysicalMaterial
+              color={gridColor}
+              roughness={0.1}
+              metalness={0.85}
+              emissive={gridEmissive}
+              emissiveIntensity={emissivePower}
+              clearcoat={1}
+              clearcoatRoughness={0.05}
+            />
           </mesh>
-          {/* Inner core line (vertical) */}
-          <mesh position={[(i - 1.5) * cellSize, boardY + 0.07, 0]}>
-            <boxGeometry args={[lineThickness, 0.012, boardSize - 0.2]} />
-            <meshStandardMaterial color={lineCoreColor} roughness={0.3} metalness={0.6} emissive={lineCoreColor} emissiveIntensity={isTie ? 0.2 : 1.2} />
-          </mesh>
-          {/* Outer glow line (horizontal) */}
-          <mesh position={[0, boardY + 0.06, (i - 1.5) * cellSize]}>
-            <boxGeometry args={[boardSize - 0.2, 0.015, lineThickness * 2.5]} />
-            <meshStandardMaterial color={lineGlowColor} roughness={0.6} metalness={0.2} />
-          </mesh>
-          {/* Inner core line (horizontal) */}
-          <mesh position={[0, boardY + 0.07, (i - 1.5) * cellSize]}>
-            <boxGeometry args={[boardSize - 0.2, 0.012, lineThickness]} />
-            <meshStandardMaterial color={lineCoreColor} roughness={0.3} metalness={0.6} emissive={lineCoreColor} emissiveIntensity={isTie ? 0.2 : 1.2} />
+          {/* Horizontal rod */}
+          <mesh position={[0, -0.075, (i - 1.5) * cellSize]} castShadow>
+            <boxGeometry args={[boardSize - 0.3, 0.03, lineThickness]} />
+            <meshPhysicalMaterial
+              color={gridColor}
+              roughness={0.1}
+              metalness={0.85}
+              emissive={gridEmissive}
+              emissiveIntensity={emissivePower}
+              clearcoat={1}
+              clearcoatRoughness={0.05}
+            />
           </mesh>
         </group>
       ))}
 
-      {/* Decorative torus ring */}
-      <mesh position={[0, boardY + 0.065, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[boardSize * 0.72, 0.025, 8, 32]} />
-        <meshStandardMaterial color={torusColor} roughness={0.2} metalness={0.8} emissive={torusColor} emissiveIntensity={isTie ? 0.1 : 0.8} />
+      {/* === DECORATIVE TORUS RING === */}
+      <mesh position={[0, -0.07, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <torusGeometry args={[boardSize * 0.72, 0.03, 12, 48]} />
+        <meshPhysicalMaterial
+          color={isTie ? '#3a4a4e' : '#e0e0e0'}
+          roughness={0.05}
+          metalness={0.95}
+          emissive={gridEmissive}
+          emissiveIntensity={emissivePower * 0.4}
+          clearcoat={1}
+          clearcoatRoughness={0.02}
+        />
       </mesh>
     </group>
   )

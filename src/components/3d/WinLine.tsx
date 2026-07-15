@@ -15,7 +15,7 @@ function cellToWorld(index: number): THREE.Vector3 {
   const col = index % 3
   const x = (col - 1) * CELL_SIZE
   const z = (row - 1) * CELL_SIZE
-  return new THREE.Vector3(x, 0.18, z)
+  return new THREE.Vector3(x, 0.22, z)
 }
 
 export default function WinLine({ cells }: WinLineProps) {
@@ -43,20 +43,44 @@ export default function WinLine({ cells }: WinLineProps) {
 
   return (
     <group ref={groupRef} position={[mid.x, mid.y, mid.z]} rotation={[0, rotation, 0]}>
-      {/* Outer glow */}
-      <mesh>
-        <boxGeometry args={[0.3, 0.04, length + 0.2]} />
-        <meshStandardMaterial color="#9a7e0c" roughness={0.5} metalness={0.4} emissive="#facc15" emissiveIntensity={0.3} />
+      {/* Outer glow beam */}
+      <mesh castShadow>
+        <boxGeometry args={[0.35, 0.05, length + 0.2]} />
+        <meshPhysicalMaterial
+          color="#9a7e0c"
+          roughness={0.3}
+          metalness={0.5}
+          clearcoat={0.6}
+          clearcoatRoughness={0.2}
+          emissive="#facc15"
+          emissiveIntensity={0.5}
+        />
       </mesh>
-      {/* Middle layer */}
-      <mesh>
-        <boxGeometry args={[0.18, 0.035, length + 0.1]} />
-        <meshStandardMaterial color="#facc15" roughness={0.3} metalness={0.6} emissive="#facc15" emissiveIntensity={0.8} />
+      {/* Middle beam */}
+      <mesh castShadow>
+        <boxGeometry args={[0.2, 0.04, length + 0.1]} />
+        <meshPhysicalMaterial
+          color="#facc15"
+          roughness={0.1}
+          metalness={0.7}
+          clearcoat={1}
+          clearcoatRoughness={0.05}
+          emissive="#facc15"
+          emissiveIntensity={1.2}
+        />
       </mesh>
       {/* Bright core */}
       <mesh>
-        <boxGeometry args={[0.08, 0.03, length]} />
-        <meshStandardMaterial color="#fde68a" roughness={0.2} metalness={0.7} emissive="#fde68a" emissiveIntensity={1.5} />
+        <boxGeometry args={[0.1, 0.035, length]} />
+        <meshPhysicalMaterial
+          color="#fde68a"
+          roughness={0.05}
+          metalness={0.8}
+          clearcoat={1}
+          clearcoatRoughness={0.02}
+          emissive="#fde68a"
+          emissiveIntensity={2.0}
+        />
       </mesh>
     </group>
   )

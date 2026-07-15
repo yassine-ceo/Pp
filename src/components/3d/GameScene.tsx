@@ -2,6 +2,7 @@
 
 import { useMemo, useCallback, useState, useEffect, useRef, memo } from 'react'
 import { Canvas } from '@react-three/fiber'
+import { Environment } from '@react-three/drei'
 import Board from './Board'
 import XPiece from './XPiece'
 import OPiece from './OPiece'
@@ -18,7 +19,7 @@ function getCellPosition(index: number): [number, number, number] {
   const col = index % 3
   const x = (col - 1) * cellSize
   const z = (row - 1) * cellSize
-  return [x, 0.07, z]
+  return [x, 0.15, z]
 }
 
 function ClickPlane() {
@@ -38,7 +39,7 @@ function ClickPlane() {
   }, [roomId, room, playerId, localBoard, applyOptimisticMove])
 
   return (
-    <group position={[0, -0.08, 0]}>
+    <group position={[0, 0.02, 0]}>
       {Array.from({ length: 9 }).map((_, i) => {
         const row = Math.floor(i / 3)
         const col = i % 3
@@ -94,9 +95,23 @@ const SceneContent = memo(function SceneContent() {
   const isTie = useGameStore((s) => s.room?.status === 'tie')
   return (
     <>
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[3, 8, 4]} intensity={0.8} color="#e0f0ff" />
-      <pointLight position={[0, 3, 0]} intensity={0.4} color="#67e8f9" distance={12} />
+      <ambientLight intensity={0.3} />
+      <directionalLight
+        position={[5, 10, 5]}
+        intensity={1.5}
+        castShadow
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-camera-far={50}
+        shadow-camera-left={-10}
+        shadow-camera-right={10}
+        shadow-camera-top={10}
+        shadow-camera-bottom={-10}
+        shadow-bias={-0.0001}
+      />
+      <pointLight position={[0, 4, 0]} intensity={0.3} color="#67e8f9" distance={15} />
+      <spotLight position={[-3, 6, -2]} intensity={0.4} angle={0.5} penumbra={0.5} color="#e0f0ff" castShadow />
+      <Environment preset="city" />
       <Board isTie={isTie} />
       <ClickPlane />
       <Pieces />
@@ -109,7 +124,8 @@ const SceneContent = memo(function SceneContent() {
 const MemoizedCanvas = memo(function MemoizedCanvas() {
   return (
     <Canvas
-      camera={{ position: [0, 4.2, 5.0], fov: 42 }}
+      shadows
+      camera={{ position: [0, 5.5, 6.0], fov: 38 }}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       dpr={[1, 2]}
       style={{ background: 'transparent' }}
