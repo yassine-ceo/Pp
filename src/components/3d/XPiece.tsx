@@ -56,7 +56,7 @@ export default function XPiece({ position, animate = true, highlight = false }: 
     }
   })
 
-  const emissiveBoost = highlight ? 2.0 : 0.8
+  const emissiveBoost = highlight ? 2.5 : 1.0
 
   return (
     <group ref={groupRef} position={[position[0], startY, position[2]]}>
@@ -64,10 +64,10 @@ export default function XPiece({ position, animate = true, highlight = false }: 
         <boxGeometry args={[0.1, 0.65, 0.1]} />
         <meshPhysicalMaterial
           color="#22d3ee"
-          roughness={0.1}
-          metalness={0.8}
+          roughness={0.15}
+          metalness={1}
           clearcoat={1}
-          clearcoatRoughness={0.05}
+          clearcoatRoughness={0.1}
           emissive="#22d3ee"
           emissiveIntensity={emissiveBoost}
         />
@@ -76,10 +76,10 @@ export default function XPiece({ position, animate = true, highlight = false }: 
         <boxGeometry args={[0.1, 0.65, 0.1]} />
         <meshPhysicalMaterial
           color="#22d3ee"
-          roughness={0.1}
-          metalness={0.8}
+          roughness={0.15}
+          metalness={1}
           clearcoat={1}
-          clearcoatRoughness={0.05}
+          clearcoatRoughness={0.1}
           emissive="#22d3ee"
           emissiveIntensity={emissiveBoost}
         />

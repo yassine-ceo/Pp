@@ -43,43 +43,40 @@ export default function WinLine({ cells }: WinLineProps) {
 
   return (
     <group ref={groupRef} position={[mid.x, mid.y, mid.z]} rotation={[0, rotation, 0]}>
-      {/* Outer glow beam */}
       <mesh castShadow>
         <boxGeometry args={[0.35, 0.05, length + 0.2]} />
         <meshPhysicalMaterial
-          color="#9a7e0c"
-          roughness={0.3}
-          metalness={0.5}
-          clearcoat={0.6}
-          clearcoatRoughness={0.2}
+          color="#b8960c"
+          roughness={0.15}
+          metalness={1}
+          clearcoat={1}
+          clearcoatRoughness={0.1}
           emissive="#facc15"
-          emissiveIntensity={0.5}
+          emissiveIntensity={0.8}
         />
       </mesh>
-      {/* Middle beam */}
       <mesh castShadow>
         <boxGeometry args={[0.2, 0.04, length + 0.1]} />
         <meshPhysicalMaterial
           color="#facc15"
-          roughness={0.1}
-          metalness={0.7}
+          roughness={0.15}
+          metalness={1}
           clearcoat={1}
-          clearcoatRoughness={0.05}
+          clearcoatRoughness={0.1}
           emissive="#facc15"
-          emissiveIntensity={1.2}
+          emissiveIntensity={1.5}
         />
       </mesh>
-      {/* Bright core */}
       <mesh>
         <boxGeometry args={[0.1, 0.035, length]} />
         <meshPhysicalMaterial
           color="#fde68a"
-          roughness={0.05}
-          metalness={0.8}
+          roughness={0.1}
+          metalness={1}
           clearcoat={1}
-          clearcoatRoughness={0.02}
+          clearcoatRoughness={0.05}
           emissive="#fde68a"
-          emissiveIntensity={2.0}
+          emissiveIntensity={2.5}
         />
       </mesh>
     </group>

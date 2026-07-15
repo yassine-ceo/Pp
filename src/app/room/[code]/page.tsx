@@ -305,17 +305,6 @@ export default function RoomPage() {
       )}
 
       {!loading && room && <HUD />}
-
-      {!loading && room?.status === 'playing' && (
-        <button
-          onClick={handleBack}
-          className="fixed top-10 left-4 z-30 w-10 h-10 rounded-xl border border-white/[0.08] bg-black/30 backdrop-blur-xl flex items-center justify-center text-white/40 hover:text-white/80 transition-colors pointer-events-auto"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-        </button>
-      )}
     </>
   )
 }

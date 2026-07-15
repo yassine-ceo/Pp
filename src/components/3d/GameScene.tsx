@@ -2,7 +2,7 @@
 
 import { useMemo, useCallback, useState, useEffect, useRef, memo } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { Environment } from '@react-three/drei'
+import { Environment, ContactShadows } from '@react-three/drei'
 import Board from './Board'
 import XPiece from './XPiece'
 import OPiece from './OPiece'
@@ -112,6 +112,7 @@ const SceneContent = memo(function SceneContent() {
       <pointLight position={[0, 4, 0]} intensity={0.3} color="#67e8f9" distance={15} />
       <spotLight position={[-3, 6, -2]} intensity={0.4} angle={0.5} penumbra={0.5} color="#e0f0ff" castShadow />
       <Environment preset="city" />
+      <ContactShadows position={[0, -0.49, 0]} opacity={0.7} scale={10} blur={2.5} far={4} />
       <Board isTie={isTie} />
       <ClickPlane />
       <Pieces />
