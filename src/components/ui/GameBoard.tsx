@@ -163,10 +163,6 @@ export default function GameBoard() {
             border: '2px solid #5c3a21',
           }}
         >
-          {/* Rivets */}
-          <div className="absolute top-3 left-3 w-3 h-3 rounded-full" style={{ background: 'linear-gradient(135deg, #daa520, #8b6508)', boxShadow: '0 1px 3px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.4)' }} />
-          <div className="absolute top-3 right-3 w-3 h-3 rounded-full" style={{ background: 'linear-gradient(135deg, #daa520, #8b6508)', boxShadow: '0 1px 3px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.4)' }} />
-
           <div className="flex items-center justify-between gap-2">
             {/* Player 1 */}
             <div className={`flex-1 min-w-0 transition-opacity duration-200 ${myActive ? 'opacity-100' : 'opacity-40'}`}>

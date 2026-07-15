@@ -27,13 +27,16 @@ function requestFullscreen() {
 }
 
 function MiniAvatar({ symbol }: { symbol: 'X' | 'O' }) {
-  const isX = symbol === 'X'
   return (
-    <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-bold shrink-0 ${
-      isX
-        ? 'bg-[#ffd700]/20 border border-[#ffd700]/30 text-[#ffd700]'
-        : 'bg-[#c0c0c0]/20 border border-[#c0c0c0]/30 text-[#c0c0c0]'
-    }`}>
+    <div
+      className="w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-bold shrink-0"
+      style={{
+        background: '#3a2517',
+        border: '1px solid #5c3a21',
+        color: '#e1c699',
+        textShadow: '0 1px 1px rgba(0,0,0,0.4)',
+      }}
+    >
       {symbol}
     </div>
   )
