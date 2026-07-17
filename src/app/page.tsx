@@ -177,12 +177,15 @@ export default function PlayOnline() {
         <XDeco className="absolute top-[55%] right-[8%] w-16 h-16 opacity-[0.04] animate-float-drift pointer-events-none" style={{ animationDelay: '1.5s' }} />
         <ODeco className="absolute top-[18%] left-[25%] w-20 h-20 opacity-[0.04] animate-float-drift-2 pointer-events-none" style={{ animationDelay: '3s' }} />
 
-        {/* Logo — top left */}
-        <div className="absolute top-8 left-6 md:top-12 md:left-12">
-          <h1 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400 drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] leading-tight">
-            Play
-            <span className="text-transparent bg-clip-text bg-gradient-to-br from-[#22c55e] to-[#16a34a]">Online</span>
-          </h1>
+        {/* Logo — corporate brand */}
+        <div className="absolute top-6 left-6 flex items-center gap-2.5" style={{ zIndex: 20 }}>
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#22c55e] to-[#16a34a] flex items-center justify-center shadow-[0_2px_0_#14532d]">
+            <span className="text-white font-black text-xs">P</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[0.55rem] font-bold uppercase tracking-[0.2em] text-white/40 leading-none">PlayOnline</span>
+            <span className="text-[0.45rem] font-bold uppercase tracking-[0.3em] text-white/20 leading-none">Game Studio</span>
+          </div>
         </div>
 
         {/* Deep link room banner */}
@@ -205,7 +208,7 @@ export default function PlayOnline() {
         </div>
 
         {/* Input — bottom center */}
-        <div className="absolute bottom-36 left-1/2 -translate-x-1/2 w-[88%] md:w-[500px]" style={{ zIndex: 20 }}>
+        <div className="absolute bottom-[20%] left-1/2 -translate-x-1/2 w-[85%] max-w-md" style={{ zIndex: 20 }}>
           <div style={{
             background: 'rgba(0,0,0,0.5)',
             border: '2px solid rgba(255,255,255,0.06)',
@@ -228,7 +231,7 @@ export default function PlayOnline() {
         </div>
 
         {/* Button — bottom center, below input */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[88%] md:w-auto" style={{ zIndex: 20 }}>
+        <div className="absolute bottom-[10%] left-1/2 -translate-x-1/2 w-[85%] max-w-sm" style={{ zIndex: 20 }}>
           <button
             onClick={submitName}
             disabled={!name.trim()}
