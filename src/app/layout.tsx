@@ -1,18 +1,18 @@
 import type { ReactNode } from 'react'
-import { Inter } from 'next/font/google'
+import { Nunito } from 'next/font/google'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const nunito = Nunito({ subsets: ['latin'], weight: ['700', '800', '900'] })
 
 export const metadata = {
-  title: 'XO Arena — Multiplayer Tic Tac Toe',
-  description: 'Challenge friends to a premium multiplayer tic tac toe game with real-time matchmaking, skeuomorphic design, and instant gameplay.',
+  title: 'PlayOnline — Multi-Game Hub',
+  description: 'Challenge friends to premium multiplayer games on the PlayOnline platform.',
   openGraph: {
-    title: 'XO Arena — Multiplayer Tic Tac Toe',
-    description: 'Challenge friends to a premium multiplayer tic tac toe game.',
+    title: 'PlayOnline — Multi-Game Hub',
+    description: 'Challenge friends to premium multiplayer games.',
     type: 'website',
-    siteName: 'XO Arena',
+    siteName: 'PlayOnline',
   },
 }
 
@@ -21,7 +21,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#0a0a1a',
+  themeColor: '#0f172a',
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -33,7 +33,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
       </head>
-      <body className={`${inter.className} h-screen overflow-hidden bg-[#0a0a1a] text-white select-none`}>
+      <body className={`${nunito.className} h-screen overflow-hidden bg-[#0f172a] text-white select-none`}>
         <ErrorBoundary>{children}</ErrorBoundary>
       </body>
     </html>
