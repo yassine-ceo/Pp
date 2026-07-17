@@ -48,33 +48,7 @@ function OIcon() {
   )
 }
 
-function NameInput({ value, onChange, onSubmit, placeholder }: {
-  value: string
-  onChange: (v: string) => void
-  onSubmit: () => void
-  placeholder: string
-}) {
-  return (
-    <input
-      type="text"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      onKeyDown={(e) => e.key === 'Enter' && onSubmit()}
-      placeholder={placeholder}
-      maxLength={15}
-      autoFocus
-      className="w-full text-center text-xl text-white font-bold"
-      style={{
-        background: '#1e293b',
-        border: '4px solid #3b82f6',
-        borderRadius: '9999px',
-        padding: '1rem 1.5rem',
-        outline: 'none',
-        color: 'white',
-      }}
-    />
-  )
-}
+
 
 export default function PlayOnline() {
   const router = useRouter()
@@ -153,24 +127,31 @@ export default function PlayOnline() {
   /* ════════ DEEP LINK: needs name ════════ */
   if (deepRoom && !localStorage.getItem('xo playerName')) {
     return (
-      <main className="page-bg flex flex-col items-center justify-center p-4">
-        <div className="flex flex-col items-center gap-8 w-full max-w-md">
-          <h1 className="title-text text-center" style={{ fontSize: '3.5rem' }}>
-            Play<span style={{ color: '#4ade80' }}>Online</span>
-          </h1>
-          <p className="text-center font-bold" style={{ color: 'rgba(255,255,255,0.5)', marginTop: '-1rem' }}>
-            Joining room <span style={{ color: '#4ade80' }}>{deepRoom}</span>
-          </p>
-          <NameInput value={name} onChange={setName} onSubmit={submitName} placeholder="Your name..." />
-          <button
-            onClick={submitName}
-            disabled={!name.trim()}
-            className="btn-3d-green"
-            style={{ opacity: name.trim() ? 1 : 0.2, cursor: name.trim() ? 'pointer' : 'not-allowed' }}
-          >
-            LET'S PLAY
-          </button>
-        </div>
+      <main className="bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#1e1b4b] via-[#0f172a] to-[#020617] min-h-screen flex flex-col items-center justify-center p-6">
+        <h1 className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400 drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)] text-center mb-12">
+          Play<span className="text-transparent bg-clip-text bg-gradient-to-br from-[#4ade80] to-[#16a34a]">Online</span>
+        </h1>
+        <p className="text-center font-bold mb-4" style={{ color: 'rgba(255,255,255,0.5)' }}>
+          Joining room <span style={{ color: '#4ade80' }}>{deepRoom}</span>
+        </p>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && submitName()}
+          placeholder="Your name..."
+          maxLength={15}
+          autoFocus
+          className="w-full max-w-md bg-white/5 border-2 border-white/10 focus:border-[#4ade80] focus:bg-white/10 focus:shadow-[0_0_20px_rgba(74,222,128,0.3)] rounded-full text-center text-xl text-white font-bold py-5 outline-none transition-all placeholder:text-gray-500 mb-8 backdrop-blur-md"
+        />
+        <button
+          onClick={submitName}
+          disabled={!name.trim()}
+          className="game-btn-primary"
+          style={{ opacity: name.trim() ? 1 : 0.2, cursor: name.trim() ? 'pointer' : 'not-allowed' }}
+        >
+          LET'S PLAY
+        </button>
       </main>
     )
   }
@@ -178,21 +159,28 @@ export default function PlayOnline() {
   /* ════════ WELCOME SCREEN ════════ */
   if (stage === 'WELCOME') {
     return (
-      <main className="page-bg flex flex-col items-center justify-center p-4">
-        <div className="flex flex-col items-center gap-8 w-full max-w-md">
-          <h1 className="title-text text-center" style={{ fontSize: '3.5rem' }}>
-            Play<span style={{ color: '#4ade80' }}>Online</span>
-          </h1>
-          <NameInput value={name} onChange={setName} onSubmit={submitName} placeholder="Enter your name..." />
-          <button
-            onClick={submitName}
-            disabled={!name.trim()}
-            className="btn-3d-green"
-            style={{ opacity: name.trim() ? 1 : 0.2, cursor: name.trim() ? 'pointer' : 'not-allowed' }}
-          >
-            LET'S PLAY
-          </button>
-        </div>
+      <main className="bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#1e1b4b] via-[#0f172a] to-[#020617] min-h-screen flex flex-col items-center justify-center p-6">
+        <h1 className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400 drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)] text-center mb-12">
+          Play<span className="text-transparent bg-clip-text bg-gradient-to-br from-[#4ade80] to-[#16a34a]">Online</span>
+        </h1>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && submitName()}
+          placeholder="Enter your name..."
+          maxLength={15}
+          autoFocus
+          className="w-full max-w-md bg-white/5 border-2 border-white/10 focus:border-[#4ade80] focus:bg-white/10 focus:shadow-[0_0_20px_rgba(74,222,128,0.3)] rounded-full text-center text-xl text-white font-bold py-5 outline-none transition-all placeholder:text-gray-500 mb-8 backdrop-blur-md"
+        />
+        <button
+          onClick={submitName}
+          disabled={!name.trim()}
+          className="game-btn-primary"
+          style={{ opacity: name.trim() ? 1 : 0.2, cursor: name.trim() ? 'pointer' : 'not-allowed' }}
+        >
+          LET'S PLAY
+        </button>
       </main>
     )
   }

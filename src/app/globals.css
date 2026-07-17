@@ -268,3 +268,28 @@ html, body {
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
+
+/* ═══════════════════════════════════════════
+   BRAWL STARS STYLE 3D BUTTON
+   ═══════════════════════════════════════════ */
+.game-btn-primary {
+  background: linear-gradient(to bottom, #fde047, #eab308);
+  border: 4px solid #1a1a1a;
+  border-bottom: 12px solid #a16207;
+  border-radius: 2rem;
+  color: white;
+  font-weight: 900;
+  font-size: 2rem;
+  text-transform: uppercase;
+  padding: 1rem 4rem;
+  text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  transition: all 0.1s ease-in-out;
+  cursor: pointer;
+  width: 100%;
+  max-width: 400px;
+}
+.game-btn-primary:active {
+  border-bottom: 4px solid #a16207;
+  transform: translateY(8px);
+}
