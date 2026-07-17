@@ -47,3 +47,224 @@ html, body {
 .animate-board-shake {
   animation: board-shake 0.6s ease-in-out;
 }
+
+/* ═══════════════════════════════════════════
+   SUPERCELL 3D BUTTONS & CARDS — PURE CSS
+   ═══════════════════════════════════════════ */
+
+/* PAGE BACKGROUND */
+.page-bg {
+  background: radial-gradient(ellipse at top, #1b2740, #0b101a 40%, #04060a);
+  min-height: 100vh;
+}
+
+/* TOP BAR */
+.top-bar {
+  background: rgba(11, 16, 26, 0.85);
+  border-bottom: 4px solid #1e2b58;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* SUPERCELL 3D BUTTONS */
+.btn-3d-gold {
+  background: linear-gradient(to bottom, #ffdf00, #d4af37);
+  color: #4a2511 !important;
+  border-radius: 1.5rem;
+  border: 2px solid #b8860b;
+  border-bottom: 8px solid #8b6508 !important;
+  font-weight: 900;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  padding: 1rem 2rem;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  transition: all 0.1s ease-in-out;
+  width: 100%;
+  cursor: pointer;
+}
+
+.btn-3d-gold:active {
+  border-bottom: 2px solid #8b6508 !important;
+  transform: translateY(6px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.btn-3d-green {
+  background: linear-gradient(to bottom, #4ade80, #16a34a);
+  color: white !important;
+  border-radius: 1.5rem;
+  border: 2px solid #15803d;
+  border-bottom: 8px solid #14532d !important;
+  font-weight: 900;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  padding: 1rem 2rem;
+  text-shadow: 0 2px 0 rgba(0,0,0,0.5);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  transition: all 0.1s ease-in-out;
+  width: 100%;
+  cursor: pointer;
+}
+
+.btn-3d-green:active {
+  border-bottom: 2px solid #14532d !important;
+  transform: translateY(6px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.btn-3d-blue {
+  background: linear-gradient(to bottom, #3b82f6, #1d4ed8);
+  color: white !important;
+  border-radius: 1.5rem;
+  border: 2px solid #2563eb;
+  border-bottom: 8px solid #1e3a8a !important;
+  font-weight: 900;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  padding: 1rem 2rem;
+  text-shadow: 0 2px 0 rgba(0,0,0,0.5);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  transition: all 0.1s ease-in-out;
+  width: 100%;
+  cursor: pointer;
+}
+
+.btn-3d-blue:active {
+  border-bottom: 2px solid #1e3a8a !important;
+  transform: translateY(6px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.btn-3d-disabled {
+  background: linear-gradient(to bottom, #475569, #334155);
+  color: rgba(255,255,255,0.3) !important;
+  border-radius: 1.5rem;
+  border: 2px solid #1e293b;
+  border-bottom: 8px solid #0f172a !important;
+  font-weight: 900;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  padding: 1rem 2rem;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  width: 100%;
+  cursor: not-allowed;
+}
+
+/* MOBILE GAME CHEST CARDS */
+.card-mobile-game {
+  background: linear-gradient(to bottom, #1e293b, #0f172a);
+  border: 4px solid #3b82f6;
+  border-radius: 2rem;
+  box-shadow: 0 15px 25px rgba(0,0,0,0.5), inset 0 6px 0 rgba(255,255,255,0.1);
+  padding: 1.5rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* ICON CHEST BOX */
+.chest-icon {
+  width: 8rem;
+  height: 8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to bottom right, #334155, #0f172a);
+  border-radius: 1rem;
+  border: 2px solid #475569;
+  box-shadow: inset 0 4px 8px rgba(0,0,0,0.5);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.chest-icon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.06), transparent);
+}
+
+/* TITLE TEXT */
+.title-text {
+  font-size: 2rem;
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 4px 0 rgba(0,0,0,1);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+/* MODAL BACKDROP */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  padding: 1rem;
+}
+
+/* MODAL CARD */
+.modal-card {
+  background: linear-gradient(to bottom, #3b5998, #1e2b58);
+  width: 100%;
+  max-width: 24rem;
+  border-radius: 2rem;
+  border: 6px solid #6b8cce;
+  padding: 2rem;
+  box-shadow: 0 15px 25px rgba(0,0,0,0.5), inset 0 6px 0 rgba(255,255,255,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+}
+
+/* PLAYER AVATAR */
+.avatar-circle {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: linear-gradient(to bottom right, #8b5cf6, #6d28d9);
+  border: 3px solid #a78bfa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 900;
+  font-size: 1rem;
+  box-shadow: 0 3px 0 #4c1d95;
+}
+
+/* PLAYER PILLS */
+.player-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(0,0,0,0.3);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 2px solid rgba(107, 140, 206, 0.5);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.1);
+}
+
+/* LOCKED CARD OVERLAY */
+.card-locked {
+  opacity: 0.45;
+}
+
+/* SUBTITLE LABEL */
+.subtitle-label {
+  font-size: 0.75rem;
+  color: #6b8cce;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
