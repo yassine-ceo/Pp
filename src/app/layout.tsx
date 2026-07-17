@@ -33,7 +33,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
       </head>
-      <body className={`${nunito.className} h-screen overflow-hidden bg-[#0f172a] text-white select-none`}>
+      <body className={`${nunito.className} h-screen overflow-hidden text-white select-none`}
+        style={{ background: '#0f172a' }}>
         <ErrorBoundary>{children}</ErrorBoundary>
       </body>
     </html>
