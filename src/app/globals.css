@@ -118,3 +118,43 @@ html, body {
   background: linear-gradient(to bottom, rgba(255,255,255,0.05), transparent);
   pointer-events: none;
 }
+
+/* ═══════════════════════════════════════════
+   FLOATING / DRIFTING ANIMATIONS
+   ═══════════════════════════════════════════ */
+@keyframes float-drift {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  25% { transform: translateY(-12px) rotate(1deg); }
+  50% { transform: translateY(-6px) rotate(-1deg); }
+  75% { transform: translateY(-18px) rotate(0.5deg); }
+}
+.animate-float-drift {
+  animation: float-drift 5s ease-in-out infinite;
+}
+
+@keyframes float-drift-2 {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-15px) rotate(-1.5deg); }
+  66% { transform: translateY(-5px) rotate(1deg); }
+}
+.animate-float-drift-2 {
+  animation: float-drift-2 7s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.05); }
+}
+.animate-glow-pulse {
+  animation: glow-pulse 4s ease-in-out infinite;
+}
+
+@keyframes subtle-drift {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(10px, -10px); }
+  50% { transform: translate(20px, 0); }
+  75% { transform: translate(10px, 10px); }
+}
+.animate-subtle-drift {
+  animation: subtle-drift 12s ease-in-out infinite;
+}

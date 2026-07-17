@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useGameStore } from '@/stores/gameStore'
 import { soundManager } from '@/lib/sound'
@@ -15,6 +15,37 @@ function tryFullscreen() {
     else if ((el as any).mozRequestFullScreen) (el as any).mozRequestFullScreen()
     else if ((el as any).msRequestFullscreen) (el as any).msRequestFullscreen()
   } catch {}
+}
+
+function XDeco({ className, style }: { className?: string; style?: React.CSSProperties }) {
+  return (
+    <svg viewBox="0 0 80 80" className={className} style={style}>
+      <defs>
+        <linearGradient id="gxd" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#fde68a" />
+          <stop offset="50%" stopColor="#fbbf24" />
+          <stop offset="100%" stopColor="#b45309" />
+        </linearGradient>
+      </defs>
+      <line x1="16" y1="16" x2="64" y2="64" stroke="url(#gxd)" strokeWidth="10" strokeLinecap="round" />
+      <line x1="64" y1="16" x2="16" y2="64" stroke="url(#gxd)" strokeWidth="10" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function ODeco({ className, style }: { className?: string; style?: React.CSSProperties }) {
+  return (
+    <svg viewBox="0 0 80 80" className={className} style={style}>
+      <defs>
+        <linearGradient id="god" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#f1f5f9" />
+          <stop offset="50%" stopColor="#94a3b8" />
+          <stop offset="100%" stopColor="#334155" />
+        </linearGradient>
+      </defs>
+      <circle cx="40" cy="40" r="24" fill="none" stroke="url(#god)" strokeWidth="10" />
+    </svg>
+  )
 }
 
 function XIcon() {
@@ -58,6 +89,7 @@ export default function PlayOnline() {
   const [joinCode, setJoinCode] = useState('')
   const [deepRoom, setDeepRoom] = useState<string | null>(null)
   const [booted, setBooted] = useState(false)
+  const nameRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search).get('room')
@@ -90,6 +122,12 @@ export default function PlayOnline() {
       }
     }
   }, [deepRoom, booted, router])
+
+  useEffect(() => {
+    if (stage === 'WELCOME') {
+      setTimeout(() => nameRef.current?.focus(), 300)
+    }
+  }, [stage])
 
   const submitName = () => {
     const t = name.trim()
@@ -126,70 +164,85 @@ export default function PlayOnline() {
   if (stage === 'WELCOME' || (deepRoom && !localStorage.getItem('xo playerName'))) {
     const isDeep = !!(deepRoom && !localStorage.getItem('xo playerName'))
     return (
-      <main className="bg-gradient-to-br from-[#0f172a] via-[#1e1b4b] to-[#020617] min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#3b82f6]/5 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#22c55e]/5 rounded-full blur-[120px] pointer-events-none" />
+      <main className="relative w-screen h-screen overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1e1b4b] to-[#020617]">
 
-        <div className="bg-gradient-to-b from-[#1e293b] to-[#0f172a] rounded-[2rem] p-8 md:p-10 shadow-[0_20px_60px_rgba(0,0,0,0.8),inset_0_2px_0_rgba(255,255,255,0.05)] border border-white/5 w-full max-w-md relative z-10">
-          <div className="flex flex-col items-center gap-6">
-            <h1 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400 drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] text-center leading-tight">
-              Play<span className="text-transparent bg-clip-text bg-gradient-to-br from-[#22c55e] to-[#16a34a]">Online</span>
-            </h1>
+        {/* Animated glow orbs */}
+        <div className="absolute top-[-15%] left-[-10%] w-[70%] h-[70%] bg-[#3b82f6]/10 rounded-full blur-[150px] animate-glow-pulse pointer-events-none" />
+        <div className="absolute bottom-[-15%] right-[-10%] w-[70%] h-[70%] bg-[#22c55e]/8 rounded-full blur-[150px] animate-glow-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-[40%] left-[40%] w-[40%] h-[40%] bg-[#FFD700]/5 rounded-full blur-[120px] animate-subtle-drift pointer-events-none" />
 
-            {isDeep && (
-              <p className="text-sm font-bold text-center" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                Joining room <span style={{ color: '#22c55e' }}>{deepRoom}</span>
-              </p>
-            )}
+        {/* Floating decorative X/O icons */}
+        <XDeco className="absolute top-[12%] right-[18%] w-24 h-24 opacity-[0.06] animate-float-drift pointer-events-none" />
+        <ODeco className="absolute bottom-[25%] left-[8%] w-32 h-32 opacity-[0.05] animate-float-drift-2 pointer-events-none" />
+        <XDeco className="absolute top-[55%] right-[8%] w-16 h-16 opacity-[0.04] animate-float-drift pointer-events-none" style={{ animationDelay: '1.5s' }} />
+        <ODeco className="absolute top-[18%] left-[25%] w-20 h-20 opacity-[0.04] animate-float-drift-2 pointer-events-none" style={{ animationDelay: '3s' }} />
 
-            <div style={{
-              width: '100%',
-              background: 'rgba(0,0,0,0.4)',
-              border: '2px solid rgba(255,255,255,0.06)',
-              borderRadius: '9999px',
-              padding: '0.25rem',
-              boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03)',
-            }}>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && submitName()}
-                placeholder="Enter your name..."
-                maxLength={15}
-                autoFocus
-                style={{
-                  width: '100%',
-                  background: 'transparent',
-                  border: 'none',
-                  borderRadius: '9999px',
-                  padding: '1rem 1.5rem',
-                  textAlign: 'center',
-                  fontSize: '1.25rem',
-                  fontWeight: '700',
-                  color: 'white',
-                  outline: 'none',
-                  transition: 'all 0.2s',
-                }}
-                className="placeholder:text-gray-600"
-              />
-            </div>
+        {/* Logo — top left */}
+        <div className="absolute top-8 left-6 md:top-12 md:left-12">
+          <h1 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400 drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] leading-tight">
+            Play
+            <span className="text-transparent bg-clip-text bg-gradient-to-br from-[#22c55e] to-[#16a34a]">Online</span>
+          </h1>
+        </div>
 
-            <div className="w-full" style={{ maxWidth: '320px' }}>
-              <button
-                onClick={submitName}
-                disabled={!name.trim()}
-                className="game-btn-primary"
-                style={{
-                  opacity: name.trim() ? 1 : 0.2,
-                  cursor: name.trim() ? 'pointer' : 'not-allowed',
-                  pointerEvents: name.trim() ? 'auto' : 'none',
-                }}
-              >
-                LET'S PLAY
-              </button>
-            </div>
+        {/* Deep link room banner */}
+        {isDeep && (
+          <div className="absolute top-24 right-6 md:top-28 md:right-12 text-right">
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              Joining room
+            </p>
+            <p style={{ color: '#22c55e', fontWeight: 900, fontSize: '1.5rem', letterSpacing: '0.15em' }}>
+              {deepRoom}
+            </p>
           </div>
+        )}
+
+        {/* Tagline — floating center-right on desktop */}
+        <div className="hidden md:block absolute top-1/3 right-12 -translate-y-1/2 text-right">
+          <p style={{ color: 'rgba(255,255,255,0.12)', fontWeight: 900, fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '0.3em', lineHeight: 1.4 }}>
+            Multiplayer<br />Arena
+          </p>
+        </div>
+
+        {/* Input — bottom center */}
+        <div className="absolute bottom-36 left-1/2 -translate-x-1/2 w-[88%] md:w-[500px]" style={{ zIndex: 20 }}>
+          <div style={{
+            background: 'rgba(0,0,0,0.5)',
+            border: '2px solid rgba(255,255,255,0.06)',
+            borderRadius: '9999px',
+            padding: '0.25rem',
+            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.4)',
+          }}>
+            <input
+              ref={nameRef}
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && submitName()}
+              placeholder="ENTER YOUR NAME"
+              maxLength={15}
+              className="w-full text-center text-lg md:text-xl text-white font-black outline-none tracking-wider placeholder:text-gray-700"
+              style={{ background: 'transparent', border: 'none', borderRadius: '9999px', padding: '1rem 1.5rem', transition: 'all 0.2s' }}
+            />
+          </div>
+        </div>
+
+        {/* Button — bottom center, below input */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[88%] md:w-auto" style={{ zIndex: 20 }}>
+          <button
+            onClick={submitName}
+            disabled={!name.trim()}
+            className="game-btn-primary"
+            style={{
+              opacity: name.trim() ? 1 : 0.2,
+              cursor: name.trim() ? 'pointer' : 'not-allowed',
+              pointerEvents: name.trim() ? 'auto' : 'none',
+              padding: '0.85rem 3.5rem',
+              fontSize: '1.4rem',
+            }}
+          >
+            LET'S PLAY
+          </button>
         </div>
       </main>
     )
@@ -198,188 +251,151 @@ export default function PlayOnline() {
   /* ════════ CATALOG (HUB) ════════ */
   return (
     <>
-      <main className="bg-gradient-to-br from-[#0f172a] via-[#1e1b4b] to-[#020617] min-h-screen flex flex-col relative overflow-hidden">
-        <div className="absolute top-[-10%] left-0 w-[50%] h-[50%] bg-[#3b82f6]/5 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] right-0 w-[50%] h-[50%] bg-[#22c55e]/5 rounded-full blur-[100px] pointer-events-none" />
+      <main className="relative w-screen h-screen overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1e1b4b] to-[#020617]">
 
-        <header style={{
-          background: 'rgba(15,23,42,0.85)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-          padding: '1rem',
+        {/* Animated glow orbs */}
+        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#3b82f6]/8 rounded-full blur-[120px] animate-glow-pulse pointer-events-none" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#22c55e]/8 rounded-full blur-[120px] animate-glow-pulse pointer-events-none" style={{ animationDelay: '2.5s' }} />
+
+        {/* Decorative icons */}
+        <XDeco className="absolute top-[8%] right-[12%] w-20 h-20 opacity-[0.04] animate-float-drift pointer-events-none" />
+        <ODeco className="absolute bottom-[15%] left-[5%] w-28 h-28 opacity-[0.03] animate-float-drift-2 pointer-events-none" />
+
+        {/* Top bar — absolute header */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 30,
+          background: 'rgba(15,23,42,0.8)',
+          borderBottom: '1px solid rgba(255,255,255,0.04)',
+          padding: '0.75rem 1rem',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          position: 'relative',
-          zIndex: 10,
         }}>
           <div className="flex items-center gap-3">
-            <div style={{
-              width: '2.75rem',
-              height: '2.75rem',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontWeight: 900,
-              fontSize: '1rem',
-              boxShadow: '0 4px 0 #14532d',
-            }}>
+            <div className="w-11 h-11 rounded-full flex items-center justify-center text-white font-black text-lg"
+              style={{
+                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                boxShadow: '0 4px 0 #14532d',
+              }}>
               {name.charAt(0).toUpperCase()}
             </div>
             <div className="flex flex-col">
-              <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Player</span>
-              <span style={{ color: 'white', fontWeight: 900, fontSize: '0.95rem' }}>{name}</span>
+              <span className="text-[0.55rem] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.25)' }}>Player</span>
+              <span className="text-white font-black text-sm">{name}</span>
             </div>
           </div>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.5rem 1rem',
-            background: 'rgba(0,0,0,0.3)',
-            borderRadius: '9999px',
-            border: '1px solid rgba(255,215,0,0.2)',
-            color: '#FFD700',
-            fontWeight: 700,
-            fontSize: '0.85rem',
-          }}>
+          <div className="flex items-center gap-2 px-4 py-2 text-[#FFD700] font-bold text-sm"
+            style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '9999px', border: '1px solid rgba(255,215,0,0.15)' }}>
             <span>💎</span>
             <span>0</span>
           </div>
-        </header>
+        </div>
 
-        <div className="flex-1 p-6 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto w-full items-start pt-12 relative z-10">
-          <article className="loot-chest">
-            <div className="loot-chest-icon">
-              <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '-0.5rem' }}>
-                <XIcon />
-                <OIcon />
-              </div>
+        {/* XO Arena Card — floating left */}
+        <div className="loot-chest absolute w-[280px] md:w-[320px]"
+          style={{ top: '50%', left: '50%', transform: 'translate(-120%, -55%)', zIndex: 10 }}>
+          <div className="loot-chest-icon">
+            <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '-0.5rem' }}>
+              <XIcon /><OIcon />
             </div>
-            <h2 className="text-2xl font-black text-white drop-shadow-[0_4px_0_rgba(0,0,0,1)] tracking-wide mb-1">
-              XO Arena
-            </h2>
-            <p className="text-xs font-black uppercase tracking-widest mb-4" style={{ color: '#3b82f6' }}>Multiverse Duel</p>
-            <button onClick={openSetup} className="game-btn-primary" style={{ fontSize: '1.25rem', padding: '0.75rem 2rem', maxWidth: '260px' }}>
-              PLAY
-            </button>
-          </article>
+          </div>
+          <h2 className="text-xl md:text-2xl font-black text-white drop-shadow-[0_4px_0_rgba(0,0,0,1)] tracking-wide mb-0.5">
+            XO Arena
+          </h2>
+          <p className="text-[0.65rem] font-black uppercase tracking-widest mb-3" style={{ color: '#3b82f6' }}>Multiverse Duel</p>
+          <button onClick={openSetup} className="game-btn-primary"
+            style={{ fontSize: '1.1rem', padding: '0.7rem 1.5rem', maxWidth: '200px' }}>
+            PLAY
+          </button>
+        </div>
 
-          <article className="loot-chest" style={{ opacity: 0.4, pointerEvents: 'none' }}>
-            <div className="loot-chest-icon">
-              <svg viewBox="0 0 60 60" style={{ width: '3.5rem', height: '3.5rem', opacity: 0.3 }}>
-                <path d="M24 50 C24 50 20 40 24 34 C28 28 24 22 30 18 C36 14 42 18 42 24 C42 30 38 34 38 36 L42 44 L42 50 Z" fill="#64748b" />
-                <rect x="20" y="50" width="20" height="4" rx="1" fill="#64748b" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-black text-white drop-shadow-[0_4px_0_rgba(0,0,0,1)] tracking-wide mb-1">
-              Chess Royale
-            </h2>
-            <p className="text-xs font-black uppercase tracking-widest mb-4" style={{ color: '#3b82f6' }}>Grandmaster Duel</p>
-            <button disabled className="game-btn-primary" style={{ fontSize: '1.25rem', padding: '0.75rem 2rem', maxWidth: '260px', opacity: 0.3, pointerEvents: 'none', cursor: 'not-allowed' }}>
-              LOCKED
-            </button>
-          </article>
+        {/* Chess Royale Card — floating right */}
+        <div className="loot-chest absolute w-[280px] md:w-[320px]"
+          style={{ top: '40%', left: '50%', transform: 'translate(20%, -50%)', zIndex: 10, opacity: 0.4, pointerEvents: 'none' }}>
+          <div className="loot-chest-icon">
+            <svg viewBox="0 0 60 60" style={{ width: '3.5rem', height: '3.5rem', opacity: 0.3 }}>
+              <path d="M24 50 C24 50 20 40 24 34 C28 28 24 22 30 18 C36 14 42 18 42 24 C42 30 38 34 38 36 L42 44 L42 50 Z" fill="#64748b" />
+              <rect x="20" y="50" width="20" height="4" rx="1" fill="#64748b" />
+            </svg>
+          </div>
+          <h2 className="text-xl md:text-2xl font-black text-white drop-shadow-[0_4px_0_rgba(0,0,0,1)] tracking-wide mb-0.5">
+            Chess Royale
+          </h2>
+          <p className="text-[0.65rem] font-black uppercase tracking-widest mb-3" style={{ color: '#3b82f6' }}>Grandmaster Duel</p>
+          <button disabled className="game-btn-primary"
+            style={{ fontSize: '1.1rem', padding: '0.7rem 1.5rem', maxWidth: '200px', opacity: 0.3, cursor: 'not-allowed', pointerEvents: 'none' }}>
+            LOCKED
+          </button>
+        </div>
 
-          <article className="loot-chest md:col-span-2 max-w-md mx-auto" style={{ opacity: 0.4, pointerEvents: 'none' }}>
-            <div className="loot-chest-icon">
-              <svg viewBox="0 0 60 60" style={{ width: '3.5rem', height: '3.5rem', opacity: 0.3 }}>
-                <rect x="18" y="10" width="24" height="40" rx="4" fill="none" stroke="#64748b" strokeWidth="3" />
-                <path d="M30 22 C26 26 22 30 26 34 C30 38 30 38 30 38 C30 38 30 38 34 34 C38 30 34 26 30 22 Z" fill="#64748b" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-black text-white drop-shadow-[0_4px_0_rgba(0,0,0,1)] tracking-wide mb-1">
-              Cards Arena
-            </h2>
-            <p className="text-xs font-black uppercase tracking-widest mb-4" style={{ color: '#3b82f6' }}>Poker Master</p>
-            <button disabled className="game-btn-primary" style={{ fontSize: '1.25rem', padding: '0.75rem 2rem', maxWidth: '260px', opacity: 0.3, pointerEvents: 'none', cursor: 'not-allowed' }}>
-              LOCKED
-            </button>
-          </article>
+        {/* Cards Arena Card — floating bottom */}
+        <div className="loot-chest absolute w-[280px] md:w-[320px]"
+          style={{ top: '75%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 10, opacity: 0.4, pointerEvents: 'none' }}>
+          <div className="loot-chest-icon">
+            <svg viewBox="0 0 60 60" style={{ width: '3.5rem', height: '3.5rem', opacity: 0.3 }}>
+              <rect x="18" y="10" width="24" height="40" rx="4" fill="none" stroke="#64748b" strokeWidth="3" />
+              <path d="M30 22 C26 26 22 30 26 34 C30 38 30 38 30 38 C30 38 30 38 34 34 C38 30 34 26 30 22 Z" fill="#64748b" />
+            </svg>
+          </div>
+          <h2 className="text-xl md:text-2xl font-black text-white drop-shadow-[0_4px_0_rgba(0,0,0,1)] tracking-wide mb-0.5">
+            Cards Arena
+          </h2>
+          <p className="text-[0.65rem] font-black uppercase tracking-widest mb-3" style={{ color: '#3b82f6' }}>Poker Master</p>
+          <button disabled className="game-btn-primary"
+            style={{ fontSize: '1.1rem', padding: '0.7rem 1.5rem', maxWidth: '200px', opacity: 0.3, cursor: 'not-allowed', pointerEvents: 'none' }}>
+            LOCKED
+          </button>
         </div>
       </main>
 
       {/* ════════ XO SETUP MODAL ════════ */}
       {stage === 'XO_SETUP' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}>
-          <div style={{
-            background: 'linear-gradient(to bottom, #1e293b, #0f172a)',
-            width: '100%',
-            maxWidth: '24rem',
-            borderRadius: '2rem',
-            padding: '2rem',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.8), inset 0 2px 0 rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1.5rem',
-            position: 'relative',
-          }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}>
+          <div className="relative w-full max-w-sm"
+            style={{
+              background: 'linear-gradient(to bottom, #1e293b, #0f172a)',
+              borderRadius: '2rem',
+              padding: '2rem',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.8), inset 0 2px 0 rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.06)',
+            }}>
             <button
               onClick={() => { soundManager.playClick(); setStage('CATALOG') }}
+              className="absolute top-4 right-4 flex items-center justify-center text-sm font-bold cursor-pointer transition-colors hover:text-white"
               style={{
-                position: 'absolute',
-                top: '1rem',
-                right: '1rem',
-                width: '2rem',
-                height: '2rem',
-                borderRadius: '50%',
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                width: '2rem', height: '2rem', borderRadius: '50%',
+                background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
                 color: 'rgba(255,255,255,0.4)',
-                fontWeight: 700,
-                fontSize: '0.85rem',
-                cursor: 'pointer',
-                transition: 'color 0.2s',
-              }}
-            >
+              }}>
               ✕
             </button>
 
             <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400 drop-shadow-[0_4px_0_rgba(0,0,0,1)] text-center">
               XO Arena
             </h2>
-            <p className="text-xs font-black uppercase tracking-widest text-center" style={{ color: '#3b82f6', marginTop: '-0.5rem' }}>
+            <p className="text-xs font-black uppercase tracking-widest text-center mt-1" style={{ color: '#3b82f6' }}>
               Choose how to play
             </p>
 
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              background: 'rgba(0,0,0,0.3)',
-              borderRadius: '1rem',
-              padding: '0.75rem 1rem',
-              border: '1px solid rgba(255,255,255,0.05)',
-            }}>
-              <div style={{
-                width: '2.5rem',
-                height: '2.5rem',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontWeight: 900,
-                fontSize: '0.85rem',
-                boxShadow: '0 3px 0 #14532d',
-              }}>
+            <div className="flex items-center gap-3 mt-6 p-3 rounded-xl"
+              style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-sm"
+                style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 3px 0 #14532d' }}>
                 {name.charAt(0).toUpperCase()}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block' }}>Playing as</span>
-                <span style={{ color: 'white', fontWeight: 900, fontSize: '0.85rem', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
+              <div className="flex-1 min-w-0">
+                <span className="text-[0.55rem] font-bold uppercase tracking-widest block" style={{ color: 'rgba(255,255,255,0.25)' }}>Playing as</span>
+                <span className="text-white font-black text-sm block truncate">{name}</span>
               </div>
             </div>
 
-            <div className="flex flex-col gap-4">
-              <button onClick={createMatch} className="game-btn-primary" style={{ fontSize: '1.25rem', padding: '0.85rem 2rem' }}>
+            <div className="flex flex-col gap-4 mt-6">
+              <button onClick={createMatch} className="game-btn-primary" style={{ fontSize: '1.1rem', padding: '0.85rem 2rem' }}>
                 CREATE MATCH
               </button>
 
@@ -392,7 +408,7 @@ export default function PlayOnline() {
                   borderRadius: '1.5rem',
                   color: 'white',
                   fontWeight: 900,
-                  fontSize: '1.25rem',
+                  fontSize: '1.1rem',
                   textTransform: 'uppercase',
                   padding: '0.85rem 2rem',
                   textShadow: '0 2px 0 rgba(0,0,0,0.5)',
@@ -400,68 +416,50 @@ export default function PlayOnline() {
                   transition: 'all 0.1s ease-in-out',
                   width: '100%',
                   cursor: 'pointer',
-                }}
-              >
+                }}>
                 JOIN MATCH
               </button>
 
               {joinPanel && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '0.5rem' }}>
+                <div className="flex flex-col gap-3 pt-2">
                   <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', marginBottom: '0.25rem' }} />
-                  <input
-                    type="text"
-                    value={joinCode}
-                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                    onKeyDown={(e) => e.key === 'Enter' && joinMatch()}
-                    placeholder="ROOM CODE"
-                    maxLength={8}
-                    autoFocus
-                    style={{
-                      width: '100%',
-                      background: 'rgba(0,0,0,0.4)',
-                      border: '2px solid rgba(59,130,246,0.3)',
-                      borderRadius: '1rem',
-                      padding: '0.85rem 1rem',
-                      textAlign: 'center',
-                      fontSize: '1.5rem',
-                      fontWeight: 900,
-                      color: 'white',
-                      letterSpacing: '0.3em',
-                      outline: 'none',
-                    }}
-                    className="placeholder:text-gray-700"
-                  />
+                  <div style={{
+                    background: 'rgba(0,0,0,0.4)',
+                    border: '2px solid rgba(59,130,246,0.3)',
+                    borderRadius: '1rem',
+                    padding: '0.25rem',
+                  }}>
+                    <input
+                      type="text"
+                      value={joinCode}
+                      onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                      onKeyDown={(e) => e.key === 'Enter' && joinMatch()}
+                      placeholder="ROOM CODE"
+                      maxLength={8}
+                      autoFocus
+                      className="w-full text-center text-xl text-white font-black outline-none tracking-[0.3em] placeholder:text-gray-700"
+                      style={{ background: 'transparent', border: 'none', borderRadius: '1rem', padding: '0.75rem 1rem' }}
+                    />
+                  </div>
                   <button
                     onClick={joinMatch}
                     disabled={joinCode.trim().length < 4}
                     className="game-btn-primary"
                     style={{
-                      fontSize: '1.25rem',
+                      fontSize: '1.1rem',
                       padding: '0.85rem 2rem',
                       opacity: joinCode.trim().length >= 4 ? 1 : 0.2,
                       cursor: joinCode.trim().length >= 4 ? 'pointer' : 'not-allowed',
                       pointerEvents: joinCode.trim().length >= 4 ? 'auto' : 'none',
-                    }}
-                  >
+                    }}>
                     JOIN
                   </button>
                 </div>
               )}
 
-              <button
-                onClick={() => { soundManager.playClick(); setStage('CATALOG') }}
-                style={{
-                  color: 'rgba(255,255,255,0.3)',
-                  fontWeight: 700,
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '0.9rem',
-                  textAlign: 'center',
-                  transition: 'color 0.2s',
-                  marginTop: '0.25rem',
-                }}
-              >
+              <button onClick={() => { soundManager.playClick(); setStage('CATALOG') }}
+                className="text-center font-bold text-sm transition-colors hover:text-white"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', marginTop: '0.25rem' }}>
                 ← Back
               </button>
             </div>
