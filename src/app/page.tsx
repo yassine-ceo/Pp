@@ -166,10 +166,9 @@ export default function PlayOnline() {
     return (
       <main className="relative w-screen h-screen overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1e1b4b] to-[#020617]">
 
-        {/* Animated glow orbs */}
-        <div className="absolute top-[-15%] left-[-10%] w-[70%] h-[70%] bg-[#3b82f6]/10 rounded-full blur-[150px] animate-glow-pulse pointer-events-none" />
-        <div className="absolute bottom-[-15%] right-[-10%] w-[70%] h-[70%] bg-[#22c55e]/8 rounded-full blur-[150px] animate-glow-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-[40%] left-[40%] w-[40%] h-[40%] bg-[#FFD700]/5 rounded-full blur-[120px] animate-subtle-drift pointer-events-none" />
+        {/* Ambient glow orbs */}
+        <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
 
         {/* Floating decorative X/O icons */}
         <XDeco className="absolute top-[12%] right-[18%] w-24 h-24 opacity-[0.06] animate-float-drift pointer-events-none" />
@@ -177,14 +176,14 @@ export default function PlayOnline() {
         <XDeco className="absolute top-[55%] right-[8%] w-16 h-16 opacity-[0.04] animate-float-drift pointer-events-none" style={{ animationDelay: '1.5s' }} />
         <ODeco className="absolute top-[18%] left-[25%] w-20 h-20 opacity-[0.04] animate-float-drift-2 pointer-events-none" style={{ animationDelay: '3s' }} />
 
-        {/* Logo — corporate brand */}
-        <div className="absolute top-6 left-6 flex items-center gap-2.5" style={{ zIndex: 20 }}>
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#22c55e] to-[#16a34a] flex items-center justify-center shadow-[0_2px_0_#14532d]">
-            <span className="text-white font-black text-xs">P</span>
+        {/* Premium gaming studio logo */}
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 md:left-12 md:translate-x-0 flex flex-col md:flex-row items-center gap-3 z-20 text-center md:text-left">
+          <div className="w-14 h-14 bg-[#1e293b] border-2 border-[#4ade80] rounded-xl shadow-[0_0_20px_rgba(74,222,128,0.4)] flex items-center justify-center font-black text-[#4ade80] text-2xl">
+            P
           </div>
-          <div className="flex flex-col">
-            <span className="text-[0.55rem] font-bold uppercase tracking-[0.2em] text-white/40 leading-none">PlayOnline</span>
-            <span className="text-[0.45rem] font-bold uppercase tracking-[0.3em] text-white/20 leading-none">Game Studio</span>
+          <div>
+            <h1 className="text-3xl font-black text-white tracking-widest font-sans">PLAYONLINE</h1>
+            <span className="text-[10px] font-bold text-[#4ade80] tracking-[0.4em] block uppercase mt-0.5">GAME STUDIO</span>
           </div>
         </div>
 
@@ -207,9 +206,9 @@ export default function PlayOnline() {
           </p>
         </div>
 
-        {/* Input — bottom center */}
-        <div className="absolute bottom-[20%] left-1/2 -translate-x-1/2 w-[85%] max-w-md" style={{ zIndex: 20 }}>
-          <div style={{
+        {/* Bottom interaction dock */}
+        <div className="absolute bottom-[15%] left-1/2 -translate-x-1/2 w-[90%] max-w-[450px] flex flex-col gap-6 items-center z-20">
+          <div className="w-full" style={{
             background: 'rgba(0,0,0,0.5)',
             border: '2px solid rgba(255,255,255,0.06)',
             borderRadius: '9999px',
@@ -228,10 +227,6 @@ export default function PlayOnline() {
               style={{ background: 'transparent', border: 'none', borderRadius: '9999px', padding: '1rem 1.5rem', transition: 'all 0.2s' }}
             />
           </div>
-        </div>
-
-        {/* Button — bottom center, below input */}
-        <div className="absolute bottom-[10%] left-1/2 -translate-x-1/2 w-[85%] max-w-sm" style={{ zIndex: 20 }}>
           <button
             onClick={submitName}
             disabled={!name.trim()}
