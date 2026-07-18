@@ -176,15 +176,17 @@ export default function PlayOnline() {
         <XDeco className="absolute top-[55%] right-[8%] w-16 h-16 opacity-[0.04] animate-float-drift pointer-events-none" style={{ animationDelay: '1.5s' }} />
         <ODeco className="absolute top-[18%] left-[25%] w-20 h-20 opacity-[0.04] animate-float-drift-2 pointer-events-none" style={{ animationDelay: '3s' }} />
 
-        {/* Premium gaming studio logo */}
-        <div className="absolute top-12 left-1/2 -translate-x-1/2 md:left-12 md:translate-x-0 flex flex-col md:flex-row items-center gap-3 z-20 text-center md:text-left">
-          <div className="w-14 h-14 bg-[#1e293b] border-2 border-[#4ade80] rounded-xl shadow-[0_0_20px_rgba(74,222,128,0.4)] flex items-center justify-center font-black text-[#4ade80] text-2xl">
-            P
-          </div>
-          <div>
-            <h1 className="text-3xl font-black text-white tracking-widest font-sans">PLAYONLINE</h1>
-            <span className="text-[10px] font-bold text-[#4ade80] tracking-[0.4em] block uppercase mt-0.5">GAME STUDIO</span>
-          </div>
+        {/* Premium SVG brand logo */}
+        <div className="absolute top-10 left-1/2 -translate-x-1/2 md:left-12 md:translate-x-0 flex items-center z-30">
+          <svg viewBox="0 0 110 70" className="h-10 md:h-12 w-auto drop-shadow-md">
+            <circle cx="68" cy="30" r="21" fill="none" stroke="#ffffff" strokeWidth="7.5" />
+            <circle cx="35" cy="30" r="21" fill="none" stroke="#ffffff" strokeWidth="7.5" />
+            <line x1="14" y1="30" x2="14" y2="68" stroke="#ffffff" strokeWidth="7.5" />
+            <path d="M 28 17 L 47 30 L 28 43 Z" fill="#38bdf8" />
+          </svg>
+          <span className="text-white text-3xl md:text-4xl font-sans tracking-tight ml-2" style={{ fontWeight: 500 }}>
+            PlayOnline
+          </span>
         </div>
 
         {/* Deep link room banner */}
