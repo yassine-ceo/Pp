@@ -4,7 +4,7 @@ import React from 'react'
 
 export default function HeroAnimation() {
   return (
-    <div className="w-full flex items-center justify-center gap-3 sm:gap-5 -mt-6 mb-12 relative z-10">
+    <div className="w-full flex items-center justify-center gap-3 sm:gap-5 -translate-y-12 mb-4 relative z-10">
 
       {/* Gold Card (Left) */}
       <div className="w-[28%] max-w-[110px] aspect-[3/4] rounded-xl sm:rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-600 shadow-[0_0_20px_rgba(251,191,36,0.3)] border border-white/20 translate-y-4"></div>
