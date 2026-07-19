@@ -1,27 +1,33 @@
 import type { ReactNode } from 'react'
+import type { Metadata, Viewport } from 'next'
 import { Nunito } from 'next/font/google'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import './globals.css'
 
 const nunito = Nunito({ subsets: ['latin'], weight: ['700', '800', '900'] })
 
-export const metadata = {
-  title: 'PlayOnline — Multi-Game Hub',
-  description: 'Challenge friends to premium multiplayer games on the PlayOnline platform.',
-  openGraph: {
-    title: 'PlayOnline — Multi-Game Hub',
-    description: 'Challenge friends to premium multiplayer games.',
-    type: 'website',
-    siteName: 'PlayOnline',
-  },
-}
-
-export const viewport = {
+export const viewport: Viewport = {
+  themeColor: '#0f172a',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  userScalable: false,
-  themeColor: '#0f172a',
+  viewportFit: 'cover',
+}
+
+export const metadata: Metadata = {
+  title: 'PlayOnline',
+  description: 'PlayOnline Game Studio',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'PlayOnline',
+  },
+  openGraph: {
+    title: 'PlayOnline',
+    description: 'PlayOnline Game Studio',
+    type: 'website',
+    siteName: 'PlayOnline',
+  },
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
