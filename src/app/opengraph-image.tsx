@@ -18,13 +18,13 @@ export default function Image() {
           justifyContent: 'center',
         }}
       >
-        <svg viewBox="0 0 110 70" width="300" height="300">
+        <svg viewBox="0 0 110 70" width="330" height="210">
           <circle cx="68" cy="35" r="21" fill="none" stroke="#ffffff" strokeWidth="7.5" />
           <circle cx="35" cy="35" r="21" fill="none" stroke="#ffffff" strokeWidth="7.5" />
           <line x1="14" y1="35" x2="14" y2="68" stroke="#ffffff" strokeWidth="7.5" />
           <path d="M 28 22 L 47 35 L 28 48 Z" fill="#38bdf8" />
         </svg>
-        <div style={{ color: 'white', fontSize: 100, fontFamily: 'sans-serif', fontWeight: 'bold', marginLeft: 40, marginTop: -20 }}>
+        <div style={{ color: 'white', fontSize: 100, fontFamily: 'sans-serif', fontWeight: 'bold', marginLeft: 40 }}>
           PlayOnline
         </div>
       </div>
