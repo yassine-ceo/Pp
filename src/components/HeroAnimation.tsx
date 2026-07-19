@@ -25,8 +25,8 @@ export default function HeroAnimation() {
           muted
           loop
           playsInline
-          className="w-full h-full object-cover"
-          style={{ objectPosition: '0% 50%' }}
+          className="w-[300%] h-full object-cover"
+          style={{ marginLeft: '0%' }}
         />
       </div>
 
@@ -39,8 +39,8 @@ export default function HeroAnimation() {
           muted
           loop
           playsInline
-          className="w-full h-full object-cover"
-          style={{ objectPosition: '50% 50%' }}
+          className="w-[300%] h-full object-cover"
+          style={{ marginLeft: '-100%' }}
         />
       </div>
 
@@ -53,8 +53,8 @@ export default function HeroAnimation() {
           muted
           loop
           playsInline
-          className="w-full h-full object-cover"
-          style={{ objectPosition: '100% 50%' }}
+          className="w-[300%] h-full object-cover"
+          style={{ marginLeft: '-200%' }}
         />
       </div>
 
