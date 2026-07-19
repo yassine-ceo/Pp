@@ -297,60 +297,64 @@ export default function PlayOnline() {
           </div>
         </div>
 
-        {/* XO Arena Card — floating left */}
-        <div className="loot-chest absolute w-[280px] md:w-[320px]"
-          style={{ top: '50%', left: '50%', transform: 'translate(-120%, -55%)', zIndex: 10 }}>
-          <div className="loot-chest-icon">
-            <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '-0.5rem' }}>
-              <XIcon /><OIcon />
+        {/* Card hub — centered vertical stack */}
+        <div className="absolute inset-0 flex items-center justify-center px-4 pt-20 pb-6 overflow-y-auto">
+          <div className="w-full max-w-sm flex flex-col items-center gap-4">
+
+            {/* XO Arena Card */}
+            <div className="loot-chest w-full">
+              <div className="loot-chest-icon">
+                <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '-0.5rem' }}>
+                  <XIcon /><OIcon />
+                </div>
+              </div>
+              <h2 className="text-xl md:text-2xl font-black text-white drop-shadow-[0_4px_0_rgba(0,0,0,1)] tracking-wide mb-0.5">
+                XO Arena
+              </h2>
+              <p className="text-[0.65rem] font-black uppercase tracking-widest mb-3" style={{ color: '#3b82f6' }}>Multiverse Duel</p>
+              <button onClick={openSetup} className="game-btn-primary"
+                style={{ fontSize: '1.1rem', padding: '0.7rem 1.5rem', maxWidth: '200px' }}>
+                PLAY
+              </button>
             </div>
-          </div>
-          <h2 className="text-xl md:text-2xl font-black text-white drop-shadow-[0_4px_0_rgba(0,0,0,1)] tracking-wide mb-0.5">
-            XO Arena
-          </h2>
-          <p className="text-[0.65rem] font-black uppercase tracking-widest mb-3" style={{ color: '#3b82f6' }}>Multiverse Duel</p>
-          <button onClick={openSetup} className="game-btn-primary"
-            style={{ fontSize: '1.1rem', padding: '0.7rem 1.5rem', maxWidth: '200px' }}>
-            PLAY
-          </button>
-        </div>
 
-        {/* Chess Royale Card — floating right */}
-        <div className="loot-chest absolute w-[280px] md:w-[320px]"
-          style={{ top: '40%', left: '50%', transform: 'translate(20%, -50%)', zIndex: 10, opacity: 0.4, pointerEvents: 'none' }}>
-          <div className="loot-chest-icon">
-            <svg viewBox="0 0 60 60" style={{ width: '3.5rem', height: '3.5rem', opacity: 0.3 }}>
-              <path d="M24 50 C24 50 20 40 24 34 C28 28 24 22 30 18 C36 14 42 18 42 24 C42 30 38 34 38 36 L42 44 L42 50 Z" fill="#64748b" />
-              <rect x="20" y="50" width="20" height="4" rx="1" fill="#64748b" />
-            </svg>
-          </div>
-          <h2 className="text-xl md:text-2xl font-black text-white drop-shadow-[0_4px_0_rgba(0,0,0,1)] tracking-wide mb-0.5">
-            Chess Royale
-          </h2>
-          <p className="text-[0.65rem] font-black uppercase tracking-widest mb-3" style={{ color: '#3b82f6' }}>Grandmaster Duel</p>
-          <button disabled className="game-btn-primary"
-            style={{ fontSize: '1.1rem', padding: '0.7rem 1.5rem', maxWidth: '200px', opacity: 0.3, cursor: 'not-allowed', pointerEvents: 'none' }}>
-            LOCKED
-          </button>
-        </div>
+            {/* Chess Royale Card */}
+            <div className="loot-chest w-full" style={{ opacity: 0.4, pointerEvents: 'none' }}>
+              <div className="loot-chest-icon">
+                <svg viewBox="0 0 60 60" style={{ width: '3.5rem', height: '3.5rem', opacity: 0.3 }}>
+                  <path d="M24 50 C24 50 20 40 24 34 C28 28 24 22 30 18 C36 14 42 18 42 24 C42 30 38 34 38 36 L42 44 L42 50 Z" fill="#64748b" />
+                  <rect x="20" y="50" width="20" height="4" rx="1" fill="#64748b" />
+                </svg>
+              </div>
+              <h2 className="text-xl md:text-2xl font-black text-white drop-shadow-[0_4px_0_rgba(0,0,0,1)] tracking-wide mb-0.5">
+                Chess Royale
+              </h2>
+              <p className="text-[0.65rem] font-black uppercase tracking-widest mb-3" style={{ color: '#3b82f6' }}>Grandmaster Duel</p>
+              <button disabled className="game-btn-primary"
+                style={{ fontSize: '1.1rem', padding: '0.7rem 1.5rem', maxWidth: '200px', opacity: 0.3, cursor: 'not-allowed', pointerEvents: 'none' }}>
+                LOCKED
+              </button>
+            </div>
 
-        {/* Cards Arena Card — floating bottom */}
-        <div className="loot-chest absolute w-[280px] md:w-[320px]"
-          style={{ top: '75%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 10, opacity: 0.4, pointerEvents: 'none' }}>
-          <div className="loot-chest-icon">
-            <svg viewBox="0 0 60 60" style={{ width: '3.5rem', height: '3.5rem', opacity: 0.3 }}>
-              <rect x="18" y="10" width="24" height="40" rx="4" fill="none" stroke="#64748b" strokeWidth="3" />
-              <path d="M30 22 C26 26 22 30 26 34 C30 38 30 38 30 38 C30 38 30 38 34 34 C38 30 34 26 30 22 Z" fill="#64748b" />
-            </svg>
+            {/* Cards Arena Card */}
+            <div className="loot-chest w-full" style={{ opacity: 0.4, pointerEvents: 'none' }}>
+              <div className="loot-chest-icon">
+                <svg viewBox="0 0 60 60" style={{ width: '3.5rem', height: '3.5rem', opacity: 0.3 }}>
+                  <rect x="18" y="10" width="24" height="40" rx="4" fill="none" stroke="#64748b" strokeWidth="3" />
+                  <path d="M30 22 C26 26 22 30 26 34 C30 38 30 38 30 38 C30 38 30 38 34 34 C38 30 34 26 30 22 Z" fill="#64748b" />
+                </svg>
+              </div>
+              <h2 className="text-xl md:text-2xl font-black text-white drop-shadow-[0_4px_0_rgba(0,0,0,1)] tracking-wide mb-0.5">
+                Cards Arena
+              </h2>
+              <p className="text-[0.65rem] font-black uppercase tracking-widest mb-3" style={{ color: '#3b82f6' }}>Poker Master</p>
+              <button disabled className="game-btn-primary"
+                style={{ fontSize: '1.1rem', padding: '0.7rem 1.5rem', maxWidth: '200px', opacity: 0.3, cursor: 'not-allowed', pointerEvents: 'none' }}>
+                LOCKED
+              </button>
+            </div>
+
           </div>
-          <h2 className="text-xl md:text-2xl font-black text-white drop-shadow-[0_4px_0_rgba(0,0,0,1)] tracking-wide mb-0.5">
-            Cards Arena
-          </h2>
-          <p className="text-[0.65rem] font-black uppercase tracking-widest mb-3" style={{ color: '#3b82f6' }}>Poker Master</p>
-          <button disabled className="game-btn-primary"
-            style={{ fontSize: '1.1rem', padding: '0.7rem 1.5rem', maxWidth: '200px', opacity: 0.3, cursor: 'not-allowed', pointerEvents: 'none' }}>
-            LOCKED
-          </button>
         </div>
       </main>
 
