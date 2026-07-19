@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useGameStore } from '@/stores/gameStore'
 import { soundManager } from '@/lib/sound'
+import HeroAnimation from '@/components/HeroAnimation'
 
 type Stage = 'WELCOME' | 'CATALOG' | 'XO_SETUP'
 
@@ -210,6 +211,7 @@ export default function PlayOnline() {
 
         {/* Bottom interaction dock */}
         <div className="absolute bottom-[15%] left-1/2 -translate-x-1/2 w-[90%] max-w-[450px] flex flex-col gap-6 items-center z-20">
+          <HeroAnimation />
           <div className="w-full" style={{
             background: 'rgba(0,0,0,0.5)',
             border: '2px solid rgba(255,255,255,0.06)',
