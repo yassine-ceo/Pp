@@ -1,46 +1,22 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import dynamic from 'next/dynamic'
-
-const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
+import React from 'react'
 
 export default function HeroAnimation() {
-  const [animationData, setAnimationData] = useState<any>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetch('https://lottie.host/809c91b4-b3cc-49a3-a7c3-305f242551e1/X1x8hK1gW0.json')
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        return res.json()
-      })
-      .then((data) => setAnimationData(data))
-      .catch((err) => {
-        console.error('Lottie Load Error:', err)
-        setError(err.message)
-      })
-  }, [])
-
-  if (error) {
-    return (
-      <div className="h-48 w-full flex items-center justify-center text-red-400 text-xs p-4 text-center">
-        ERROR: {error} <br /> (Check Lottie URL or CORS)
-      </div>
-    )
-  }
-
-  if (!animationData) {
-    return (
-      <div className="h-48 w-full flex items-center justify-center text-sky-400/50 text-sm animate-pulse font-bold tracking-widest">
-        CONNECTING...
-      </div>
-    )
-  }
-
   return (
-    <div className="w-full max-w-[280px] mx-auto h-auto flex items-center justify-center pointer-events-none drop-shadow-2xl">
-      <Lottie animationData={animationData} loop={true} />
+    <div className="relative w-full h-48 flex items-center justify-center overflow-hidden">
+      {/* Middle Connection Line */}
+      <div className="absolute w-24 h-[2px] bg-gradient-to-r from-purple-500 via-white to-cyan-500 animate-pulse"></div>
+
+      {/* Avatars */}
+      <div className="flex gap-16">
+        <div className="w-16 h-16 rounded-full border-2 border-purple-500 bg-black shadow-[0_0_20px_rgba(168,85,247,0.5)]"></div>
+        <div className="w-16 h-16 rounded-full border-2 border-cyan-500 bg-black shadow-[0_0_20px_rgba(6,182,212,0.5)]"></div>
+      </div>
+
+      {/* Phone Elements (Abstract) */}
+      <div className="absolute bottom-4 flex gap-24">
+         <div className="w-8 h-12 border-2 border-purple-500/50 rounded-lg"></div>
+         <div className="w-8 h-12 border-2 border-cyan-500/50 rounded-lg"></div>
+      </div>
     </div>
   )
 }
