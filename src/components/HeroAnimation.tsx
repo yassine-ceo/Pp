@@ -17,7 +17,7 @@ export default function HeroAnimation() {
     <div className="w-full flex items-center justify-center gap-3 sm:gap-5 -translate-y-12 mb-4 relative z-10">
 
       {/* Gold Card (Left) - Left slice */}
-      <div className="w-[28%] max-w-[110px] aspect-[3/4] rounded-xl sm:rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-600 shadow-[0_0_20px_rgba(251,191,36,0.3)] border border-white/20 translate-y-4 overflow-hidden relative">
+      <div className="w-[28%] max-w-[110px] h-36 sm:h-44 rounded-xl sm:rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-600 shadow-[0_0_20px_rgba(251,191,36,0.3)] border border-white/20 translate-y-4 overflow-hidden relative">
         <video
           ref={(el) => { videosRef.current[0] = el }}
           src={VIDEO_SRC}
@@ -25,13 +25,13 @@ export default function HeroAnimation() {
           muted
           loop
           playsInline
-          className="w-[300%] h-full object-cover"
-          style={{ marginLeft: '0%' }}
+          className="w-full h-full object-cover"
+          style={{ objectPosition: '0% 50%' }}
         />
       </div>
 
       {/* Purple Card (Center/Elevated) - Center slice */}
-      <div className="w-[32%] max-w-[125px] aspect-[3/4] rounded-xl sm:rounded-2xl bg-gradient-to-br from-purple-500 to-fuchsia-700 shadow-[0_0_30px_rgba(168,85,247,0.5)] z-10 border border-white/30 -translate-y-4 overflow-hidden relative">
+      <div className="w-[32%] max-w-[125px] h-36 sm:h-44 rounded-xl sm:rounded-2xl bg-gradient-to-br from-purple-500 to-fuchsia-700 shadow-[0_0_30px_rgba(168,85,247,0.5)] z-10 border border-white/30 -translate-y-4 overflow-hidden relative">
         <video
           ref={(el) => { videosRef.current[1] = el }}
           src={VIDEO_SRC}
@@ -39,13 +39,13 @@ export default function HeroAnimation() {
           muted
           loop
           playsInline
-          className="w-[300%] h-full object-cover"
-          style={{ marginLeft: '-100%' }}
+          className="w-full h-full object-cover"
+          style={{ objectPosition: '50% 50%' }}
         />
       </div>
 
       {/* Cyan Card (Right) - Right slice */}
-      <div className="w-[28%] max-w-[110px] aspect-[3/4] rounded-xl sm:rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 shadow-[0_0_20px_rgba(6,182,212,0.3)] border border-white/20 translate-y-4 overflow-hidden relative">
+      <div className="w-[28%] max-w-[110px] h-36 sm:h-44 rounded-xl sm:rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 shadow-[0_0_20px_rgba(6,182,212,0.3)] border border-white/20 translate-y-4 overflow-hidden relative">
         <video
           ref={(el) => { videosRef.current[2] = el }}
           src={VIDEO_SRC}
@@ -53,8 +53,8 @@ export default function HeroAnimation() {
           muted
           loop
           playsInline
-          className="w-[300%] h-full object-cover"
-          style={{ marginLeft: '-200%' }}
+          className="w-full h-full object-cover"
+          style={{ objectPosition: '100% 50%' }}
         />
       </div>
 
