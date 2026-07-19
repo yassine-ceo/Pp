@@ -3,24 +3,12 @@
 import React, { useState, useEffect } from 'react'
 
 const AVATAR_POOL: string[] = [
-  // Style 1: Dark Fantasy
-  'https://image.pollinations.ai/prompt/dark-fantasy-mysterious-character-with-glowing-neon-blue-magical-fire-above-head-dark-cloak-glowing-white-eyes-purple-background?width=400&height=600&nologo=true&seed=101',
-  'https://image.pollinations.ai/prompt/shadow-assassin-female-character-glowing-blue-magical-flames-dark-hooded-cloak-striking-glowing-eyes-fantasy-avatar?width=400&height=600&nologo=true&seed=102',
-  'https://image.pollinations.ai/prompt/mystical-dark-fantasy-warlock-neon-blue-fire-crown-wrapped-in-dark-bandages-glowing-core-dark-violet-fog?width=400&height=600&nologo=true&seed=103',
-  'https://image.pollinations.ai/prompt/enigmatic-dark-sorceress-glowing-bright-blue-magical-aura-hooded-dark-robes-piercing-glowing-eyes-neon-purple?width=400&height=600&nologo=true&seed=104',
-  'https://image.pollinations.ai/prompt/dark-mythical-creature-avatar-glowing-blue-flames-dark-shadowy-armor-glowing-white-eyes-premium-gaming-art?width=400&height=600&nologo=true&seed=105',
-  // Style 2: Sci-Fi / Cyberpunk Anime
-  'https://image.pollinations.ai/prompt/cool-cyberpunk-anime-boy-wearing-vr-headset-visor-floating-shattered-rocks-deep-pink-and-blue-neon-sky?width=400&height=600&nologo=true&seed=106',
-  'https://image.pollinations.ai/prompt/cyberpunk-sci-fi-girl-with-glowing-vr-goggles-floating-debris-vibrant-purple-and-neon-pink-atmospheric-lighting?width=400&height=600&nologo=true&seed=107',
-  'https://image.pollinations.ai/prompt/futuristic-anime-gamer-boy-sleek-high-tech-vr-headset-manipulating-floating-gravity-rocks-cosmic-pink-and-cyan?width=400&height=600&nologo=true&seed=108',
-  'https://image.pollinations.ai/prompt/sci-fi-anime-female-character-wearing-cyberpunk-visor-surrounded-by-floating-shattered-crystals-dynamic-neon-pink?width=400&height=600&nologo=true&seed=109',
-  'https://image.pollinations.ai/prompt/ethereal-cyberpunk-teenager-with-futuristic-vr-glasses-anti-gravity-floating-rocks-vibrant-magenta-and-cyan?width=400&height=600&nologo=true&seed=110',
-  // Style 3: Stylized RPG / Chibi
-  'https://image.pollinations.ai/prompt/stylized-3d-anime-blocky-warrior-boy-holding-massive-glowing-blue-crystal-sword-magical-aura-effects?width=400&height=600&nologo=true&seed=111',
-  'https://image.pollinations.ai/prompt/cute-chibi-anime-rpg-warrior-female-wielding-giant-glowing-pink-magical-sword-blocky-stylized-art?width=400&height=600&nologo=true&seed=112',
-  'https://image.pollinations.ai/prompt/blocky-3d-stylized-rpg-hero-holding-huge-glowing-cyan-energy-sword-spiky-hair-magical-particles?width=400&height=600&nologo=true&seed=113',
-  'https://image.pollinations.ai/prompt/chibi-hybrid-anime-warrior-wielding-massive-glowing-gold-and-blue-crystal-broadsword-stylized-3d?width=400&height=600&nologo=true&seed=114',
-  'https://image.pollinations.ai/prompt/cute-blocky-fantasy-swordsman-giant-glowing-purple-crystal-blade-glowing-pixel-effects-high-quality-rpg?width=400&height=600&nologo=true&seed=115',
+  'https://images.unsplash.com/photo-1605901309584-818e25960b8f?auto=format&fit=crop&w=400&h=600&q=80',
+  'https://images.unsplash.com/photo-1534423861386-85a16f5d13fd?auto=format&fit=crop&w=400&h=600&q=80',
+  'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=400&h=600&q=80',
+  'https://images.unsplash.com/photo-1555680202-c86f0e12f086?auto=format&fit=crop&w=400&h=600&q=80',
+  'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&h=600&q=80',
+  'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&w=400&h=600&q=80',
 ]
 
 export default function HeroAnimation() {
