@@ -24,6 +24,7 @@ export default function HeroAnimation() {
           loop
           playsInline
           className="w-full h-full object-cover"
+          style={{ transform: 'rotate(180deg)' }}
         />
       </div>
 
@@ -37,6 +38,7 @@ export default function HeroAnimation() {
           loop
           playsInline
           className="w-full h-full object-cover"
+          style={{ transform: 'rotate(180deg)' }}
         />
       </div>
 
@@ -50,6 +52,7 @@ export default function HeroAnimation() {
           loop
           playsInline
           className="w-full h-full object-cover"
+          style={{ transform: 'rotate(180deg)' }}
         />
       </div>
 
