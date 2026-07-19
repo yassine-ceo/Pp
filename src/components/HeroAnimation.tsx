@@ -9,10 +9,17 @@ export default function HeroAnimation() {
   const [animationData, setAnimationData] = useState<any>(null)
 
   useEffect(() => {
-    fetch('https://lottie.host/809c91b4-b3cc-49a3-a7c3-305f242551e1/X1x8hK1gW0.json')
+    // TIP: To get the "Boy and Girl Playing" animation:
+    // 1. Go to lottiefiles.com
+    // 2. Search for "gaming" or "online friends"
+    // 3. Click the animation > Click "Lottie JSON" > Copy the URL
+    // 4. Paste that URL below:
+    const LOTTIE_URL = 'https://lottie.host/809c91b4-b3cc-49a3-a7c3-305f242551e1/X1x8hK1gW0.json'
+
+    fetch(LOTTIE_URL)
       .then((res) => res.json())
       .then((data) => setAnimationData(data))
-      .catch((err) => console.error('Error loading Lottie animation:', err))
+      .catch((err) => console.error('Error loading Lottie:', err))
   }, [])
 
   if (!animationData) {
