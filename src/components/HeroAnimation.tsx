@@ -4,28 +4,20 @@ import React from 'react'
 
 export default function HeroAnimation() {
   return (
-    <div className="relative w-full h-64 flex items-center justify-center overflow-hidden perspective-1000">
+    <div className="relative w-full h-80 flex items-center justify-center overflow-hidden mt-4" style={{ perspective: '1000px' }}>
 
-      {/* Gold Card (Left - Clipped) */}
-      <div className="absolute left-[-20px] w-32 h-44 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-600 shadow-2xl rotate-[-15deg] skew-y-6 border border-white/20 z-10 animate-float-slow"></div>
-
-      {/* Purple Card (Center - Main) */}
-      <div className="relative w-40 h-56 rounded-2xl bg-gradient-to-br from-purple-500 to-fuchsia-700 shadow-2xl z-20 flex items-center justify-center border border-white/20 animate-float-main">
-         <span className="text-white/20 font-black text-6xl">P</span>
+      {/* Background Cards (The 3 Cards) */}
+      <div className="absolute flex gap-4 opacity-70">
+        <div className="w-24 h-36 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-600 shadow-xl -rotate-6"></div>
+        <div className="w-24 h-36 rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-700 shadow-xl"></div>
+        <div className="w-24 h-36 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 shadow-xl rotate-6"></div>
       </div>
 
-      {/* Cyan Card (Right - Clipped) */}
-      <div className="absolute right-[-20px] w-32 h-44 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 shadow-2xl rotate-[15deg] skew-y-[-6deg] border border-white/20 z-10 animate-float-slow"></div>
+      {/* Foreground Main Card (The Tilted 3D Card) */}
+      <div className="relative z-10 w-48 h-64 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rotate-[15deg] border border-white/30 flex items-center justify-center transform hover:rotate-0 transition-transform duration-500">
+        <span className="text-white font-black text-4xl opacity-50 select-none">3D</span>
+      </div>
 
-      <style jsx global>{`
-        .perspective-1000 { perspective: 1000px; }
-        .animate-float-slow { animation: float 6s ease-in-out infinite; }
-        .animate-float-main { animation: float 4s ease-in-out infinite; }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-15px); }
-        }
-      `}</style>
     </div>
   )
 }
