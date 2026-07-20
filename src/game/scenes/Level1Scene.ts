@@ -8,7 +8,7 @@ const GROUND_Y = 568
 
 export default class Level1Scene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Sprite
-  private remotePlayer!: Phaser.Physics.Arcade.Sprite
+  private remotePlayer!: Phaser.GameObjects.Sprite
   private platforms!: Phaser.Physics.Arcade.StaticGroup
   private playerLabel!: Phaser.GameObjects.Text
   private remoteLabel!: Phaser.GameObjects.Text
@@ -50,7 +50,7 @@ export default class Level1Scene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, WORLD_W, WORLD_H)
     this.cameras.main.setBackgroundColor('#5c94fc')
 
-    // --- Parallax hills (far background) ---
+    // Parallax hills (far background)
     const hills = this.add.graphics()
     hills.fillStyle(0x3a8c2e, 0.3)
     for (let x = 0; x < WORLD_W; x += 200) {
@@ -59,8 +59,8 @@ export default class Level1Scene extends Phaser.Scene {
     }
     hills.setDepth(-8)
 
-    // --- Clouds (mid background) ---
-    const cloudPositions = [
+    // Clouds (mid background)
+    const cloudPositions: [number, number][] = [
       [180, 80], [520, 130], [900, 60], [1280, 140], [1650, 90],
       [2000, 120], [2400, 70], [2750, 140], [3100, 80], [3450, 110],
       [3800, 60], [4200, 130], [4600, 90], [4900, 50],
@@ -69,24 +69,23 @@ export default class Level1Scene extends Phaser.Scene {
       this.add.image(cx, cy, 'cloud').setAlpha(0.9).setDepth(-5)
     }
 
-    // --- Small background clouds ---
-    const smallCloudPositions = [
+    // Small background clouds
+    const smallCloudPositions: [number, number][] = [
       [350, 160], [1100, 170], [1900, 150], [2550, 180], [3350, 160], [4050, 170], [4750, 150],
     ]
     for (const [cx, cy] of smallCloudPositions) {
       this.add.image(cx, cy, 'cloud').setAlpha(0.5).setScale(0.5).setDepth(-5)
     }
 
-    // --- Platforms ---
+    // Platforms
     this.platforms = this.physics.add.staticGroup()
 
     // Ground segments with gaps
-    const groundSegments = [
+    const groundSegments: [number, number][] = [
       [0, 2240],
       [2420, 3520],
       [3700, WORLD_W],
-    ] as [number, number][]
-
+    ]
     for (const [start, end] of groundSegments) {
       for (let x = start; x < end; x += 32) {
         this.platforms.create(x + 16, GROUND_Y, 'ground')
@@ -119,10 +118,9 @@ export default class Level1Scene extends Phaser.Scene {
     }
 
     // Staircase up (x=850 area)
-    const stairBaseX = 850
     for (let i = 0; i < 5; i++) {
       for (let j = 0; j <= i; j++) {
-        this.platforms.create(stairBaseX + i * 32, GROUND_Y - 16 - j * 32, 'brick')
+        this.platforms.create(850 + i * 32, GROUND_Y - 16 - j * 32, 'brick')
       }
     }
 
@@ -132,14 +130,13 @@ export default class Level1Scene extends Phaser.Scene {
     }
 
     // Brick staircase descending (x=1550)
-    const stairBaseX2 = 1550
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4 - i; j++) {
-        this.platforms.create(stairBaseX2 + i * 32, GROUND_Y - 16 - j * 32, 'brick')
+        this.platforms.create(1550 + i * 32, GROUND_Y - 16 - j * 32, 'brick')
       }
     }
 
-    // --- Player ---
+    // Player
     this.player = this.physics.add.sprite(80, GROUND_Y - 60, 'player')
     this.player.setCollideWorldBounds(true)
     this.player.setDepth(2)
@@ -154,14 +151,10 @@ export default class Level1Scene extends Phaser.Scene {
       fontFamily: 'monospace',
     }).setOrigin(0.5).setDepth(3)
 
-    // --- Remote player ---
-    this.remotePlayer = this.physics.add.sprite(-100, -100, 'remotePlayer')
-    this.remotePlayer.setVisible(false)
+    // Remote player — NO physics (visual-only)
+    this.remotePlayer = this.add.sprite(-100, -100, 'remotePlayer')
+    this.remotePlayer.setVisible(true)
     this.remotePlayer.setDepth(2)
-    const rBody = this.remotePlayer.body as Phaser.Physics.Arcade.Body
-    rBody.setSize(20, 40)
-    rBody.setOffset(6, 8)
-    rBody.setGravityY(600)
 
     this.remoteLabel = this.add.text(-100, -100, '', {
       fontSize: '10px',
@@ -169,15 +162,14 @@ export default class Level1Scene extends Phaser.Scene {
       fontFamily: 'monospace',
     }).setOrigin(0.5).setDepth(3)
 
-    // --- Collisions ---
+    // Collisions (local player only)
     this.physics.add.collider(this.player, this.platforms)
-    this.physics.add.collider(this.remotePlayer, this.platforms)
 
-    // --- Camera ---
+    // Camera
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08)
     this.cameras.main.setDeadzone(80, 40)
 
-    // --- Input ---
+    // Input
     if (this.input.keyboard) {
       this.cursors = this.input.keyboard.createCursorKeys()
       this.wasd = {
@@ -188,7 +180,7 @@ export default class Level1Scene extends Phaser.Scene {
       }
     }
 
-    // --- Sync loop ---
+    // Sync loop
     this.time.addEvent({
       delay: this.syncInterval,
       callback: () => this.syncState(),
@@ -223,11 +215,10 @@ export default class Level1Scene extends Phaser.Scene {
       this.player.setVelocity(0, 0)
     }
 
-    // Remote interpolate
+    // Remote player — smooth lerp (no physics, no velocity, no gravity)
     if (this.remoteConnected) {
-      const dx = this.remoteTarget.x - this.remotePlayer.x
-      const dy = this.remoteTarget.y - this.remotePlayer.y
-      this.remotePlayer.setVelocity(dx * 10, dy * 10)
+      this.remotePlayer.x += (this.remoteTarget.x - this.remotePlayer.x) * 0.12
+      this.remotePlayer.y += (this.remoteTarget.y - this.remotePlayer.y) * 0.12
       this.remoteLabel.setPosition(this.remotePlayer.x, this.remotePlayer.y - 36)
     }
   }
@@ -242,8 +233,8 @@ export default class Level1Scene extends Phaser.Scene {
 
   setRemoteDisconnected(): void {
     this.remoteConnected = false
-    this.remotePlayer.setVisible(false)
     this.remotePlayer.setPosition(-100, -100)
+    this.remoteLabel.setPosition(-100, -100)
   }
 
   setActiveControls(controls: { left: boolean; right: boolean; jump: boolean }): void {

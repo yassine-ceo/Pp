@@ -31,6 +31,7 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
   const unsubRef = useRef<(() => void) | null>(null)
   const cleanupRef = useRef(false)
   const currentSceneRef = useRef<'lobby' | 'level1'>('lobby')
+  const lastRemoteState = useRef<{ x: number; y: number; facing: number } | null>(null)
 
   const syncState = useCallback((data: { x: number; y: number; vx: number; vy: number; grounded: boolean; facing: number }) => {
     if (cleanupRef.current) return
@@ -55,6 +56,9 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
     const l1 = game.scene.getScene('Level1Scene') as Level1Scene
     level1Ref.current = l1
     l1.setCallbacks(syncState)
+    if (lastRemoteState.current) {
+      l1.setRemotePosition(lastRemoteState.current.x, lastRemoteState.current.y, lastRemoteState.current.facing)
+    }
   }, [onLevelStart, syncState])
 
   // Subscribe to Firebase room
@@ -65,7 +69,6 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
     const unsub = subscribePlatformerRoom(roomCode, (room: PlatformerRoom | null) => {
       if (cleanupRef.current || !room) return
 
-      // Detect remote players
       const otherPlayers = Object.entries(room.players).filter(([id]) => id !== playerId)
       const remoteCount = otherPlayers.length
 
@@ -73,19 +76,21 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
         onRemoteJoin()
 
         const [, remoteState] = otherPlayers[0]
+        lastRemoteState.current = { x: remoteState.x, y: remoteState.y, facing: remoteState.facing }
+
         if (currentSceneRef.current === 'lobby' && lobbyRef.current) {
           lobbyRef.current.setRemotePosition(remoteState.x, remoteState.y, remoteState.facing)
         } else if (currentSceneRef.current === 'level1' && level1Ref.current) {
           level1Ref.current.setRemotePosition(remoteState.x, remoteState.y, remoteState.facing)
         }
 
-        // Host promotes status to 'starting' when guest arrives
         if (isHost && room.status === 'waiting' && remoteCount >= 1 && !hostHasTriggered) {
           hostHasTriggered = true
           setRoomStatus(roomCode, 'starting').catch(() => {})
         }
       } else {
-        // No remote player
+        lastRemoteState.current = null
+
         if (currentSceneRef.current === 'lobby' && lobbyRef.current) {
           lobbyRef.current.setRemoteDisconnected()
         } else if (currentSceneRef.current === 'level1' && level1Ref.current) {
@@ -93,7 +98,6 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
         }
       }
 
-      // Both clients react to 'starting' status — synchronized transition
       if (room.status === 'starting' && currentSceneRef.current === 'lobby') {
         doTransition()
       }
@@ -140,6 +144,9 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
       const lobby = game.scene.getScene('LobbyScene') as LobbyScene
       lobbyRef.current = lobby
       lobby.setCallbacks(syncState)
+      if (lastRemoteState.current) {
+        lobby.setRemotePosition(lastRemoteState.current.x, lastRemoteState.current.y, lastRemoteState.current.facing)
+      }
     })
 
     return () => {

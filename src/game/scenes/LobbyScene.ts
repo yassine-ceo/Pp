@@ -11,7 +11,7 @@ interface LobbyData {
 
 export default class LobbyScene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Sprite
-  private remotePlayer!: Phaser.Physics.Arcade.Sprite
+  private remotePlayer!: Phaser.GameObjects.Sprite
   private platforms!: Phaser.Physics.Arcade.StaticGroup
   private playerLabel!: Phaser.GameObjects.Text
   private remoteLabel!: Phaser.GameObjects.Text
@@ -137,24 +137,19 @@ export default class LobbyScene extends Phaser.Scene {
       fontFamily: 'monospace',
     }).setOrigin(0.5).setDepth(3)
 
-    // Remote player
-    this.remotePlayer = this.physics.add.sprite(-100, -100, 'remotePlayer')
-    this.remotePlayer.setVisible(false)
+    // Remote player — NO physics (visual-only)
+    this.remotePlayer = this.add.sprite(-100, -100, 'remotePlayer')
+    this.remotePlayer.setVisible(true)
     this.remotePlayer.setDepth(2)
-    const rpBody = this.remotePlayer.body as Phaser.Physics.Arcade.Body
-    rpBody.setSize(20, 40)
-    rpBody.setOffset(6, 8)
-    rpBody.setGravityY(500)
 
-    this.remoteLabel = this.add.text(-100, -100, '', {
+    this.remoteLabel = this.add.text(-100, -100, 'Player 2', {
       fontSize: '10px',
       color: '#4a90d9',
       fontFamily: 'monospace',
     }).setOrigin(0.5).setDepth(3)
 
-    // Collisions
+    // Collisions (local player only)
     this.physics.add.collider(this.player, this.platforms)
-    this.physics.add.collider(this.remotePlayer, this.platforms)
 
     // Input
     if (this.input.keyboard) {
@@ -177,31 +172,26 @@ export default class LobbyScene extends Phaser.Scene {
     const pBody = this.player.body as Phaser.Physics.Arcade.Body
     const grounded = pBody.blocked.down || pBody.touching.down
 
-    // Horizontal movement
     const speed = 180
     let vx = 0
     if (this.cursors?.left.isDown || this.keyA?.isDown || this.moveLeft) vx = -speed
     else if (this.cursors?.right.isDown || this.keyD?.isDown || this.moveRight) vx = speed
     this.player.setVelocityX(vx)
 
-    // Jump
     const jumpRequested = this.cursors?.up.isDown || this.keyW?.isDown || this.keySpace?.isDown || this.jumpPressed
     if (jumpRequested && grounded) {
       this.player.setVelocityY(-380)
     }
 
-    // Face direction
     if (vx < 0) this.player.setFlipX(true)
     else if (vx > 0) this.player.setFlipX(false)
 
-    // Label follows player
     this.playerLabel.setPosition(this.player.x, this.player.y - 36)
 
-    // Remote player interpolation (with gravity, the lerp handles Y too)
+    // Remote player — smooth lerp (no physics, no velocity, no gravity)
     if (this.remoteConnected) {
-      const dx = this.remoteTarget.x - this.remotePlayer.x
-      const dy = this.remoteTarget.y - this.remotePlayer.y
-      this.remotePlayer.setVelocity(dx * 8, dy * 8)
+      this.remotePlayer.x += (this.remoteTarget.x - this.remotePlayer.x) * 0.12
+      this.remotePlayer.y += (this.remoteTarget.y - this.remotePlayer.y) * 0.12
       this.remoteLabel.setPosition(this.remotePlayer.x, this.remotePlayer.y - 36)
     }
   }
@@ -216,7 +206,6 @@ export default class LobbyScene extends Phaser.Scene {
 
   setRemoteDisconnected(): void {
     this.remoteConnected = false
-    this.remotePlayer.setVisible(false)
     this.remotePlayer.setPosition(-100, -100)
     this.remoteLabel.setPosition(-100, -100)
   }
