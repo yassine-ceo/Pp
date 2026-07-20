@@ -297,8 +297,8 @@ export default function PlayOnline() {
 
         {/* Fixed Header — sticky, never scrolls */}
         <div className="sticky top-0 z-20">
-          {/* Progressive fade mask — cards dissolve smoothly as they pass under the header */}
-          <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none bg-gradient-to-b from-transparent via-[#0f172a]/20 to-[#0f172a]" />
+          {/* Progressive fade gradient at bottom of header — cards dissolve smoothly as they scroll under */}
+          <div className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none bg-gradient-to-b from-transparent via-[#0f172a]/15 to-[#0f172a]" />
           <header className="w-full flex justify-between items-center bg-transparent" style={{ padding: '24px' }}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 min-w-[40px] rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-lg shadow-sm">
@@ -322,7 +322,10 @@ export default function PlayOnline() {
         </div>
 
         {/* Scrollable Cards Dashboard — scrolls under the fixed header */}
-        <div className="flex-1 overflow-y-auto pb-6">
+        <div className="flex-1 overflow-y-auto pb-6" style={{ 
+          maskImage: 'linear-gradient(to bottom, transparent 0%, black 80px, black 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 80px, black 100%)'
+        }}>
           <div className="flex flex-col items-center gap-5 pt-36">
             {/* Structural spacer — forces first card down past the fixed header */}
             <div className="h-14 w-full block clear-both" />
