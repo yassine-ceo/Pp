@@ -295,73 +295,55 @@ export default function PlayOnline() {
         <XDeco className="absolute top-[8%] right-[12%] w-20 h-20 opacity-[0.04] animate-float-drift pointer-events-none" />
         <ODeco className="absolute bottom-[15%] left-[5%] w-28 h-28 opacity-[0.03] animate-float-drift-2 pointer-events-none" />
 
-        {/* Top bar — unified flexbox with robust inline style padding */}
-        <header className="w-full flex justify-between items-center bg-transparent" style={{ padding: '24px' }}>
-          {/* LEFT SIDE: Unified User Profile Info Container */}
-          <div className="flex items-center gap-3">
-            {/* Avatar - Zero floats, zero absolute positioning */}
-            <div className="w-10 h-10 min-w-[40px] rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-              {name.charAt(0).toUpperCase()}
-            </div>
-            
-            {/* Text Stack: Level -> Progress Bar -> Username */}
-            <div className="flex flex-col items-start justify-center">
-              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block leading-none">
-                LEVEL {level}
-              </span>
-              <div className="w-24 h-1.5 bg-gray-800 rounded-full overflow-hidden my-1 block">
-                <div 
-                  className="h-full bg-blue-500" 
-                  style={{ width: `${(playedTimeMs % 1800000) / 1800000 * 100}%` }}
-                ></div>
+        {/* Fixed Header — sticky, never scrolls */}
+        <div className="sticky top-0 z-20">
+          {/* Soft fade gradient at bottom edge — cards dissolve smoothly as they scroll under */}
+          <div className="absolute bottom-0 left-0 right-0 h-10 z-10 pointer-events-none bg-gradient-to-b from-transparent to-[#0f172a]" />
+          <header className="w-full flex justify-between items-center bg-transparent" style={{ padding: '24px' }}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 min-w-[40px] rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                {name.charAt(0).toUpperCase()}
               </div>
-              <span className="text-white font-bold text-sm block leading-none">
-                {name}
-              </span>
+              <div className="flex flex-col items-start justify-center">
+                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block leading-none">
+                  LEVEL {level}
+                </span>
+                <div className="w-24 h-1.5 bg-gray-800 rounded-full overflow-hidden my-1 block">
+                  <div className="h-full bg-blue-500" style={{ width: `${(playedTimeMs % 1800000) / 1800000 * 100}%` }} />
+                </div>
+                <span className="text-white font-bold text-sm block leading-none">{name}</span>
+              </div>
             </div>
-          </div>
-
-          {/* RIGHT SIDE: Smart Diamond Pill */}
-          <div className="bg-black/30 border border-gray-700 rounded-full px-3 py-1 flex items-center justify-center gap-2 min-w-[60px] h-8">
-            <span className="text-[#FFD700] text-sm">💎</span>
-            <span className="text-[#FFD700] font-bold text-sm leading-none">0</span>
-          </div>
-        </header>
-
-        {/* 1. OUTER WRAPPER: Forced layout via inline styles to bypass any Tailwind compilation or override bugs */}
-        <div style={{ width: '100%', paddingLeft: '16px', paddingRight: '16px', paddingTop: '48px', paddingBottom: '16px', boxSizing: 'border-box' }}>
-          
-          {/* 2. THE CARD */}
-          <div 
-            className="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-900 border border-white/10"
-            style={{ width: '100%', aspectRatio: '16/9' }}
-          >
-            
-            {/* Background Image */}
-            <img 
-              src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop" 
-              alt="XO Arena" 
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            
-            {/* Dark Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent"></div>
-            
-            {/* INNER CONTENT WRAPPER: Forced to the absolute bottom of the card */}
-            <div className="absolute inset-x-0 bottom-2 w-full flex flex-col items-center pb-12 px-3">
-              
-              {/* Title: Left-aligned to match button start */}
-              <h3 className="text-white font-bold text-lg w-[92%] text-left mb-2">
-                XO Arena
-              </h3>
-              
-              {/* Play Button: Lifted via pb-8, thinner, wider, perfectly centered */}
-              <button className="w-[92%] flex justify-center items-center gap-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-xs shadow-lg transition-transform active:scale-95" style={{ height: '26px' }}>
-                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                Play
-              </button>
-
+            <div className="bg-black/30 border border-gray-700 rounded-full px-3 py-1 flex items-center justify-center gap-2 min-w-[60px] h-8">
+              <span className="text-[#FFD700] text-sm">💎</span>
+              <span className="text-[#FFD700] font-bold text-sm leading-none">0</span>
             </div>
+          </header>
+        </div>
+
+        {/* Scrollable Cards Dashboard — scrolls under the fixed header */}
+        <div className="flex-1 overflow-y-auto px-4 pb-6">
+          <div className="flex flex-col gap-5 pt-6">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i}
+                className="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-900 border border-white/10"
+                style={{ width: '100%', aspectRatio: '16/9' }}
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop"
+                  alt="XO Arena"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+                <div className="absolute inset-x-0 bottom-2 w-full flex flex-col items-center pb-12 px-3">
+                  <h3 className="text-white font-bold text-lg w-[92%] text-left mb-2">XO Arena</h3>
+                  <button className="w-[92%] flex justify-center items-center gap-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-xs shadow-lg transition-transform active:scale-95" style={{ height: '26px' }}>
+                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    Play
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </main>
