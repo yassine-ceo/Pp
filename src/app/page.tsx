@@ -180,14 +180,12 @@ export default function PlayOnline() {
 
   const createMatch = () => {
     soundManager.playClick()
-    tryFullscreen()
     router.push('/room/create')
   }
 
   const joinMatch = () => {
     if (joinCode.trim().length < 4) return
     soundManager.playClick()
-    tryFullscreen()
     router.push(`/room/${joinCode.trim().toUpperCase()}`)
   }
 
@@ -308,66 +306,49 @@ export default function PlayOnline() {
           <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400 drop-shadow-[0_4px_0_rgba(0,0,0,1)] text-center">
             XO Arena
           </h2>
-          <p className="text-xs font-black uppercase tracking-widest text-center mt-1" style={{ color: '#3b82f6' }}>
+          <p className="text-xs font-black uppercase tracking-widest text-center mt-2" style={{ color: '#3b82f6' }}>
             Choose how to play
           </p>
 
-          <div className="flex items-center gap-3 mt-8 p-3 rounded-xl w-full max-w-sm"
-            style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-sm shrink-0"
-              style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 3px 0 #14532d' }}>
-              {name.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <span className="text-[0.55rem] font-bold uppercase tracking-widest block" style={{ color: 'rgba(255,255,255,0.25)' }}>Playing as</span>
-              <span className="text-white font-black text-sm block truncate">{name}</span>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4 mt-8 w-full max-w-sm">
+          <div className="flex flex-col items-center gap-5 mt-12 w-full max-w-[260px]">
             <button
               onClick={createMatch}
-              className="w-full flex justify-center items-center gap-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-sm shadow-lg transition-transform active:scale-95"
-              style={{ padding: '0.85rem 2rem' }}
+              className="w-full flex justify-center items-center gap-2 rounded-xl border text-white text-sm font-semibold transition-all hover:bg-white/10 active:scale-[0.97]"
+              style={{ padding: '0.6rem 1.5rem', background: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.12)' }}
             >
               Create Match
             </button>
 
             <button
               onClick={() => { soundManager.playClick(); setJoinPanel(!joinPanel) }}
-              className="w-full flex justify-center items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white font-semibold text-sm shadow-lg transition-transform active:scale-95"
-              style={{ padding: '0.85rem 2rem' }}
+              className="w-full flex justify-center items-center gap-2 rounded-xl border text-white text-sm font-semibold transition-all hover:bg-white/10 active:scale-[0.97]"
+              style={{ padding: '0.6rem 1.5rem', background: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.12)' }}
             >
               Join Match
             </button>
 
             {joinPanel && (
-              <div className="flex flex-col gap-3">
-                <div className="w-full" style={{
-                  background: 'rgba(0,0,0,0.4)',
-                  border: '2px solid rgba(59,130,246,0.3)',
-                  borderRadius: '9999px',
-                  padding: '0.25rem',
-                }}>
-                  <input
-                    type="text"
-                    value={joinCode}
-                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                    onKeyDown={(e) => e.key === 'Enter' && joinMatch()}
-                    placeholder="ROOM CODE"
-                    maxLength={8}
-                    autoFocus
-                    className="w-full text-center text-xl text-white font-black outline-none tracking-[0.3em] placeholder:text-gray-700"
-                    style={{ background: 'transparent', border: 'none', borderRadius: '9999px', padding: '0.75rem 1rem' }}
-                  />
-                </div>
+              <div className="flex flex-col items-center gap-3 w-full mt-1">
+                <input
+                  type="text"
+                  value={joinCode}
+                  onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => e.key === 'Enter' && joinMatch()}
+                  placeholder="Room Code"
+                  maxLength={8}
+                  autoFocus
+                  className="w-full text-center text-sm text-white font-semibold outline-none tracking-widest placeholder:text-gray-600"
+                  style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.75rem', padding: '0.6rem 1rem' }}
+                />
                 <button
                   onClick={joinMatch}
                   disabled={joinCode.trim().length < 4}
-                  className="w-full flex justify-center items-center gap-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-sm shadow-lg transition-transform active:scale-95"
+                  className="w-full flex justify-center items-center gap-2 rounded-xl border text-white text-sm font-semibold transition-all active:scale-[0.97]"
                   style={{
-                    padding: '0.85rem 2rem',
-                    opacity: joinCode.trim().length >= 4 ? 1 : 0.2,
+                    padding: '0.6rem 1.5rem',
+                    background: joinCode.trim().length >= 4 ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)',
+                    borderColor: joinCode.trim().length >= 4 ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.06)',
+                    opacity: joinCode.trim().length >= 4 ? 1 : 0.35,
                     cursor: joinCode.trim().length >= 4 ? 'pointer' : 'not-allowed',
                   }}
                 >
