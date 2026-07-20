@@ -348,15 +348,15 @@ export default function PlayOnline() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent"></div>
             
             {/* INNER CONTENT WRAPPER: Forced to the absolute bottom of the card */}
-            <div className="absolute inset-x-0 bottom-0 w-full flex flex-col items-center pb-3 px-3">
+            <div className="absolute inset-x-0 bottom-0 w-full flex flex-col items-center pb-8 px-3">
               
-              {/* Title: Pushed down, aligned left */}
-              <h3 className="text-white font-bold text-lg w-full text-left mb-2" style={{ paddingLeft: '32px' }}>
+              {/* Title: Left-aligned to match button start */}
+              <h3 className="text-white font-bold text-lg w-[92%] text-left mb-2">
                 XO Arena
               </h3>
               
-              {/* Play Button: THINNER (h-8 via inline style), WIDER (w-[92%]), smaller text, centered */}
-              <button className="w-[92%] flex justify-center items-center gap-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-xs shadow-lg transition-transform active:scale-95" style={{ height: '28px' }}>
+              {/* Play Button: Lifted via pb-8, thinner, wider, perfectly centered */}
+              <button className="w-[92%] flex justify-center items-center gap-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-xs shadow-lg transition-transform active:scale-95" style={{ height: '26px' }}>
                 <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                 Play
               </button>
