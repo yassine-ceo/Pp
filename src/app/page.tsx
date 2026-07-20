@@ -283,52 +283,101 @@ export default function PlayOnline() {
   /* ════════ XO SETUP — Full Page ════════ */
   if (stage === 'XO_SETUP') {
     return (
-      <main className="relative w-screen h-screen bg-gradient-to-br from-[#0f172a] via-[#1e1b4b] to-[#020617] flex flex-col overflow-y-auto">
-        {/* Ambient glow orbs */}
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#3b82f6]/8 rounded-full blur-[120px] animate-glow-pulse pointer-events-none" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#22c55e]/8 rounded-full blur-[120px] animate-glow-pulse pointer-events-none" style={{ animationDelay: '2.5s' }} />
+      <main className="relative w-screen h-screen flex flex-col overflow-y-auto"
+        style={{
+          background: `
+            radial-gradient(ellipse 140% 80% at 50% -20%, rgba(180,130,60,0.08) 0%, transparent 60%),
+            radial-gradient(ellipse 100% 60% at 80% 90%, rgba(180,130,60,0.06) 0%, transparent 50%),
+            radial-gradient(ellipse 80% 60% at 20% 80%, rgba(180,130,60,0.04) 0%, transparent 40%),
+            repeating-linear-gradient(90deg, transparent 0px, transparent 3px, rgba(255,215,0,0.015) 3px, rgba(255,215,0,0.015) 4px, transparent 4px, transparent 7px),
+            repeating-linear-gradient(0deg, transparent 0px, transparent 60px, rgba(0,0,0,0.06) 60px, rgba(0,0,0,0.06) 61px, transparent 61px, transparent 120px),
+            linear-gradient(180deg, #1a0f0a 0%, #0d0806 50%, #120a06 100%)
+          `
+        }}
+      >
+        {/* Warm ambient glow orbs */}
+        <div className="absolute top-[-15%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[100px] pointer-events-none" style={{ background: 'rgba(180,130,60,0.07)' }} />
+        <div className="absolute bottom-[-15%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[100px] pointer-events-none" style={{ background: 'rgba(200,160,80,0.05)' }} />
 
-        {/* Decorative X/O */}
-        <XDeco className="absolute top-[8%] right-[12%] w-20 h-20 opacity-[0.04] animate-float-drift pointer-events-none" />
-        <ODeco className="absolute bottom-[15%] left-[5%] w-28 h-28 opacity-[0.03] animate-float-drift-2 pointer-events-none" />
+        {/* Engraved X/O filigree patterns */}
+        <div className="absolute top-[12%] right-[15%] opacity-[0.06] pointer-events-none" style={{ color: '#c9953e' }}>
+          <svg width="80" height="80" viewBox="0 0 80 80" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M15 15 L65 65 M65 15 L15 65" strokeLinecap="round" />
+            <circle cx="40" cy="40" r="20" />
+            <circle cx="40" cy="40" r="26" strokeWidth="1" opacity="0.5" />
+          </svg>
+        </div>
+        <div className="absolute bottom-[18%] left-[8%] opacity-[0.05] pointer-events-none" style={{ color: '#c9953e' }}>
+          <svg width="100" height="100" viewBox="0 0 80 80" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M12 12 L68 68 M68 12 L12 68" strokeLinecap="round" />
+            <circle cx="40" cy="40" r="22" />
+            <path d="M40 8 L40 72 M8 40 L72 40" opacity="0.3" />
+          </svg>
+        </div>
+        <div className="absolute top-[40%] left-[20%] opacity-[0.04] pointer-events-none" style={{ color: '#c9953e' }}>
+          <svg width="40" height="40" viewBox="0 0 80 80" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M20 20 L60 60 M60 20 L20 60" strokeLinecap="round" />
+          </svg>
+        </div>
+        <div className="absolute bottom-[35%] right-[18%] opacity-[0.04] pointer-events-none" style={{ color: '#c9953e' }}>
+          <svg width="50" height="50" viewBox="0 0 80 80" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <circle cx="40" cy="40" r="18" />
+          </svg>
+        </div>
 
-        {/* Back arrow */}
+        {/* Gold filigree corner accents */}
+        <div className="absolute top-8 right-8 w-16 h-16 opacity-[0.15] pointer-events-none" style={{ borderTop: '1px solid #c9953e', borderRight: '1px solid #c9953e' }} />
+        <div className="absolute bottom-8 left-8 w-16 h-16 opacity-[0.15] pointer-events-none" style={{ borderBottom: '1px solid #c9953e', borderLeft: '1px solid #c9953e' }} />
+
+        {/* Back arrow — polished gold */}
         <button
           onClick={() => { soundManager.playClick(); setStage('CATALOG') }}
-          className="absolute top-6 left-6 z-10 flex items-center justify-center w-10 h-10 rounded-full transition-colors hover:bg-white/10"
-          style={{ color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}
+          className="absolute top-6 left-6 z-10 flex items-center justify-center w-10 h-10 rounded-full transition-all hover:scale-105 active:scale-95"
+          style={{ color: '#d4a84b', border: '1px solid rgba(212,168,75,0.25)', background: 'rgba(20,12,8,0.6)' }}
         >
           <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         </button>
 
         {/* Center content */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6 py-20">
-          <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400 drop-shadow-[0_4px_0_rgba(0,0,0,1)] text-center">
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-24">
+          <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-[#f5e6c8] via-[#d4a84b] to-[#b8860b] drop-shadow-[0_2px_0_rgba(0,0,0,0.6)] text-center tracking-tight">
             XO Arena
           </h2>
-          <p className="text-xs font-black uppercase tracking-widest text-center mt-2" style={{ color: '#3b82f6' }}>
+          <p className="text-[0.65rem] font-black uppercase tracking-[0.25em] text-center mt-6" style={{ color: 'rgba(212,168,75,0.6)' }}>
             Choose how to play
           </p>
 
-          <div className="flex flex-col items-center gap-5 mt-12 w-full max-w-[260px]">
+          <div className="flex flex-col items-center gap-6 mt-16 w-full max-w-[240px]">
             <button
               onClick={createMatch}
-              className="w-full flex justify-center items-center gap-2 rounded-xl border text-white text-sm font-semibold transition-all hover:bg-white/10 active:scale-[0.97]"
-              style={{ padding: '0.6rem 1.5rem', background: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.12)' }}
+              className="w-full flex justify-center items-center gap-2 rounded-lg text-sm font-semibold transition-all active:scale-[0.97]"
+              style={{
+                padding: '0.6rem 1.5rem',
+                background: 'linear-gradient(to bottom, #2a1a10, #1a0f0a)',
+                border: '1px solid rgba(212,168,75,0.35)',
+                boxShadow: 'inset 0 1px 0 rgba(212,168,75,0.12), 0 2px 6px rgba(0,0,0,0.4)',
+                color: '#d4a84b',
+              }}
             >
               Create Match
             </button>
 
             <button
               onClick={() => { soundManager.playClick(); setJoinPanel(!joinPanel) }}
-              className="w-full flex justify-center items-center gap-2 rounded-xl border text-white text-sm font-semibold transition-all hover:bg-white/10 active:scale-[0.97]"
-              style={{ padding: '0.6rem 1.5rem', background: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.12)' }}
+              className="w-full flex justify-center items-center gap-2 rounded-lg text-sm font-semibold transition-all active:scale-[0.97]"
+              style={{
+                padding: '0.6rem 1.5rem',
+                background: 'linear-gradient(to bottom, #2a1a10, #1a0f0a)',
+                border: '1px solid rgba(212,168,75,0.35)',
+                boxShadow: 'inset 0 1px 0 rgba(212,168,75,0.12), 0 2px 6px rgba(0,0,0,0.4)',
+                color: '#d4a84b',
+              }}
             >
               Join Match
             </button>
 
             {joinPanel && (
-              <div className="flex flex-col items-center gap-3 w-full mt-1">
+              <div className="flex flex-col items-center gap-4 w-full mt-2">
                 <input
                   type="text"
                   value={joinCode}
@@ -337,19 +386,31 @@ export default function PlayOnline() {
                   placeholder="Room Code"
                   maxLength={8}
                   autoFocus
-                  className="w-full text-center text-sm text-white font-semibold outline-none tracking-widest placeholder:text-gray-600"
-                  style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.75rem', padding: '0.6rem 1rem' }}
+                  className="w-full text-center text-sm font-semibold outline-none tracking-[0.2em] placeholder:text-[rgba(212,168,75,0.25)]"
+                  style={{
+                    background: 'rgba(10,6,4,0.6)',
+                    border: '1px solid rgba(212,168,75,0.2)',
+                    borderRadius: '0.5rem',
+                    padding: '0.6rem 1rem',
+                    color: '#d4a84b',
+                  }}
                 />
                 <button
                   onClick={joinMatch}
                   disabled={joinCode.trim().length < 4}
-                  className="w-full flex justify-center items-center gap-2 rounded-xl border text-white text-sm font-semibold transition-all active:scale-[0.97]"
+                  className="w-full flex justify-center items-center gap-2 rounded-lg text-sm font-semibold transition-all active:scale-[0.97]"
                   style={{
                     padding: '0.6rem 1.5rem',
-                    background: joinCode.trim().length >= 4 ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)',
-                    borderColor: joinCode.trim().length >= 4 ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.06)',
-                    opacity: joinCode.trim().length >= 4 ? 1 : 0.35,
+                    background: joinCode.trim().length >= 4
+                      ? 'linear-gradient(to bottom, #3a2818, #2a1a10)'
+                      : 'linear-gradient(to bottom, #1a1008, #120a06)',
+                    border: joinCode.trim().length >= 4
+                      ? '1px solid rgba(212,168,75,0.5)'
+                      : '1px solid rgba(212,168,75,0.1)',
+                    boxShadow: joinCode.trim().length >= 4 ? 'inset 0 1px 0 rgba(212,168,75,0.15), 0 2px 6px rgba(0,0,0,0.4)' : 'none',
+                    color: joinCode.trim().length >= 4 ? '#d4a84b' : 'rgba(212,168,75,0.3)',
                     cursor: joinCode.trim().length >= 4 ? 'pointer' : 'not-allowed',
+                    opacity: joinCode.trim().length >= 4 ? 1 : 0.5,
                   }}
                 >
                   Join
