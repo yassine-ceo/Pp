@@ -333,7 +333,7 @@ export default function PlayOnline() {
             New catalog UI will be built here.
             ═══════════════════════════════════════════════════ */}
         <div className="flex-1 w-full relative overflow-y-auto">
-          <div className="aspect-video relative rounded-3xl overflow-hidden mx-6 mt-6">
+          <div className="aspect-video relative rounded-3xl overflow-hidden mx-6 mt-8">
             <img
               src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop"
               alt="Game background"
@@ -343,7 +343,7 @@ export default function PlayOnline() {
               className="absolute inset-0"
               style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)' }}
             />
-            <div className="absolute bottom-0 left-0 right-0 p-5">
+            <div className="absolute bottom-0 left-0 right-0 pb-8 pt-5 px-5">
               <h3 className="text-white font-bold text-lg leading-tight mb-3">XO Arena</h3>
               <button className="w-[85%] mx-auto mt-3 py-2 flex justify-center items-center rounded-full bg-white/20 backdrop-blur-md border border-white/10">
                 <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white">
