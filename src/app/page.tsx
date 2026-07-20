@@ -326,8 +326,8 @@ export default function PlayOnline() {
           <div className="flex flex-col gap-5 pt-6">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i}
-                className="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-900 border border-white/10 mx-5"
-                style={{ aspectRatio: '5/4' }}
+                className="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-900 border border-white/10 w-[85%] mx-auto"
+                style={{ aspectRatio: '16/9' }}
               >
                 <img
                   src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop"
