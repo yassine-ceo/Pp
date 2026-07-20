@@ -295,13 +295,13 @@ export default function PlayOnline() {
         <XDeco className="absolute top-[8%] right-[12%] w-20 h-20 opacity-[0.04] animate-float-drift pointer-events-none" />
         <ODeco className="absolute bottom-[15%] left-[5%] w-28 h-28 opacity-[0.03] animate-float-drift-2 pointer-events-none" />
 
-        {/* Top bar — flat DOM, no inner wrappers */}
-        <div className="w-full block relative pt-6 px-6 pb-2">
-          <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold float-left">
+        {/* Top bar — flat DOM, forced left/top margins */}
+        <div className="w-full block relative p-6">
+          <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold float-left mt-6 ml-6">
             {name.charAt(0).toUpperCase()}
           </div>
-          <div className="ml-14">
-            <span className="text-[10px] text-gray-400 font-bold uppercase block">LEVEL {level}</span>
+          <div className="float-left mt-6 ml-4 flex flex-col items-start justify-center">
+            <span className="text-[10px] text-gray-400 font-bold uppercase block tracking-wider">LEVEL {level}</span>
             <div className="w-24 h-1.5 bg-gray-800 rounded-full overflow-hidden my-1 block">
               <div className="h-full bg-blue-500" style={{ width: `${(playedTimeMs % 1800000) / 1800000 * 100}%` }} />
             </div>
