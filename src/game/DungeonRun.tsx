@@ -14,7 +14,6 @@ interface DungeonRunProps {
 
 export default function DungeonRun({ roomCode, playerId, playerName, isHost, onBack }: DungeonRunProps) {
   const [playerCount, setPlayerCount] = useState(1)
-  const [scene, setScene] = useState<'lobby' | 'level1'>('lobby')
   const [levelStarted, setLevelStarted] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -24,11 +23,6 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
 
   const handleLevelStart = useCallback(() => {
     setLevelStarted(true)
-    setScene('level1')
-  }, [])
-
-  const handleError = useCallback((msg: string) => {
-    console.error(msg)
   }, [])
 
   const handleShareLink = useCallback(() => {
@@ -68,7 +62,6 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
         </button>
       </div>
 
-      {/* Phaser canvas */}
       <PhaserGame
         roomCode={roomCode}
         playerId={playerId}
@@ -76,11 +69,10 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
         isHost={isHost}
         onRemoteJoin={handleRemoteJoin}
         onLevelStart={handleLevelStart}
-        onError={handleError}
+        onError={console.error}
       />
 
-      {/* Touch controls overlay */}
-      <TouchControls scene={scene} />
+      <TouchControls />
     </div>
   )
 }

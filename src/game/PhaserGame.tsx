@@ -31,9 +31,7 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
   const unsubRef = useRef<(() => void) | null>(null)
   const cleanupRef = useRef(false)
   const currentSceneRef = useRef<'lobby' | 'level1'>('lobby')
-  const transitionStartedRef = useRef(false)
 
-  // Sync player state to Firebase
   const syncState = useCallback((data: { x: number; y: number; vx: number; vy: number; grounded: boolean; facing: number }) => {
     if (cleanupRef.current) return
     updatePlayerPosition(roomCode, playerId, {
@@ -46,21 +44,34 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
     }).catch(() => {})
   }, [roomCode, playerId])
 
-  // Subscribe to remote player
+  const doTransition = useCallback(() => {
+    if (cleanupRef.current || currentSceneRef.current === 'level1') return
+    currentSceneRef.current = 'level1'
+    onLevelStart()
+    const game = gameRef.current
+    if (!game) return
+    game.scene.stop('LobbyScene')
+    game.scene.start('Level1Scene')
+    const l1 = game.scene.getScene('Level1Scene') as Level1Scene
+    level1Ref.current = l1
+    l1.setCallbacks(syncState)
+  }, [onLevelStart, syncState])
+
+  // Subscribe to Firebase room
   useEffect(() => {
     cleanupRef.current = false
-    transitionStartedRef.current = false
+    let hostHasTriggered = false
 
     const unsub = subscribePlatformerRoom(roomCode, (room: PlatformerRoom | null) => {
       if (cleanupRef.current || !room) return
 
+      // Detect remote players
       const otherPlayers = Object.entries(room.players).filter(([id]) => id !== playerId)
       const remoteCount = otherPlayers.length
 
       if (remoteCount > 0) {
         onRemoteJoin()
 
-        // Update remote position in lobby or level1
         const [, remoteState] = otherPlayers[0]
         if (currentSceneRef.current === 'lobby' && lobbyRef.current) {
           lobbyRef.current.setRemotePosition(remoteState.x, remoteState.y, remoteState.facing)
@@ -68,38 +79,23 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
           level1Ref.current.setRemotePosition(remoteState.x, remoteState.y, remoteState.facing)
         }
 
-        // Transition to level 1 when both are together in lobby
-        if (room.status === 'waiting' && remoteCount >= 1 && !transitionStartedRef.current) {
-          transitionStartedRef.current = true
-          setRoomStatus(roomCode, 'countdown').catch(() => {})
-          setTimeout(() => {
-            if (cleanupRef.current) return
-            currentSceneRef.current = 'level1'
-            onLevelStart()
-            const game = gameRef.current
-            if (game) {
-              game.scene.stop('LobbyScene')
-              game.scene.start('Level1Scene')
-              const l1 = game.scene.getScene('Level1Scene') as Level1Scene
-              level1Ref.current = l1
-              if (room.players) {
-                const others = Object.entries(room.players).filter(([id]) => id !== playerId)
-                if (others.length > 0) {
-                  const [, state] = others[0]
-                  l1.setRemotePosition(state.x, state.y, state.facing)
-                }
-              }
-              l1.setCallbacks(syncState)
-            }
-            setRoomStatus(roomCode, 'playing').catch(() => {})
-          }, 2000)
+        // Host promotes status to 'starting' when guest arrives
+        if (isHost && room.status === 'waiting' && remoteCount >= 1 && !hostHasTriggered) {
+          hostHasTriggered = true
+          setRoomStatus(roomCode, 'starting').catch(() => {})
         }
       } else {
+        // No remote player
         if (currentSceneRef.current === 'lobby' && lobbyRef.current) {
           lobbyRef.current.setRemoteDisconnected()
         } else if (currentSceneRef.current === 'level1' && level1Ref.current) {
           level1Ref.current.setRemoteDisconnected()
         }
+      }
+
+      // Both clients react to 'starting' status — synchronized transition
+      if (room.status === 'starting' && currentSceneRef.current === 'lobby') {
+        doTransition()
       }
     })
 
@@ -108,7 +104,7 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
       cleanupRef.current = true
       unsub()
     }
-  }, [roomCode, playerId, onRemoteJoin, onLevelStart, syncState, onError])
+  }, [roomCode, playerId, isHost, onRemoteJoin, doTransition, onError])
 
   // Initialize Phaser
   useEffect(() => {
@@ -126,7 +122,7 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
       backgroundColor: '#0d0806',
       physics: {
         default: 'arcade',
-        arcade: { gravity: { x: 0, y: 0 }, debug: false },
+        arcade: { gravity: { x: 0, y: 500 }, debug: false },
       },
       scene: [BootScene, LobbyScene, Level1Scene],
       scale: {
@@ -139,12 +135,11 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
     const game = new Phaser.Game(config)
     gameRef.current = game
 
-    // Wait for boot then start lobby
     game.events.on('ready', () => {
       game.scene.start('LobbyScene', { roomCode, playerId, playerName, isHost })
       const lobby = game.scene.getScene('LobbyScene') as LobbyScene
       lobbyRef.current = lobby
-      lobby.setCallbacks(syncState, () => {})
+      lobby.setCallbacks(syncState)
     })
 
     return () => {
@@ -163,8 +158,8 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
     }
   }, [roomCode, playerId, playerName, isHost, syncState])
 
-  // Expose control methods via imperative handle
-  const setLobbyControls = useCallback((controls: { left: boolean; right: boolean; up: boolean; down: boolean }) => {
+  // Expose control methods via window for TouchControls
+  const setLobbyControls = useCallback((controls: { left: boolean; right: boolean; jump: boolean }) => {
     lobbyRef.current?.setActiveControls(controls)
   }, [])
 
@@ -172,11 +167,9 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
     level1Ref.current?.setActiveControls(controls)
   }, [])
 
-  // Store on instance for touch controls to access
   const apiRef = useRef({ setLobbyControls, setLevelControls, currentSceneRef })
   apiRef.current = { setLobbyControls, setLevelControls, currentSceneRef }
 
-  // Expose on window for touch overlay
   useEffect(() => {
     const w = window as any
     w.__phaserControls = apiRef

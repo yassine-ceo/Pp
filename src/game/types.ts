@@ -1,6 +1,6 @@
 'use client'
 
-export type PlatformerRoomStatus = 'waiting' | 'countdown' | 'playing' | 'finished'
+export type PlatformerRoomStatus = 'waiting' | 'starting' | 'playing' | 'finished'
 
 export interface PlayerState {
   id: string
@@ -23,12 +23,10 @@ export interface PlatformerRoom {
   createdAt: number
 }
 
-export type GamepadAction = 'left' | 'right' | 'jump' | 'attack' | 'shield'
+export type GamepadAction = 'left' | 'right' | 'jump'
 
 export interface InputState {
   left: boolean
   right: boolean
   jump: boolean
-  attack: boolean
-  shield: boolean
 }
