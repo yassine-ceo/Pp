@@ -2,6 +2,10 @@
 
 import * as Phaser from 'phaser'
 
+const WORLD_W = 5000
+const WORLD_H = 600
+const GROUND_Y = 568
+
 export default class Level1Scene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Sprite
   private remotePlayer!: Phaser.Physics.Arcade.Sprite
@@ -42,60 +46,122 @@ export default class Level1Scene extends Phaser.Scene {
   }
 
   create(): void {
-    const w = Number(this.game.config.width)
-    const h = Number(this.game.config.height)
+    this.physics.world.setBounds(0, 0, WORLD_W, WORLD_H)
+    this.cameras.main.setBounds(0, 0, WORLD_W, WORLD_H)
+    this.cameras.main.setBackgroundColor('#5c94fc')
 
-    this.cameras.main.setBackgroundColor('#0a0a15')
+    // --- Parallax hills (far background) ---
+    const hills = this.add.graphics()
+    hills.fillStyle(0x3a8c2e, 0.3)
+    for (let x = 0; x < WORLD_W; x += 200) {
+      const h = 80 + Math.random() * 120
+      hills.fillEllipse(x + 100, WORLD_H - h / 2, 240, h)
+    }
+    hills.setDepth(-8)
 
-    // Background gradient
-    const bg = this.add.graphics()
-    bg.fillGradientStyle(0x0a0a20, 0x0a0a20, 0x1a1a30, 0x1a1a30, 1)
-    bg.fillRect(0, 0, w, h)
-    bg.setDepth(-10)
+    // --- Clouds (mid background) ---
+    const cloudPositions = [
+      [180, 80], [520, 130], [900, 60], [1280, 140], [1650, 90],
+      [2000, 120], [2400, 70], [2750, 140], [3100, 80], [3450, 110],
+      [3800, 60], [4200, 130], [4600, 90], [4900, 50],
+    ]
+    for (const [cx, cy] of cloudPositions) {
+      this.add.image(cx, cy, 'cloud').setAlpha(0.9).setDepth(-5)
+    }
 
-    // Platforms
+    // --- Small background clouds ---
+    const smallCloudPositions = [
+      [350, 160], [1100, 170], [1900, 150], [2550, 180], [3350, 160], [4050, 170], [4750, 150],
+    ]
+    for (const [cx, cy] of smallCloudPositions) {
+      this.add.image(cx, cy, 'cloud').setAlpha(0.5).setScale(0.5).setDepth(-5)
+    }
+
+    // --- Platforms ---
     this.platforms = this.physics.add.staticGroup()
 
-    // Ground
-    for (let x = 0; x < w; x += 64) {
-      this.platforms.create(x + 32, h - 16, 'platform')
+    // Ground segments with gaps
+    const groundSegments = [
+      [0, 2240],
+      [2420, 3520],
+      [3700, WORLD_W],
+    ] as [number, number][]
+
+    for (const [start, end] of groundSegments) {
+      for (let x = start; x < end; x += 32) {
+        this.platforms.create(x + 16, GROUND_Y, 'ground')
+      }
     }
 
-    // Floating platforms
-    const platformLayout = [
-      { x: w * 0.15, y: h * 0.6 },
-      { x: w * 0.35, y: h * 0.45 },
-      { x: w * 0.55, y: h * 0.55 },
-      { x: w * 0.75, y: h * 0.4 },
-      { x: w * 0.9, y: h * 0.3 },
+    // Gap 1 stepping stones
+    this.platforms.create(2300, 440, 'brick')
+    this.platforms.create(2360, 440, 'brick')
+
+    // Gap 2 stepping stones (ascending)
+    this.platforms.create(3580, 440, 'brick')
+    this.platforms.create(3640, 360, 'brick')
+
+    // Scattered brick platforms
+    const brickPositions: [number, number][] = [
+      [300, 420], [500, 340], [700, 420],
+      [1000, 400], [1150, 300], [1300, 420],
+      [1500, 340], [1700, 280], [1900, 400],
+      [2100, 340], [2250, 420],
+      [2550, 380], [2700, 300], [2850, 420],
+      [3050, 340], [3200, 260], [3400, 400],
+      [3550, 300],
+      [3850, 420], [4000, 340], [4150, 260],
+      [4350, 400], [4500, 320], [4650, 380],
+      [4850, 300], [4950, 420],
     ]
-    for (const p of platformLayout) {
-      this.platforms.create(p.x, p.y, 'platform')
+    for (const [bx, by] of brickPositions) {
+      this.platforms.create(bx, by, 'brick')
     }
 
-    // Player
-    this.player = this.physics.add.sprite(80, h - 60, 'player')
+    // Staircase up (x=850 area)
+    const stairBaseX = 850
+    for (let i = 0; i < 5; i++) {
+      for (let j = 0; j <= i; j++) {
+        this.platforms.create(stairBaseX + i * 32, GROUND_Y - 16 - j * 32, 'brick')
+      }
+    }
+
+    // Tall column at x=4400
+    for (let y = GROUND_Y - 16; y > GROUND_Y - 200; y -= 32) {
+      this.platforms.create(4400, y, 'brick')
+    }
+
+    // Brick staircase descending (x=1550)
+    const stairBaseX2 = 1550
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4 - i; j++) {
+        this.platforms.create(stairBaseX2 + i * 32, GROUND_Y - 16 - j * 32, 'brick')
+      }
+    }
+
+    // --- Player ---
+    this.player = this.physics.add.sprite(80, GROUND_Y - 60, 'player')
     this.player.setCollideWorldBounds(true)
     this.player.setDepth(2)
-    const playerBody = this.player.body as Phaser.Physics.Arcade.Body
-    playerBody.setSize(20, 40)
-    playerBody.setOffset(6, 8)
-    playerBody.setGravityY(600)
+    const pBody = this.player.body as Phaser.Physics.Arcade.Body
+    pBody.setSize(20, 40)
+    pBody.setOffset(6, 8)
+    pBody.setGravityY(600)
 
-    this.playerLabel = this.add.text(80, h - 90, 'You', {
+    this.playerLabel = this.add.text(this.player.x, this.player.y - 36, 'You', {
       fontSize: '10px',
       color: '#d4a84b',
       fontFamily: 'monospace',
     }).setOrigin(0.5).setDepth(3)
 
-    // Remote player
+    // --- Remote player ---
     this.remotePlayer = this.physics.add.sprite(-100, -100, 'remotePlayer')
     this.remotePlayer.setVisible(false)
     this.remotePlayer.setDepth(2)
-    const remoteBody = this.remotePlayer.body as Phaser.Physics.Arcade.Body
-    remoteBody.setSize(20, 40)
-    remoteBody.setOffset(6, 8)
-    remoteBody.setGravityY(600)
+    const rBody = this.remotePlayer.body as Phaser.Physics.Arcade.Body
+    rBody.setSize(20, 40)
+    rBody.setOffset(6, 8)
+    rBody.setGravityY(600)
 
     this.remoteLabel = this.add.text(-100, -100, '', {
       fontSize: '10px',
@@ -103,11 +169,15 @@ export default class Level1Scene extends Phaser.Scene {
       fontFamily: 'monospace',
     }).setOrigin(0.5).setDepth(3)
 
-    // Collisions
+    // --- Collisions ---
     this.physics.add.collider(this.player, this.platforms)
     this.physics.add.collider(this.remotePlayer, this.platforms)
 
-    // Input
+    // --- Camera ---
+    this.cameras.main.startFollow(this.player, true, 0.08, 0.08)
+    this.cameras.main.setDeadzone(80, 40)
+
+    // --- Input ---
     if (this.input.keyboard) {
       this.cursors = this.input.keyboard.createCursorKeys()
       this.wasd = {
@@ -118,7 +188,7 @@ export default class Level1Scene extends Phaser.Scene {
       }
     }
 
-    // Sync loop
+    // --- Sync loop ---
     this.time.addEvent({
       delay: this.syncInterval,
       callback: () => this.syncState(),
@@ -147,7 +217,13 @@ export default class Level1Scene extends Phaser.Scene {
 
     this.playerLabel.setPosition(this.player.x, this.player.y - 36)
 
-    // Interpolate remote
+    // Fall death zone
+    if (this.player.y > WORLD_H + 50) {
+      this.player.setPosition(80, GROUND_Y - 60)
+      this.player.setVelocity(0, 0)
+    }
+
+    // Remote interpolate
     if (this.remoteConnected) {
       const dx = this.remoteTarget.x - this.remotePlayer.x
       const dy = this.remoteTarget.y - this.remotePlayer.y

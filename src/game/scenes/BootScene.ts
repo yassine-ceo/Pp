@@ -33,7 +33,7 @@ export default class BootScene extends Phaser.Scene {
     g.generateTexture('remotePlayer', 32, 48)
     g.clear()
 
-    // Floor tile
+    // Floor tile (32x32) — for LobbyScene
     g.fillStyle(0x3a2a1a)
     g.fillRect(0, 0, 32, 32)
     g.lineStyle(1, 0x2a1a0a, 0.3)
@@ -41,7 +41,7 @@ export default class BootScene extends Phaser.Scene {
     g.generateTexture('floor', 32, 32)
     g.clear()
 
-    // Wall tile
+    // Wall tile (32x32) — for LobbyScene
     g.fillStyle(0x2a1a1a)
     g.fillRect(0, 0, 32, 32)
     g.fillStyle(0x3a2a2a)
@@ -51,22 +51,44 @@ export default class BootScene extends Phaser.Scene {
     g.generateTexture('wall', 32, 32)
     g.clear()
 
-    // Door texture
-    g.fillStyle(0x8b6508)
-    g.fillRect(8, 0, 16, 64)
-    g.fillStyle(0x6b4c1a)
-    g.fillRect(10, 2, 12, 60)
-    g.fillStyle(0xd4a84b)
-    g.fillCircle(20, 32, 3)
-    g.generateTexture('door', 32, 64)
+    // Ground tile (32x64) — green grass on brown dirt
+    g.fillStyle(0x8B4513)
+    g.fillRect(0, 0, 32, 64)
+    g.fillStyle(0x4a7c2e)
+    g.fillRect(0, 0, 32, 8)
+    g.fillStyle(0x5c9e3a)
+    g.fillRect(0, 0, 32, 4)
+    g.lineStyle(1, 0x6B3A1F, 0.3)
+    g.lineBetween(0, 20, 32, 20)
+    g.lineBetween(0, 40, 32, 40)
+    g.generateTexture('ground', 32, 64)
     g.clear()
 
-    // Platform
-    g.fillStyle(0x4a3a2a)
-    g.fillRect(0, 0, 64, 16)
-    g.lineStyle(1, 0x6b4c1a, 0.5)
-    g.strokeRect(0, 0, 64, 16)
-    g.generateTexture('platform', 64, 16)
+    // Brick tile (32x32)
+    g.fillStyle(0xc87c2e)
+    g.fillRect(0, 0, 32, 32)
+    g.fillStyle(0xd48c3e)
+    g.fillRect(2, 2, 12, 12)
+    g.fillRect(18, 2, 12, 12)
+    g.fillRect(10, 18, 12, 12)
+    g.lineStyle(1, 0x8a5a2a, 0.4)
+    g.strokeRect(0, 0, 32, 32)
+    g.lineBetween(16, 0, 16, 14)
+    g.lineBetween(0, 16, 32, 16)
+    g.lineBetween(8, 16, 8, 32)
+    g.lineBetween(24, 16, 24, 32)
+    g.generateTexture('brick', 32, 32)
+    g.clear()
+
+    // Cloud texture (128x64)
+    g.fillStyle(0xffffff)
+    g.fillCircle(32, 40, 24)
+    g.fillCircle(64, 32, 28)
+    g.fillCircle(96, 40, 24)
+    g.fillStyle(0xf0f0f0)
+    g.fillCircle(48, 28, 20)
+    g.fillCircle(80, 28, 20)
+    g.generateTexture('cloud', 128, 64)
     g.clear()
 
     g.destroy()
