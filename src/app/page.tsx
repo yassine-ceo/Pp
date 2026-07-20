@@ -327,13 +327,13 @@ export default function PlayOnline() {
           <div className="flex flex-col items-center gap-5 pt-36">
             {/* Structural spacer — forces first card down past the fixed header */}
             <div className="h-14 w-full block clear-both" />
-            {[1, 2, 3, 4, 5].map((i) => (
+            {[1, 2, 3, 4, 5].map((i, index) => (
               <div key={i}
                 className="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-900 border border-white/10 w-[85%] max-w-sm mx-auto"
                 style={{ aspectRatio: '16/9' }}
               >
                 <img
-                  src="/avatars/xo-background.png"
+                  src={index === 0 ? '/avatars/xo-background.png' : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop'}
                   alt="XO Arena"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
