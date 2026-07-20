@@ -6,8 +6,9 @@ import { useGameStore } from '@/stores/gameStore'
 import { soundManager } from '@/lib/sound'
 import HeroAnimation from '@/components/HeroAnimation'
 import BotGame from '@/components/ui/BotGame'
+import { LobbyEntry, GameEntry } from '@/game/ClientEntry'
 
-type Stage = 'WELCOME' | 'CATALOG' | 'XO_SETUP' | 'BOT_GAME'
+type Stage = 'WELCOME' | 'CATALOG' | 'XO_SETUP' | 'BOT_GAME' | 'PLATFORMER_LOBBY' | 'PLATFORMER_GAME'
 
 function tryFullscreen() {
   try {
@@ -83,7 +84,7 @@ function OIcon() {
 
 export default function PlayOnline() {
   const router = useRouter()
-  const { playerName, setPlayerName, setPlayerId } = useGameStore()
+  const { playerName, playerId, setPlayerName, setPlayerId } = useGameStore()
 
   const [stage, setStage] = useState<Stage>('WELCOME')
   const [name, setName] = useState(playerName || '')
@@ -91,6 +92,8 @@ export default function PlayOnline() {
   const [botPanel, setBotPanel] = useState(false)
   const [botDifficulty, setBotDifficulty] = useState<'Easy' | 'Medium' | 'Epic'>('Easy')
   const [joinCode, setJoinCode] = useState('')
+  const [platformerRoomCode, setPlatformerRoomCode] = useState('')
+  const [platformerIsHost, setPlatformerIsHost] = useState(false)
   const [deepRoom, setDeepRoom] = useState<string | null>(null)
   const [booted, setBooted] = useState(false)
   const [playedTimeMs, setPlayedTimeMs] = useState(0)
@@ -465,6 +468,38 @@ export default function PlayOnline() {
     return <BotGame difficulty={botDifficulty} playerName={name || 'Player'} onBack={() => setStage('XO_SETUP')} />
   }
 
+  /* ════════ PLATFORMER LOBBY ════════ */
+  if (stage === 'PLATFORMER_LOBBY') {
+    return (
+      <LobbyEntry
+        playerId={playerId || ''}
+        playerName={name || 'Player'}
+        onStartGame={(code, isHost) => {
+          setPlatformerRoomCode(code)
+          setPlatformerIsHost(isHost)
+          setStage('PLATFORMER_GAME')
+        }}
+        onBack={() => setStage('CATALOG')}
+      />
+    )
+  }
+
+  /* ════════ PLATFORMER GAME ════════ */
+  if (stage === 'PLATFORMER_GAME') {
+    return (
+      <GameEntry
+        roomCode={platformerRoomCode}
+        playerId={playerId || ''}
+        playerName={name || 'Player'}
+        isHost={platformerIsHost}
+        onBack={() => {
+          setStage('CATALOG')
+          setPlatformerRoomCode('')
+        }}
+      />
+    )
+  }
+
   /* ════════ CATALOG (HUB) ════════ */
   return (
     <>
@@ -510,31 +545,38 @@ export default function PlayOnline() {
           <div className="flex flex-col items-center gap-5 pt-36">
             {/* Structural spacer — forces first card down past the fixed header */}
             <div className="h-14 w-full block clear-both" />
-            {[1, 2, 3, 4, 5].map((i, index) => (
+            {[1, 2, 3, 4, 5].map((i, index) => {
+              const isXOArena = index === 0
+              const isDungeonRun = index === 1
+              const isLocked = index > 1
+              const title = isXOArena ? 'XO Arena' : isDungeonRun ? 'Dungeon Run' : 'Coming Soon...'
+              const imgSrc = isXOArena ? '/avatars/xo-background.png' : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop'
+              const active = isXOArena || isDungeonRun
+              return (
               <div key={i}
                 className="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-900 border border-white/10 w-[85%] max-w-sm mx-auto"
                 style={{ aspectRatio: '16/9' }}
               >
                 <img
-                  src={index === 0 ? '/avatars/xo-background.png' : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop'}
-                  alt={index === 0 ? 'XO Arena' : 'Coming Soon...'}
+                  src={imgSrc}
+                  alt={title}
                   className="absolute inset-0 w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
                 <div className="absolute inset-x-0 bottom-2 w-full flex flex-col items-center pb-12 px-3">
-                  <h3 className="text-white font-bold text-lg w-[92%] text-left mb-2">{index === 0 ? 'XO Arena' : 'Coming Soon...'}</h3>
+                  <h3 className="text-white font-bold text-lg w-[92%] text-left mb-2">{title}</h3>
                   <button
-                    onClick={index === 0 ? openSetup : undefined}
-                    className={`w-[92%] flex justify-center items-center gap-2 rounded-full backdrop-blur-md border text-white font-semibold text-xs shadow-lg transition-transform active:scale-95 ${index === 0 ? 'bg-white/20 border-white/20 cursor-pointer' : 'bg-white/5 border-white/5 opacity-50 cursor-not-allowed'}`}
+                    onClick={isXOArena ? openSetup : isDungeonRun ? (() => { soundManager.playClick(); setStage('PLATFORMER_LOBBY') }) : undefined}
+                    className={`w-[92%] flex justify-center items-center gap-2 rounded-full backdrop-blur-md border text-white font-semibold text-xs shadow-lg transition-transform active:scale-95 ${active ? 'bg-white/20 border-white/20 cursor-pointer' : 'bg-white/5 border-white/5 opacity-50 cursor-not-allowed'}`}
                     style={{ height: '26px' }}
-                    disabled={index !== 0}
+                    disabled={!active}
                   >
                     <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                    {index === 0 ? 'Play' : 'Locked'}
+                    {active ? 'Play' : 'Locked'}
                   </button>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         </div>
       </main>
