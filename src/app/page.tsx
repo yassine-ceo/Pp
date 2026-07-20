@@ -323,7 +323,7 @@ export default function PlayOnline() {
 
         {/* Scrollable Cards Dashboard — scrolls under the fixed header */}
         <div className="flex-1 overflow-y-auto pb-6">
-          <div className="flex flex-col items-center gap-5 pt-20">
+          <div className="flex flex-col items-center gap-5 pt-36">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i}
                 className="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-900 border border-white/10 w-[85%] max-w-sm mx-auto"
