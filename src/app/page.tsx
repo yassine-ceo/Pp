@@ -334,15 +334,20 @@ export default function PlayOnline() {
               >
                 <img
                   src={index === 0 ? '/avatars/xo-background.png' : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop'}
-                  alt="XO Arena"
+                  alt={index === 0 ? 'XO Arena' : 'Coming Soon...'}
                   className="absolute inset-0 w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
                 <div className="absolute inset-x-0 bottom-2 w-full flex flex-col items-center pb-12 px-3">
-                  <h3 className="text-white font-bold text-lg w-[92%] text-left mb-2">XO Arena</h3>
-                  <button className="w-[92%] flex justify-center items-center gap-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-xs shadow-lg transition-transform active:scale-95" style={{ height: '26px' }}>
+                  <h3 className="text-white font-bold text-lg w-[92%] text-left mb-2">{index === 0 ? 'XO Arena' : 'Coming Soon...'}</h3>
+                  <button
+                    onClick={index === 0 ? openSetup : undefined}
+                    className={`w-[92%] flex justify-center items-center gap-2 rounded-full backdrop-blur-md border text-white font-semibold text-xs shadow-lg transition-transform active:scale-95 ${index === 0 ? 'bg-white/20 border-white/20 cursor-pointer' : 'bg-white/5 border-white/5 opacity-50 cursor-not-allowed'}`}
+                    style={{ height: '26px' }}
+                    disabled={index !== 0}
+                  >
                     <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                    Play
+                    {index === 0 ? 'Play' : 'Locked'}
                   </button>
                 </div>
               </div>
