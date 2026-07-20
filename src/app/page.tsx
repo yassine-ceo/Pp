@@ -297,8 +297,6 @@ export default function PlayOnline() {
 
         {/* Fixed Header — sticky, never scrolls */}
         <div className="sticky top-0 z-20">
-          {/* Soft fade gradient at bottom edge — cards dissolve smoothly as they scroll under */}
-          <div className="absolute bottom-0 left-0 right-0 h-10 z-10 pointer-events-none bg-gradient-to-b from-transparent to-[#0f172a]" />
           <header className="w-full flex justify-between items-center bg-transparent" style={{ padding: '24px' }}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 min-w-[40px] rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-lg shadow-sm">
