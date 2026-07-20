@@ -253,7 +253,7 @@ export default function PlayOnline() {
   /* ════════ CATALOG (HUB) ════════ */
   return (
     <>
-      <main className="relative w-screen h-screen overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1e1b4b] to-[#020617]">
+      <main className="relative w-screen h-screen bg-gradient-to-br from-[#0f172a] via-[#1e1b4b] to-[#020617] flex flex-col">
 
         {/* Animated glow orbs */}
         <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#3b82f6]/8 rounded-full blur-[120px] animate-glow-pulse pointer-events-none" />
@@ -263,20 +263,12 @@ export default function PlayOnline() {
         <XDeco className="absolute top-[8%] right-[12%] w-20 h-20 opacity-[0.04] animate-float-drift pointer-events-none" />
         <ODeco className="absolute bottom-[15%] left-[5%] w-28 h-28 opacity-[0.03] animate-float-drift-2 pointer-events-none" />
 
-        {/* Top bar — absolute header */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 30,
-          background: 'rgba(15,23,42,0.8)',
-          borderBottom: '1px solid rgba(255,255,255,0.04)',
-          padding: '0.75rem 1rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
+        {/* Top bar — standard flow */}
+        <div className="flex items-center justify-between px-4 py-3 z-30"
+          style={{
+            background: 'rgba(15,23,42,0.8)',
+            borderBottom: '1px solid rgba(255,255,255,0.04)',
+          }}>
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-full flex items-center justify-center text-white font-black text-lg"
               style={{
@@ -297,89 +289,96 @@ export default function PlayOnline() {
           </div>
         </div>
 
-        {/* Retro 2D Search Bar */}
-        <div className="absolute left-0 right-0 z-20" style={{ top: '4.25rem' }}>
-          <div className="max-w-md mx-auto px-4">
-            <div className="relative flex items-center" style={{
-              background: '#0f172a',
-              border: '3px solid #22d3ee',
-              boxShadow: '4px 4px 0 #0e7490, 8px 8px 0 rgba(0,0,0,0.3)',
-              borderRadius: '4px',
+        {/* Search Bar — standard flow */}
+        <div className="px-4 pt-4 pb-2 z-20">
+          <div className="w-full flex items-center"
+            style={{
+              background: '#111827',
+              border: '4px solid #3b82f6',
+              boxShadow: '4px 4px 0px 0px rgba(59,130,246,1)',
             }}>
-              <span className="absolute left-3 text-cyan-400 font-bold text-sm" style={{ fontFamily: "'Courier New', monospace" }}>▶</span>
-              <input
-                type="text"
-                placeholder="SEARCH GAMES..."
-                className="w-full bg-transparent text-cyan-300 font-bold text-xs py-3 pl-8 pr-4 outline-none"
-                style={{ fontFamily: "'Courier New', monospace", letterSpacing: '0.15em', border: 'none' }}
-              />
-              <span className="absolute right-3 text-cyan-400/40 text-xs animate-pulse" style={{ fontFamily: "'Courier New', monospace" }}>█</span>
-            </div>
+            <span className="pl-3 text-blue-500 font-bold text-sm" style={{ fontFamily: "'Courier New', monospace" }}>▸</span>
+            <input
+              type="text"
+              placeholder="SEARCH GAMES..."
+              className="w-full bg-transparent text-white font-bold text-sm p-3 outline-none uppercase placeholder-blue-700"
+              style={{ fontFamily: "'Courier New', monospace", letterSpacing: '0.15em' }}
+            />
+            <span className="pr-3 text-blue-700 text-sm animate-pulse" style={{ fontFamily: "'Courier New', monospace" }}>█</span>
           </div>
         </div>
 
-        {/* Game Grid — 2 columns */}
-        <div className="absolute inset-0 overflow-y-auto px-4 pt-24 pb-6 z-10">
-          <div className="max-w-md mx-auto grid grid-cols-2 gap-4">
+        {/* Game Grid — standard flow */}
+        <div className="flex-1 overflow-y-auto px-4 pb-6">
+          <div className="w-full grid grid-cols-2 gap-4">
 
             {/* ─── XO Arena ─── */}
-            <div className="flex flex-col items-center text-center p-4 rounded-2xl"
+            <div className="flex flex-col items-center text-center p-4 rounded-xl"
               style={{
-                background: 'linear-gradient(to bottom, #1e293b, #0f172a)',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.6), inset 0 2px 0 rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,255,255,0.06)',
+                background: '#1a1a2e',
+                border: '2px solid #2a2a4a',
               }}>
-              <div className="w-16 h-16 flex items-center justify-center rounded-xl mb-2"
-                style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', boxShadow: 'inset 0 4px 8px rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.4)' }}>
-                <div className="flex items-center justify-center gap-[-0.25rem]" style={{ transform: 'scale(0.5)', transformOrigin: 'center' }}>
+              <div className="w-14 h-14 flex items-center justify-center rounded-lg mb-2.5"
+                style={{ background: '#0f172a', border: '1px solid #2a2a4a' }}>
+                <div style={{ transform: 'scale(0.45)', transformOrigin: 'center' }}>
                   <XIcon /><OIcon />
                 </div>
               </div>
-              <h3 className="text-[0.85rem] font-black text-white tracking-wide mb-0.5">XO Arena</h3>
-              <p className="text-[0.5rem] font-black uppercase tracking-widest mb-2.5" style={{ color: '#3b82f6' }}>Multiverse Duel</p>
-              <button onClick={openSetup} className="game-btn-primary" style={{ fontSize: '0.75rem', padding: '0.4rem 1rem', maxWidth: '110px' }}>
+              <h3 className="text-sm font-black text-white tracking-wide mb-0.5">XO Arena</h3>
+              <p className="text-[0.5rem] font-bold uppercase tracking-widest mb-3" style={{ color: '#3b82f6' }}>Multiverse Duel</p>
+              <button onClick={openSetup} className="w-full py-2 text-xs font-black uppercase tracking-widest rounded-lg cursor-pointer"
+                style={{
+                  background: 'linear-gradient(to bottom, #fde047, #eab308)',
+                  borderBottom: '4px solid #b45309',
+                  color: 'white',
+                  textShadow: '1px 1px 0 #000',
+                }}>
                 PLAY ▶
               </button>
             </div>
 
             {/* ─── Chess Royale ─── */}
-            <div className="flex flex-col items-center text-center p-4 rounded-2xl" style={{
-              opacity: 0.4, pointerEvents: 'none',
-              background: 'linear-gradient(to bottom, #1e293b, #0f172a)',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.6), inset 0 2px 0 rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.06)',
-            }}>
-              <div className="w-16 h-16 flex items-center justify-center rounded-xl mb-2"
-                style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', boxShadow: 'inset 0 4px 8px rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.4)' }}>
-                <svg viewBox="0 0 60 60" style={{ width: '2rem', height: '2rem', opacity: 0.4 }}>
+            <div className="flex flex-col items-center text-center p-4 rounded-xl"
+              style={{
+                background: '#1a1a2e',
+                border: '2px solid #2a2a4a',
+                opacity: 0.4,
+                pointerEvents: 'none',
+              }}>
+              <div className="w-14 h-14 flex items-center justify-center rounded-lg mb-2.5"
+                style={{ background: '#0f172a', border: '1px solid #2a2a4a' }}>
+                <svg viewBox="0 0 60 60" style={{ width: '1.75rem', height: '1.75rem', opacity: 0.4 }}>
                   <path d="M24 50 C24 50 20 40 24 34 C28 28 24 22 30 18 C36 14 42 18 42 24 C42 30 38 34 38 36 L42 44 L42 50 Z" fill="#94a3b8" />
                   <rect x="20" y="50" width="20" height="4" rx="1" fill="#94a3b8" />
                 </svg>
               </div>
-              <h3 className="text-[0.85rem] font-black text-white tracking-wide mb-0.5">Chess Royale</h3>
-              <p className="text-[0.5rem] font-black uppercase tracking-widest mb-2.5" style={{ color: '#64748b' }}>Grandmaster</p>
-              <span className="text-[0.6rem] font-black uppercase tracking-widest px-3 py-1 rounded-full" style={{ background: 'rgba(100,116,139,0.2)', color: '#64748b', border: '1px solid rgba(100,116,139,0.3)' }}>
+              <h3 className="text-sm font-black text-white tracking-wide mb-0.5">Chess Royale</h3>
+              <p className="text-[0.5rem] font-bold uppercase tracking-widest mb-3" style={{ color: '#64748b' }}>Grandmaster</p>
+              <span className="text-[0.6rem] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full"
+                style={{ background: 'rgba(100,116,139,0.15)', color: '#64748b', border: '1px solid rgba(100,116,139,0.25)' }}>
                 🔒 LOCKED
               </span>
             </div>
 
             {/* ─── Cards Arena ─── */}
-            <div className="flex flex-col items-center text-center p-4 rounded-2xl" style={{
-              opacity: 0.4, pointerEvents: 'none',
-              background: 'linear-gradient(to bottom, #1e293b, #0f172a)',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.6), inset 0 2px 0 rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.06)',
-            }}>
-              <div className="w-16 h-16 flex items-center justify-center rounded-xl mb-2"
-                style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', boxShadow: 'inset 0 4px 8px rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.4)' }}>
-                <svg viewBox="0 0 60 60" style={{ width: '2rem', height: '2rem', opacity: 0.4 }}>
+            <div className="flex flex-col items-center text-center p-4 rounded-xl"
+              style={{
+                background: '#1a1a2e',
+                border: '2px solid #2a2a4a',
+                opacity: 0.4,
+                pointerEvents: 'none',
+              }}>
+              <div className="w-14 h-14 flex items-center justify-center rounded-lg mb-2.5"
+                style={{ background: '#0f172a', border: '1px solid #2a2a4a' }}>
+                <svg viewBox="0 0 60 60" style={{ width: '1.75rem', height: '1.75rem', opacity: 0.4 }}>
                   <rect x="18" y="10" width="24" height="40" rx="4" fill="none" stroke="#94a3b8" strokeWidth="3" />
                   <path d="M30 22 C26 26 22 30 26 34 C30 38 30 38 30 38 C30 38 30 38 34 34 C38 30 34 26 30 22 Z" fill="#94a3b8" />
                 </svg>
               </div>
-              <h3 className="text-[0.85rem] font-black text-white tracking-wide mb-0.5">Cards Arena</h3>
-              <p className="text-[0.5rem] font-black uppercase tracking-widest mb-2.5" style={{ color: '#64748b' }}>Poker Master</p>
-              <span className="text-[0.6rem] font-black uppercase tracking-widest px-3 py-1 rounded-full" style={{ background: 'rgba(100,116,139,0.2)', color: '#64748b', border: '1px solid rgba(100,116,139,0.3)' }}>
+              <h3 className="text-sm font-black text-white tracking-wide mb-0.5">Cards Arena</h3>
+              <p className="text-[0.5rem] font-bold uppercase tracking-widest mb-3" style={{ color: '#64748b' }}>Poker Master</p>
+              <span className="text-[0.6rem] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full"
+                style={{ background: 'rgba(100,116,139,0.15)', color: '#64748b', border: '1px solid rgba(100,116,139,0.25)' }}>
                 🔒 LOCKED
               </span>
             </div>
