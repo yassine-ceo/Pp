@@ -289,86 +289,11 @@ export default function PlayOnline() {
           </div>
         </div>
 
-        {/* Scrollable content — standard document flow */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="flex flex-col gap-8 w-full pt-6 px-4 pb-6">
-
-            {/* Retro 2D Search Bar */}
-            <div className="w-full flex items-center"
-              style={{
-                background: '#111827',
-                border: '4px solid #3b82f6',
-                boxShadow: '4px 4px 0px 0px rgba(59,130,246,1)',
-              }}>
-              <span className="pl-3 text-blue-500 font-bold text-sm" style={{ fontFamily: "'Courier New', monospace" }}>▸</span>
-              <input
-                type="text"
-                placeholder="SEARCH GAMES..."
-                className="w-full bg-transparent text-white font-bold text-sm p-3 outline-none uppercase placeholder-blue-700"
-                style={{ fontFamily: "'Courier New', monospace", letterSpacing: '0.15em' }}
-              />
-              <span className="pr-3 text-blue-700 text-sm animate-pulse" style={{ fontFamily: "'Courier New', monospace" }}>█</span>
-            </div>
-
-            {/* Game Grid — 2 columns */}
-            <div className="w-full grid grid-cols-2 gap-4">
-
-              {/* ─── XO Arena ─── */}
-              <div className="flex flex-col items-center text-center p-4 rounded-xl"
-                style={{ background: '#1a1a2e', border: '2px solid #2a2a4a' }}>
-                <div className="w-14 h-14 flex items-center justify-center rounded-lg mb-2.5"
-                  style={{ background: '#0f172a', border: '1px solid #2a2a4a' }}>
-                  <div style={{ transform: 'scale(0.45)', transformOrigin: 'center' }}>
-                    <XIcon /><OIcon />
-                  </div>
-                </div>
-                <h3 className="text-sm font-black text-white tracking-wide mb-0.5">XO Arena</h3>
-                <p className="text-[0.5rem] font-bold uppercase tracking-widest mb-3" style={{ color: '#3b82f6' }}>Multiverse Duel</p>
-                <button onClick={openSetup} className="w-full py-2 text-xs font-black uppercase tracking-widest rounded-lg cursor-pointer"
-                  style={{ background: 'linear-gradient(to bottom, #fde047, #eab308)', borderBottom: '4px solid #b45309', color: 'white', textShadow: '1px 1px 0 #000' }}>
-                  PLAY ▶
-                </button>
-              </div>
-
-              {/* ─── Chess Royale ─── */}
-              <div className="flex flex-col items-center text-center p-4 rounded-xl"
-                style={{ background: '#1a1a2e', border: '2px solid #2a2a4a', opacity: 0.4, pointerEvents: 'none' }}>
-                <div className="w-14 h-14 flex items-center justify-center rounded-lg mb-2.5"
-                  style={{ background: '#0f172a', border: '1px solid #2a2a4a' }}>
-                  <svg viewBox="0 0 60 60" style={{ width: '1.75rem', height: '1.75rem', opacity: 0.4 }}>
-                    <path d="M24 50 C24 50 20 40 24 34 C28 28 24 22 30 18 C36 14 42 18 42 24 C42 30 38 34 38 36 L42 44 L42 50 Z" fill="#94a3b8" />
-                    <rect x="20" y="50" width="20" height="4" rx="1" fill="#94a3b8" />
-                  </svg>
-                </div>
-                <h3 className="text-sm font-black text-white tracking-wide mb-0.5">Chess Royale</h3>
-                <p className="text-[0.5rem] font-bold uppercase tracking-widest mb-3" style={{ color: '#64748b' }}>Grandmaster</p>
-                <span className="text-[0.6rem] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full"
-                  style={{ background: 'rgba(100,116,139,0.15)', color: '#64748b', border: '1px solid rgba(100,116,139,0.25)' }}>
-                  🔒 LOCKED
-                </span>
-              </div>
-
-              {/* ─── Cards Arena ─── */}
-              <div className="flex flex-col items-center text-center p-4 rounded-xl"
-                style={{ background: '#1a1a2e', border: '2px solid #2a2a4a', opacity: 0.4, pointerEvents: 'none' }}>
-                <div className="w-14 h-14 flex items-center justify-center rounded-lg mb-2.5"
-                  style={{ background: '#0f172a', border: '1px solid #2a2a4a' }}>
-                  <svg viewBox="0 0 60 60" style={{ width: '1.75rem', height: '1.75rem', opacity: 0.4 }}>
-                    <rect x="18" y="10" width="24" height="40" rx="4" fill="none" stroke="#94a3b8" strokeWidth="3" />
-                    <path d="M30 22 C26 26 22 30 26 34 C30 38 30 38 30 38 C30 38 30 38 34 34 C38 30 34 26 30 22 Z" fill="#94a3b8" />
-                  </svg>
-                </div>
-                <h3 className="text-sm font-black text-white tracking-wide mb-0.5">Cards Arena</h3>
-                <p className="text-[0.5rem] font-bold uppercase tracking-widest mb-3" style={{ color: '#64748b' }}>Poker Master</p>
-                <span className="text-[0.6rem] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full"
-                  style={{ background: 'rgba(100,116,139,0.15)', color: '#64748b', border: '1px solid rgba(100,116,139,0.25)' }}>
-                  🔒 LOCKED
-                </span>
-              </div>
-
-            </div>
-          </div>
-        </div>
+        {/* ═══════════════════════════════════════════════════
+            WIPE ZONE — clean slate below the top header.
+            New catalog UI will be built here.
+            ═══════════════════════════════════════════════════ */}
+        <div className="flex-1 w-full h-full relative" />
       </main>
 
       {/* ════════ XO SETUP MODAL ════════ */}
