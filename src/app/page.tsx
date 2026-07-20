@@ -282,6 +282,105 @@ export default function PlayOnline() {
     )
   }
 
+  /* ════════ XO SETUP — Full Page ════════ */
+  if (stage === 'XO_SETUP') {
+    return (
+      <main className="relative w-screen h-screen bg-gradient-to-br from-[#0f172a] via-[#1e1b4b] to-[#020617] flex flex-col overflow-y-auto">
+        {/* Ambient glow orbs */}
+        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#3b82f6]/8 rounded-full blur-[120px] animate-glow-pulse pointer-events-none" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#22c55e]/8 rounded-full blur-[120px] animate-glow-pulse pointer-events-none" style={{ animationDelay: '2.5s' }} />
+
+        {/* Decorative X/O */}
+        <XDeco className="absolute top-[8%] right-[12%] w-20 h-20 opacity-[0.04] animate-float-drift pointer-events-none" />
+        <ODeco className="absolute bottom-[15%] left-[5%] w-28 h-28 opacity-[0.03] animate-float-drift-2 pointer-events-none" />
+
+        {/* Back arrow */}
+        <button
+          onClick={() => { soundManager.playClick(); setStage('CATALOG') }}
+          className="absolute top-6 left-6 z-10 flex items-center justify-center w-10 h-10 rounded-full transition-colors hover:bg-white/10"
+          style={{ color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}
+        >
+          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </button>
+
+        {/* Center content */}
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-20">
+          <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400 drop-shadow-[0_4px_0_rgba(0,0,0,1)] text-center">
+            XO Arena
+          </h2>
+          <p className="text-xs font-black uppercase tracking-widest text-center mt-1" style={{ color: '#3b82f6' }}>
+            Choose how to play
+          </p>
+
+          <div className="flex items-center gap-3 mt-8 p-3 rounded-xl w-full max-w-sm"
+            style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-sm shrink-0"
+              style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 3px 0 #14532d' }}>
+              {name.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="text-[0.55rem] font-bold uppercase tracking-widest block" style={{ color: 'rgba(255,255,255,0.25)' }}>Playing as</span>
+              <span className="text-white font-black text-sm block truncate">{name}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4 mt-8 w-full max-w-sm">
+            <button
+              onClick={createMatch}
+              className="w-full flex justify-center items-center gap-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-sm shadow-lg transition-transform active:scale-95"
+              style={{ padding: '0.85rem 2rem' }}
+            >
+              Create Match
+            </button>
+
+            <button
+              onClick={() => { soundManager.playClick(); setJoinPanel(!joinPanel) }}
+              className="w-full flex justify-center items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white font-semibold text-sm shadow-lg transition-transform active:scale-95"
+              style={{ padding: '0.85rem 2rem' }}
+            >
+              Join Match
+            </button>
+
+            {joinPanel && (
+              <div className="flex flex-col gap-3">
+                <div className="w-full" style={{
+                  background: 'rgba(0,0,0,0.4)',
+                  border: '2px solid rgba(59,130,246,0.3)',
+                  borderRadius: '9999px',
+                  padding: '0.25rem',
+                }}>
+                  <input
+                    type="text"
+                    value={joinCode}
+                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => e.key === 'Enter' && joinMatch()}
+                    placeholder="ROOM CODE"
+                    maxLength={8}
+                    autoFocus
+                    className="w-full text-center text-xl text-white font-black outline-none tracking-[0.3em] placeholder:text-gray-700"
+                    style={{ background: 'transparent', border: 'none', borderRadius: '9999px', padding: '0.75rem 1rem' }}
+                  />
+                </div>
+                <button
+                  onClick={joinMatch}
+                  disabled={joinCode.trim().length < 4}
+                  className="w-full flex justify-center items-center gap-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-sm shadow-lg transition-transform active:scale-95"
+                  style={{
+                    padding: '0.85rem 2rem',
+                    opacity: joinCode.trim().length >= 4 ? 1 : 0.2,
+                    cursor: joinCode.trim().length >= 4 ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  Join
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+    )
+  }
+
   /* ════════ CATALOG (HUB) ════════ */
   return (
     <>
@@ -356,120 +455,6 @@ export default function PlayOnline() {
         </div>
       </main>
 
-      {/* ════════ XO SETUP MODAL ════════ */}
-      {stage === 'XO_SETUP' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}>
-          <div className="relative w-full max-w-sm"
-            style={{
-              background: 'linear-gradient(to bottom, #1e293b, #0f172a)',
-              borderRadius: '2rem',
-              padding: '2rem',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.8), inset 0 2px 0 rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.06)',
-            }}>
-            <button
-              onClick={() => { soundManager.playClick(); setStage('CATALOG') }}
-              className="absolute top-4 right-4 flex items-center justify-center text-sm font-bold cursor-pointer transition-colors hover:text-white"
-              style={{
-                width: '2rem', height: '2rem', borderRadius: '50%',
-                background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                color: 'rgba(255,255,255,0.4)',
-              }}>
-              ✕
-            </button>
-
-            <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400 drop-shadow-[0_4px_0_rgba(0,0,0,1)] text-center">
-              XO Arena
-            </h2>
-            <p className="text-xs font-black uppercase tracking-widest text-center mt-1" style={{ color: '#3b82f6' }}>
-              Choose how to play
-            </p>
-
-            <div className="flex items-center gap-3 mt-6 p-3 rounded-xl"
-              style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-sm"
-                style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 3px 0 #14532d' }}>
-                {name.charAt(0).toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="text-[0.55rem] font-bold uppercase tracking-widest block" style={{ color: 'rgba(255,255,255,0.25)' }}>Playing as</span>
-                <span className="text-white font-black text-sm block truncate">{name}</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4 mt-6">
-              <button onClick={createMatch} className="game-btn-primary" style={{ fontSize: '1.1rem', padding: '0.85rem 2rem' }}>
-                CREATE MATCH
-              </button>
-
-              <button
-                onClick={() => { soundManager.playClick(); setJoinPanel(!joinPanel) }}
-                style={{
-                  background: 'linear-gradient(to bottom, #3b82f6, #1d4ed8)',
-                  border: '2px solid #2563eb',
-                  borderBottom: '8px solid #1e3a8a',
-                  borderRadius: '1.5rem',
-                  color: 'white',
-                  fontWeight: 900,
-                  fontSize: '1.1rem',
-                  textTransform: 'uppercase',
-                  padding: '0.85rem 2rem',
-                  textShadow: '0 2px 0 rgba(0,0,0,0.5)',
-                  boxShadow: '0 10px 20px rgba(0,0,0,0.3)',
-                  transition: 'all 0.1s ease-in-out',
-                  width: '100%',
-                  cursor: 'pointer',
-                }}>
-                JOIN MATCH
-              </button>
-
-              {joinPanel && (
-                <div className="flex flex-col gap-3 pt-2">
-                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', marginBottom: '0.25rem' }} />
-                  <div style={{
-                    background: 'rgba(0,0,0,0.4)',
-                    border: '2px solid rgba(59,130,246,0.3)',
-                    borderRadius: '1rem',
-                    padding: '0.25rem',
-                  }}>
-                    <input
-                      type="text"
-                      value={joinCode}
-                      onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                      onKeyDown={(e) => e.key === 'Enter' && joinMatch()}
-                      placeholder="ROOM CODE"
-                      maxLength={8}
-                      autoFocus
-                      className="w-full text-center text-xl text-white font-black outline-none tracking-[0.3em] placeholder:text-gray-700"
-                      style={{ background: 'transparent', border: 'none', borderRadius: '1rem', padding: '0.75rem 1rem' }}
-                    />
-                  </div>
-                  <button
-                    onClick={joinMatch}
-                    disabled={joinCode.trim().length < 4}
-                    className="game-btn-primary"
-                    style={{
-                      fontSize: '1.1rem',
-                      padding: '0.85rem 2rem',
-                      opacity: joinCode.trim().length >= 4 ? 1 : 0.2,
-                      cursor: joinCode.trim().length >= 4 ? 'pointer' : 'not-allowed',
-                      pointerEvents: joinCode.trim().length >= 4 ? 'auto' : 'none',
-                    }}>
-                    JOIN
-                  </button>
-                </div>
-              )}
-
-              <button onClick={() => { soundManager.playClick(); setStage('CATALOG') }}
-                className="text-center font-bold text-sm transition-colors hover:text-white"
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', marginTop: '0.25rem' }}>
-                ← Back
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }
