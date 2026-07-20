@@ -87,6 +87,7 @@ export default function PlayOnline() {
   const [stage, setStage] = useState<Stage>('WELCOME')
   const [name, setName] = useState(playerName || '')
   const [joinPanel, setJoinPanel] = useState(false)
+  const [botPanel, setBotPanel] = useState(false)
   const [joinCode, setJoinCode] = useState('')
   const [deepRoom, setDeepRoom] = useState<string | null>(null)
   const [booted, setBooted] = useState(false)
@@ -363,7 +364,7 @@ export default function PlayOnline() {
             </button>
 
             <button
-              onClick={() => { soundManager.playClick(); setJoinPanel(!joinPanel) }}
+              onClick={() => { soundManager.playClick(); setJoinPanel(!joinPanel); setBotPanel(false) }}
               className="w-full flex justify-center items-center gap-2 rounded-lg text-sm font-semibold transition-all active:scale-[0.97]"
               style={{
                 padding: '0.6rem 1.5rem',
@@ -375,6 +376,40 @@ export default function PlayOnline() {
             >
               Join Match
             </button>
+
+            <button
+              onClick={() => { soundManager.playClick(); setBotPanel(!botPanel); setJoinPanel(false) }}
+              className="w-full flex justify-center items-center gap-2 rounded-lg text-sm font-semibold transition-all active:scale-[0.97]"
+              style={{
+                padding: '0.6rem 1.5rem',
+                background: 'linear-gradient(to bottom, #2a1a10, #1a0f0a)',
+                border: '1px solid rgba(212,168,75,0.35)',
+                boxShadow: 'inset 0 1px 0 rgba(212,168,75,0.12), 0 2px 6px rgba(0,0,0,0.4)',
+                color: '#d4a84b',
+              }}
+            >
+              Play with Bot
+            </button>
+
+            {botPanel && (
+              <div className="flex flex-col items-center gap-3 w-full mt-1">
+                {['Easy', 'Medium', 'Epic'].map((diff) => (
+                  <button
+                    key={diff}
+                    onClick={() => { soundManager.playClick() }}
+                    className="w-full flex justify-center items-center gap-2 rounded-lg text-sm font-semibold transition-all active:scale-[0.97]"
+                    style={{
+                      padding: '0.5rem 1.25rem',
+                      background: 'linear-gradient(to bottom, #1f120c, #140b07)',
+                      border: '1px solid rgba(212,168,75,0.2)',
+                      color: 'rgba(212,168,75,0.7)',
+                    }}
+                  >
+                    {diff}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {joinPanel && (
               <div className="flex flex-col items-center gap-4 w-full mt-2">

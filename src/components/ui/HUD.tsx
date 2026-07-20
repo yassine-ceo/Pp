@@ -302,9 +302,9 @@ export default function HUD() {
               <Trophy size={28} className="text-[#c4a35a] hidden sm:block" />
             </div>
             <h2 className="text-lg sm:text-xl font-bold text-[#c4a35a] mb-2">Waiting for opponent</h2>
-            <p className="text-xs sm:text-sm text-white/40 mb-5 sm:mb-6">Share this code with your friend:</p>
+            <p className="text-xs sm:text-sm text-white/40 mb-8 sm:mb-10">Share this code with your friend:</p>
             <div
-              className="rounded-xl px-5 py-3 sm:px-6 sm:py-4 mb-3"
+              className="rounded-xl px-5 py-3 sm:px-6 sm:py-4 mb-3 mt-2"
               style={{
                 background: 'linear-gradient(to bottom, #3b2a1a, #1f150d)',
                 border: '1.5px solid #5c3a21',
@@ -323,7 +323,7 @@ export default function HUD() {
                 {shareCopied ? 'Copied!' : 'Share Link'}
               </button>
             </div>
-            <p className="text-[10px] sm:text-xs text-white/25 mb-4">Expires in 5 minutes if not joined</p>
+            <p className="text-[10px] sm:text-xs text-white/25 mb-6">Expires in 5 minutes if not joined</p>
             <button onClick={handleExit} className="w-full h-11 rounded-xl text-rose-400 text-sm font-semibold hover:bg-rose-400/20 transition-all flex items-center justify-center gap-2" style={{ background: 'rgba(220,60,60,0.1)', border: '1px solid rgba(220,60,60,0.2)' }}>
               <LogOut size={15} />
               Cancel & Exit
@@ -337,7 +337,7 @@ export default function HUD() {
         {useGameStore.getState().showResult && (room?.status === 'won' || room?.status === 'tie') && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }} className="fixed inset-0 z-30 flex items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-auto">
             <div
-              className="rounded-[1.5rem] overflow-hidden px-6 py-8 sm:px-8 sm:py-10 text-center max-w-sm w-full mx-4"
+            className="rounded-[1.5rem] overflow-hidden px-6 py-10 sm:px-8 sm:py-12 text-center max-w-sm w-full mx-4"
               style={{
                 background: 'linear-gradient(to bottom, #2b1d14, #1a120d)',
                 boxShadow: '0 20px 40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -2px 0 rgba(0,0,0,0.3)',
