@@ -296,9 +296,9 @@ export default function PlayOnline() {
         <ODeco className="absolute bottom-[15%] left-[5%] w-28 h-28 opacity-[0.03] animate-float-drift-2 pointer-events-none" />
 
         {/* Top bar — transparent PNG look, centered */}
-        <div className="w-full max-w-4xl mx-auto px-6 py-4 flex justify-between items-center z-30 bg-transparent shadow-none">
+        <div className="w-full px-6 pt-6 pb-2 flex justify-between items-center z-30 bg-transparent shadow-none">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-sm"
+            <div className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-full flex items-center justify-center text-white font-black text-sm"
               style={{
                 background: 'linear-gradient(135deg, #22c55e, #16a34a)',
                 boxShadow: '0 4px 0 #14532d',
@@ -307,10 +307,13 @@ export default function PlayOnline() {
             </div>
             <div className="flex flex-col">
               <span className="text-[0.55rem] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.25)' }}>Level {level}</span>
+              <div className="w-full h-1.5 bg-gray-800 rounded-full mt-1 overflow-hidden">
+                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${(playedTimeMs % 1800000) / 1800000 * 100}%` }} />
+              </div>
               <span className="text-white font-black text-sm">{name}</span>
             </div>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 text-[#FFD700] font-bold text-sm"
+          <div className="w-auto px-3 py-1 flex items-center justify-center gap-2 text-[#FFD700] font-bold text-sm"
             style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '9999px', border: '1px solid rgba(255,215,0,0.15)' }}>
             <span>💎</span>
             <span>0</span>
