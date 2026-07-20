@@ -347,23 +347,17 @@ export default function PlayOnline() {
             {/* Dark Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent"></div>
             
-            {/* 3. INNER CONTENT CONTAINER: Forced padding to push everything up */}
-            <div 
-              className="absolute inset-x-0 bottom-0 flex flex-col items-center justify-end"
-              style={{ padding: '24px', boxSizing: 'border-box' }}
-            >
+            {/* INNER CONTENT WRAPPER: Forced to the absolute bottom of the card */}
+            <div className="absolute inset-x-0 bottom-0 w-full flex flex-col items-center pb-3 px-3">
               
-              {/* Title - aligned left, but constrained by the container padding */}
-              <h3 className="text-white font-bold text-xl w-full text-left mb-3">
+              {/* Title: Pushed down, aligned left */}
+              <h3 className="text-white font-bold text-lg w-full text-left mb-2 pl-2">
                 XO Arena
               </h3>
               
-              {/* Play Button - Centered, 90% width, thinner vertical profile */}
-              <button 
-                className="mx-auto flex justify-center items-center gap-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white font-bold shadow-lg transition-transform active:scale-95"
-                style={{ width: '90%', padding: '8px 0' }}
-              >
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              {/* Play Button: THINNER (h-9), WIDER (w-[92%]), smaller text, centered */}
+              <button className="w-[92%] h-9 flex justify-center items-center gap-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-sm shadow-lg transition-transform active:scale-95">
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                 Play
               </button>
 
