@@ -332,7 +332,7 @@ export default function PlayOnline() {
             WIPE ZONE — clean slate below the top header.
             New catalog UI will be built here.
             ═══════════════════════════════════════════════════ */}
-        <div className="flex-1 w-full relative px-6 pb-6 overflow-y-auto">
+        <div className="flex-1 w-full relative px-6 pt-4 pb-6 overflow-y-auto">
           <div className="w-full aspect-video relative rounded-3xl overflow-hidden">
             <img
               src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop"
@@ -343,16 +343,16 @@ export default function PlayOnline() {
               className="absolute inset-0"
               style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)' }}
             />
-            <div className="absolute bottom-0 left-0 right-0 p-5">
+            <div className="absolute bottom-0 left-0 right-0 p-6 pb-5">
               <h3 className="text-white font-bold text-lg leading-tight mb-3">XO Arena</h3>
-              <button className="w-full py-3 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+              <button className="w-auto px-8 py-2.5 rounded-full flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
                 style={{
                   background: 'rgba(255,255,255,0.12)',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
                   border: '1px solid rgba(255,255,255,0.2)',
                 }}>
-                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white">
+                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white">
                   <polygon points="5,3 19,12 5,21" />
                 </svg>
                 <span className="text-white font-bold text-sm tracking-wide">Play</span>
