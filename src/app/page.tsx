@@ -90,7 +90,10 @@ export default function PlayOnline() {
   const [joinCode, setJoinCode] = useState('')
   const [deepRoom, setDeepRoom] = useState<string | null>(null)
   const [booted, setBooted] = useState(false)
+  const [playedTimeMs, setPlayedTimeMs] = useState(0)
   const nameRef = useRef<HTMLInputElement>(null)
+
+  const level = Math.floor(playedTimeMs / (30 * 60 * 1000)) + 1
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search).get('room')
@@ -127,6 +130,35 @@ export default function PlayOnline() {
   useEffect(() => {
     if (stage === 'WELCOME') {
       setTimeout(() => nameRef.current?.focus(), 300)
+    }
+  }, [stage])
+
+  /* ── Background leveling timer ── */
+  useEffect(() => {
+    if (stage !== 'CATALOG') return
+
+    const saved = parseInt(localStorage.getItem('xo playedTimeMs') || '0', 10)
+    let totalMs = saved
+    let startTime = Date.now()
+    setPlayedTimeMs(totalMs)
+
+    const tick = () => {
+      if (!navigator.onLine || document.hidden) {
+        startTime = Date.now()
+        return
+      }
+      const elapsed = Date.now() - startTime
+      totalMs += elapsed
+      startTime = Date.now()
+      setPlayedTimeMs(totalMs)
+      localStorage.setItem('xo playedTimeMs', String(totalMs))
+    }
+
+    const interval = setInterval(tick, 2000)
+
+    return () => {
+      clearInterval(interval)
+      localStorage.setItem('xo playedTimeMs', String(totalMs))
     }
   }, [stage])
 
@@ -263,14 +295,10 @@ export default function PlayOnline() {
         <XDeco className="absolute top-[8%] right-[12%] w-20 h-20 opacity-[0.04] animate-float-drift pointer-events-none" />
         <ODeco className="absolute bottom-[15%] left-[5%] w-28 h-28 opacity-[0.03] animate-float-drift-2 pointer-events-none" />
 
-        {/* Top bar — standard flow */}
-        <div className="flex items-center justify-between px-4 py-3 z-30"
-          style={{
-            background: 'rgba(15,23,42,0.8)',
-            borderBottom: '1px solid rgba(255,255,255,0.04)',
-          }}>
+        {/* Top bar — transparent PNG look, centered */}
+        <div className="w-full max-w-4xl mx-auto px-6 py-4 flex justify-between items-center z-30 bg-transparent shadow-none">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-full flex items-center justify-center text-white font-black text-lg"
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-sm"
               style={{
                 background: 'linear-gradient(135deg, #22c55e, #16a34a)',
                 boxShadow: '0 4px 0 #14532d',
@@ -278,7 +306,7 @@ export default function PlayOnline() {
               {name.charAt(0).toUpperCase()}
             </div>
             <div className="flex flex-col">
-              <span className="text-[0.55rem] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.25)' }}>Player</span>
+              <span className="text-[0.55rem] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.25)' }}>Level {level}</span>
               <span className="text-white font-black text-sm">{name}</span>
             </div>
           </div>
