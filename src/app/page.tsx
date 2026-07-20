@@ -295,23 +295,27 @@ export default function PlayOnline() {
         <XDeco className="absolute top-[8%] right-[12%] w-20 h-20 opacity-[0.04] animate-float-drift pointer-events-none" />
         <ODeco className="absolute bottom-[15%] left-[5%] w-28 h-28 opacity-[0.03] animate-float-drift-2 pointer-events-none" />
 
-        {/* Top bar — flat DOM, forced left/top margins */}
-        <div className="w-full block relative p-6">
-          <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold float-left mt-6 ml-6">
-            {name.charAt(0).toUpperCase()}
-          </div>
-          <div className="float-left mt-6 ml-4 flex flex-col items-start justify-center">
-            <span className="text-[10px] text-gray-400 font-bold uppercase block tracking-wider">LEVEL {level}</span>
-            <div className="w-24 h-1.5 bg-gray-800 rounded-full overflow-hidden my-1 block">
-              <div className="h-full bg-blue-500" style={{ width: `${(playedTimeMs % 1800000) / 1800000 * 100}%` }} />
+        {/* Top bar — modern flex layout, no floats */}
+        <header className="w-full flex justify-between items-center p-6 bg-transparent">
+          <div className="flex items-center gap-4 pl-2 pt-2">
+            <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-lg">
+              {name.charAt(0).toUpperCase()}
             </div>
-            <span className="text-white font-bold text-sm block">{name}</span>
+            <div className="flex flex-col items-start justify-center">
+              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">LEVEL {level}</span>
+              <div className="w-24 h-1.5 bg-gray-800 rounded-full overflow-hidden my-1">
+                <div className="h-full bg-blue-500" style={{ width: `${(playedTimeMs % 1800000) / 1800000 * 100}%` }} />
+              </div>
+              <span className="text-white font-bold text-sm">{name}</span>
+            </div>
           </div>
-          <div className="absolute right-6 top-6 w-auto px-3 py-1 bg-black/30 border border-gray-700 rounded-full flex items-center justify-center gap-2">
-            <span className="text-[#FFD700] text-sm">💎</span>
-            <span className="text-[#FFD700] text-sm font-bold">0</span>
+          <div className="pr-2 pt-2">
+            <div className="w-auto px-3 py-1 bg-black/30 border border-gray-700 rounded-full flex items-center justify-center gap-2">
+              <span className="text-[#FFD700] text-sm">💎</span>
+              <span className="text-[#FFD700] text-sm font-bold">0</span>
+            </div>
           </div>
-        </div>
+        </header>
 
         {/* ═══════════════════════════════════════════════════
             WIPE ZONE — clean slate below the top header.
