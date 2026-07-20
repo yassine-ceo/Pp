@@ -333,7 +333,7 @@ export default function PlayOnline() {
                 style={{ aspectRatio: '16/9' }}
               >
                 <img
-                  src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop"
+                  src="/avatars/xo-background.png"
                   alt="XO Arena"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
