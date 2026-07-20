@@ -348,7 +348,7 @@ export default function PlayOnline() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent"></div>
             
             {/* INNER CONTENT WRAPPER: Forced to the absolute bottom of the card */}
-            <div className="absolute inset-x-0 bottom-5 w-full flex flex-col items-center pb-12 px-3">
+            <div className="absolute inset-x-0 bottom-2 w-full flex flex-col items-center pb-12 px-3">
               
               {/* Title: Left-aligned to match button start */}
               <h3 className="text-white font-bold text-lg w-[92%] text-left mb-2">
