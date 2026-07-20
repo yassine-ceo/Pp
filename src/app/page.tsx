@@ -329,7 +329,7 @@ export default function PlayOnline() {
         </header>
 
         {/* 1. OUTER WRAPPER: Forced layout via inline styles to bypass any Tailwind compilation or override bugs */}
-        <div style={{ width: '100%', paddingLeft: '24px', paddingRight: '24px', paddingTop: '32px', paddingBottom: '16px', boxSizing: 'border-box' }}>
+        <div style={{ width: '100%', paddingLeft: '16px', paddingRight: '16px', paddingTop: '48px', paddingBottom: '16px', boxSizing: 'border-box' }}>
           
           {/* 2. THE CARD */}
           <div 
@@ -349,19 +349,19 @@ export default function PlayOnline() {
             
             {/* 3. INNER CONTENT CONTAINER: Forced padding to push everything up */}
             <div 
-              className="absolute inset-x-0 bottom-0 flex flex-col items-center"
+              className="absolute inset-x-0 bottom-0 flex flex-col items-center justify-end"
               style={{ padding: '24px', boxSizing: 'border-box' }}
             >
               
               {/* Title - aligned left, but constrained by the container padding */}
-              <h3 className="text-white font-bold text-xl w-full text-left" style={{ marginBottom: '16px' }}>
+              <h3 className="text-white font-bold text-xl w-full text-left mb-3">
                 XO Arena
               </h3>
               
-              {/* Play Button - Centered via flex parent, strictly 85% width */}
+              {/* Play Button - Centered, 90% width, thinner vertical profile */}
               <button 
-                className="flex justify-center items-center gap-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white font-bold shadow-lg transition-transform active:scale-95"
-                style={{ width: '85%', padding: '10px 0' }}
+                className="mx-auto flex justify-center items-center gap-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white font-bold shadow-lg transition-transform active:scale-95"
+                style={{ width: '90%', padding: '8px 0' }}
               >
                 <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                 Play
