@@ -351,12 +351,12 @@ export default function PlayOnline() {
             <div className="absolute inset-x-0 bottom-0 w-full flex flex-col items-center pb-3 px-3">
               
               {/* Title: Pushed down, aligned left */}
-              <h3 className="text-white font-bold text-lg w-full text-left mb-2 pl-4">
+              <h3 className="text-white font-bold text-lg w-full text-left mb-2" style={{ paddingLeft: '32px' }}>
                 XO Arena
               </h3>
               
-              {/* Play Button: THINNER (h-8), WIDER (w-[92%]), smaller text, centered */}
-              <button className="w-[92%] h-8 flex justify-center items-center gap-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-xs shadow-lg transition-transform active:scale-95">
+              {/* Play Button: THINNER (h-8 via inline style), WIDER (w-[92%]), smaller text, centered */}
+              <button className="w-[92%] flex justify-center items-center gap-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-xs shadow-lg transition-transform active:scale-95" style={{ height: '28px' }}>
                 <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                 Play
               </button>
