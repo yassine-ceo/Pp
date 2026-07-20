@@ -295,12 +295,12 @@ export default function PlayOnline() {
         <XDeco className="absolute top-[8%] right-[12%] w-20 h-20 opacity-[0.04] animate-float-drift pointer-events-none" />
         <ODeco className="absolute bottom-[15%] left-[5%] w-28 h-28 opacity-[0.03] animate-float-drift-2 pointer-events-none" />
 
-        {/* Top bar — exact unified flexbox, zero floats */}
-        <header className="w-full flex justify-between items-center px-6 pt-6 pb-2 bg-transparent">
+        {/* Top bar — unified flexbox with robust inline style padding */}
+        <header className="w-full flex justify-between items-center bg-transparent" style={{ padding: '24px' }}>
           {/* LEFT SIDE: Unified User Profile Info Container */}
           <div className="flex items-center gap-3">
             {/* Avatar - Zero floats, zero absolute positioning */}
-            <div className="w-10 h-10 min-w-[40px] h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+            <div className="w-10 h-10 min-w-[40px] rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-lg shadow-sm">
               {name.charAt(0).toUpperCase()}
             </div>
             
