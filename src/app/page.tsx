@@ -328,11 +328,14 @@ export default function PlayOnline() {
           </div>
         </header>
 
-        {/* 1. OUTER WRAPPER: Forces the card down and pushes it away from the screen edges using strict padding */}
-        <div className="w-full px-6 pt-8 pb-4">
+        {/* 1. OUTER WRAPPER: Forced layout via inline styles to bypass any Tailwind compilation or override bugs */}
+        <div style={{ width: '100%', paddingLeft: '24px', paddingRight: '24px', paddingTop: '32px', paddingBottom: '16px', boxSizing: 'border-box' }}>
           
-          {/* 2. THE CARD ITSELF: Rounded corners, hides overflow, relative for absolute children */}
-          <div className="relative w-full aspect-[16/9] rounded-3xl overflow-hidden shadow-2xl bg-gray-900 border border-white/10">
+          {/* 2. THE CARD */}
+          <div 
+            className="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-900 border border-white/10"
+            style={{ width: '100%', aspectRatio: '16/9' }}
+          >
             
             {/* Background Image */}
             <img 
@@ -341,19 +344,25 @@ export default function PlayOnline() {
               className="absolute inset-0 w-full h-full object-cover"
             />
             
-            {/* Gradient Overlay for text readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+            {/* Dark Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent"></div>
             
-            {/* 3. INNER CONTENT WRAPPER: Pinned to the bottom, strict padding to lift elements UP */}
-            <div className="absolute inset-x-0 bottom-0 p-5 flex flex-col items-center">
+            {/* 3. INNER CONTENT CONTAINER: Forced padding to push everything up */}
+            <div 
+              className="absolute inset-x-0 bottom-0 flex flex-col items-center"
+              style={{ padding: '24px', boxSizing: 'border-box' }}
+            >
               
               {/* Title - aligned left, but constrained by the container padding */}
-              <h3 className="text-white font-bold text-xl w-full text-left mb-3">
+              <h3 className="text-white font-bold text-xl w-full text-left" style={{ marginBottom: '16px' }}>
                 XO Arena
               </h3>
               
               {/* Play Button - Centered via flex parent, strictly 85% width */}
-              <button className="w-[85%] py-2.5 flex justify-center items-center gap-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white font-bold shadow-lg transition-transform active:scale-95">
+              <button 
+                className="flex justify-center items-center gap-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white font-bold shadow-lg transition-transform active:scale-95"
+                style={{ width: '85%', padding: '10px 0' }}
+              >
                 <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                 Play
               </button>
