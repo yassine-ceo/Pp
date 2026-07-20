@@ -295,27 +295,25 @@ export default function PlayOnline() {
         <XDeco className="absolute top-[8%] right-[12%] w-20 h-20 opacity-[0.04] animate-float-drift pointer-events-none" />
         <ODeco className="absolute bottom-[15%] left-[5%] w-28 h-28 opacity-[0.03] animate-float-drift-2 pointer-events-none" />
 
-        {/* Top bar — forced padding, clean PNG layout */}
-        <div className="w-full px-6 pt-8 pb-4 flex justify-between items-start">
+        {/* Top bar — forced p-6 padding, strict vertical stacking */}
+        <header className="w-full flex justify-between items-center p-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 min-w-[40px] rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-lg">
               {name.charAt(0).toUpperCase()}
             </div>
-            <div className="flex flex-col gap-1 w-32">
-              <span className="text-white font-bold text-sm tracking-wide">{name}</span>
-              <div className="flex items-center gap-2 w-full">
-                <span className="text-[10px] text-gray-400 font-mono">LVL {level}</span>
-                <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-500" style={{ width: `${(playedTimeMs % 1800000) / 1800000 * 100}%` }} />
-                </div>
+            <div className="flex flex-col items-start justify-center">
+              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">LEVEL {level}</span>
+              <div className="w-24 h-1.5 bg-gray-800 rounded-full overflow-hidden mt-0.5 mb-0.5">
+                <div className="h-full bg-blue-500" style={{ width: `${(playedTimeMs % 1800000) / 1800000 * 100}%` }} />
               </div>
+              <span className="text-white font-bold text-sm tracking-wide">{name}</span>
             </div>
           </div>
           <div className="bg-black/30 border border-gray-700 rounded-full px-3 py-1 flex items-center justify-center gap-2 min-w-[60px] max-h-[32px]">
             <span className="text-[#FFD700] text-sm">💎</span>
             <span className="text-[#FFD700] text-sm font-bold">0</span>
           </div>
-        </div>
+        </header>
 
         {/* ═══════════════════════════════════════════════════
             WIPE ZONE — clean slate below the top header.
