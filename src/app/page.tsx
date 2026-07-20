@@ -297,61 +297,91 @@ export default function PlayOnline() {
           </div>
         </div>
 
-        {/* Card hub — centered vertical stack */}
-        <div className="absolute inset-0 flex items-center justify-center px-4 pt-20 pb-6 overflow-y-auto">
-          <div className="w-full max-w-sm flex flex-col items-center gap-4">
+        {/* Retro 2D Search Bar */}
+        <div className="absolute left-0 right-0 z-20" style={{ top: '4.25rem' }}>
+          <div className="max-w-md mx-auto px-4">
+            <div className="relative flex items-center" style={{
+              background: '#0f172a',
+              border: '3px solid #22d3ee',
+              boxShadow: '4px 4px 0 #0e7490, 8px 8px 0 rgba(0,0,0,0.3)',
+              borderRadius: '4px',
+            }}>
+              <span className="absolute left-3 text-cyan-400 font-bold text-sm" style={{ fontFamily: "'Courier New', monospace" }}>▶</span>
+              <input
+                type="text"
+                placeholder="SEARCH GAMES..."
+                className="w-full bg-transparent text-cyan-300 font-bold text-xs py-3 pl-8 pr-4 outline-none"
+                style={{ fontFamily: "'Courier New', monospace", letterSpacing: '0.15em', border: 'none' }}
+              />
+              <span className="absolute right-3 text-cyan-400/40 text-xs animate-pulse" style={{ fontFamily: "'Courier New', monospace" }}>█</span>
+            </div>
+          </div>
+        </div>
 
-            {/* XO Arena Card */}
-            <div className="loot-chest w-full">
-              <div className="loot-chest-icon">
-                <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '-0.5rem' }}>
+        {/* Game Grid — 2 columns */}
+        <div className="absolute inset-0 overflow-y-auto px-4 pt-24 pb-6 z-10">
+          <div className="max-w-md mx-auto grid grid-cols-2 gap-4">
+
+            {/* ─── XO Arena ─── */}
+            <div className="flex flex-col items-center text-center p-4 rounded-2xl"
+              style={{
+                background: 'linear-gradient(to bottom, #1e293b, #0f172a)',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.6), inset 0 2px 0 rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.06)',
+              }}>
+              <div className="w-16 h-16 flex items-center justify-center rounded-xl mb-2"
+                style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', boxShadow: 'inset 0 4px 8px rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.4)' }}>
+                <div className="flex items-center justify-center gap-[-0.25rem]" style={{ transform: 'scale(0.5)', transformOrigin: 'center' }}>
                   <XIcon /><OIcon />
                 </div>
               </div>
-              <h2 className="text-xl md:text-2xl font-black text-white drop-shadow-[0_4px_0_rgba(0,0,0,1)] tracking-wide mb-0.5">
-                XO Arena
-              </h2>
-              <p className="text-[0.65rem] font-black uppercase tracking-widest mb-3" style={{ color: '#3b82f6' }}>Multiverse Duel</p>
-              <button onClick={openSetup} className="game-btn-primary"
-                style={{ fontSize: '1.1rem', padding: '0.7rem 1.5rem', maxWidth: '200px' }}>
-                PLAY
+              <h3 className="text-[0.85rem] font-black text-white tracking-wide mb-0.5">XO Arena</h3>
+              <p className="text-[0.5rem] font-black uppercase tracking-widest mb-2.5" style={{ color: '#3b82f6' }}>Multiverse Duel</p>
+              <button onClick={openSetup} className="game-btn-primary" style={{ fontSize: '0.75rem', padding: '0.4rem 1rem', maxWidth: '110px' }}>
+                PLAY ▶
               </button>
             </div>
 
-            {/* Chess Royale Card */}
-            <div className="loot-chest w-full" style={{ opacity: 0.4, pointerEvents: 'none' }}>
-              <div className="loot-chest-icon">
-                <svg viewBox="0 0 60 60" style={{ width: '3.5rem', height: '3.5rem', opacity: 0.3 }}>
-                  <path d="M24 50 C24 50 20 40 24 34 C28 28 24 22 30 18 C36 14 42 18 42 24 C42 30 38 34 38 36 L42 44 L42 50 Z" fill="#64748b" />
-                  <rect x="20" y="50" width="20" height="4" rx="1" fill="#64748b" />
+            {/* ─── Chess Royale ─── */}
+            <div className="flex flex-col items-center text-center p-4 rounded-2xl" style={{
+              opacity: 0.4, pointerEvents: 'none',
+              background: 'linear-gradient(to bottom, #1e293b, #0f172a)',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.6), inset 0 2px 0 rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.06)',
+            }}>
+              <div className="w-16 h-16 flex items-center justify-center rounded-xl mb-2"
+                style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', boxShadow: 'inset 0 4px 8px rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.4)' }}>
+                <svg viewBox="0 0 60 60" style={{ width: '2rem', height: '2rem', opacity: 0.4 }}>
+                  <path d="M24 50 C24 50 20 40 24 34 C28 28 24 22 30 18 C36 14 42 18 42 24 C42 30 38 34 38 36 L42 44 L42 50 Z" fill="#94a3b8" />
+                  <rect x="20" y="50" width="20" height="4" rx="1" fill="#94a3b8" />
                 </svg>
               </div>
-              <h2 className="text-xl md:text-2xl font-black text-white drop-shadow-[0_4px_0_rgba(0,0,0,1)] tracking-wide mb-0.5">
-                Chess Royale
-              </h2>
-              <p className="text-[0.65rem] font-black uppercase tracking-widest mb-3" style={{ color: '#3b82f6' }}>Grandmaster Duel</p>
-              <button disabled className="game-btn-primary"
-                style={{ fontSize: '1.1rem', padding: '0.7rem 1.5rem', maxWidth: '200px', opacity: 0.3, cursor: 'not-allowed', pointerEvents: 'none' }}>
-                LOCKED
-              </button>
+              <h3 className="text-[0.85rem] font-black text-white tracking-wide mb-0.5">Chess Royale</h3>
+              <p className="text-[0.5rem] font-black uppercase tracking-widest mb-2.5" style={{ color: '#64748b' }}>Grandmaster</p>
+              <span className="text-[0.6rem] font-black uppercase tracking-widest px-3 py-1 rounded-full" style={{ background: 'rgba(100,116,139,0.2)', color: '#64748b', border: '1px solid rgba(100,116,139,0.3)' }}>
+                🔒 LOCKED
+              </span>
             </div>
 
-            {/* Cards Arena Card */}
-            <div className="loot-chest w-full" style={{ opacity: 0.4, pointerEvents: 'none' }}>
-              <div className="loot-chest-icon">
-                <svg viewBox="0 0 60 60" style={{ width: '3.5rem', height: '3.5rem', opacity: 0.3 }}>
-                  <rect x="18" y="10" width="24" height="40" rx="4" fill="none" stroke="#64748b" strokeWidth="3" />
-                  <path d="M30 22 C26 26 22 30 26 34 C30 38 30 38 30 38 C30 38 30 38 34 34 C38 30 34 26 30 22 Z" fill="#64748b" />
+            {/* ─── Cards Arena ─── */}
+            <div className="flex flex-col items-center text-center p-4 rounded-2xl" style={{
+              opacity: 0.4, pointerEvents: 'none',
+              background: 'linear-gradient(to bottom, #1e293b, #0f172a)',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.6), inset 0 2px 0 rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.06)',
+            }}>
+              <div className="w-16 h-16 flex items-center justify-center rounded-xl mb-2"
+                style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', boxShadow: 'inset 0 4px 8px rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.4)' }}>
+                <svg viewBox="0 0 60 60" style={{ width: '2rem', height: '2rem', opacity: 0.4 }}>
+                  <rect x="18" y="10" width="24" height="40" rx="4" fill="none" stroke="#94a3b8" strokeWidth="3" />
+                  <path d="M30 22 C26 26 22 30 26 34 C30 38 30 38 30 38 C30 38 30 38 34 34 C38 30 34 26 30 22 Z" fill="#94a3b8" />
                 </svg>
               </div>
-              <h2 className="text-xl md:text-2xl font-black text-white drop-shadow-[0_4px_0_rgba(0,0,0,1)] tracking-wide mb-0.5">
-                Cards Arena
-              </h2>
-              <p className="text-[0.65rem] font-black uppercase tracking-widest mb-3" style={{ color: '#3b82f6' }}>Poker Master</p>
-              <button disabled className="game-btn-primary"
-                style={{ fontSize: '1.1rem', padding: '0.7rem 1.5rem', maxWidth: '200px', opacity: 0.3, cursor: 'not-allowed', pointerEvents: 'none' }}>
-                LOCKED
-              </button>
+              <h3 className="text-[0.85rem] font-black text-white tracking-wide mb-0.5">Cards Arena</h3>
+              <p className="text-[0.5rem] font-black uppercase tracking-widest mb-2.5" style={{ color: '#64748b' }}>Poker Master</p>
+              <span className="text-[0.6rem] font-black uppercase tracking-widest px-3 py-1 rounded-full" style={{ background: 'rgba(100,116,139,0.2)', color: '#64748b', border: '1px solid rgba(100,116,139,0.3)' }}>
+                🔒 LOCKED
+              </span>
             </div>
 
           </div>
