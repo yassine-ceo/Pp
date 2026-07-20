@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import { useGameStore } from '@/stores/gameStore'
 import { soundManager } from '@/lib/sound'
 import HeroAnimation from '@/components/HeroAnimation'
+import BotGame from '@/components/ui/BotGame'
 
-type Stage = 'WELCOME' | 'CATALOG' | 'XO_SETUP'
+type Stage = 'WELCOME' | 'CATALOG' | 'XO_SETUP' | 'BOT_GAME'
 
 function tryFullscreen() {
   try {
@@ -88,6 +89,7 @@ export default function PlayOnline() {
   const [name, setName] = useState(playerName || '')
   const [joinPanel, setJoinPanel] = useState(false)
   const [botPanel, setBotPanel] = useState(false)
+  const [botDifficulty, setBotDifficulty] = useState<'Easy' | 'Medium' | 'Epic'>('Easy')
   const [joinCode, setJoinCode] = useState('')
   const [deepRoom, setDeepRoom] = useState<string | null>(null)
   const [booted, setBooted] = useState(false)
@@ -393,10 +395,10 @@ export default function PlayOnline() {
 
             {botPanel && (
               <div className="flex flex-col items-center gap-3 w-full mt-1">
-                {['Easy', 'Medium', 'Epic'].map((diff) => (
+                {(['Easy', 'Medium', 'Epic'] as const).map((diff) => (
                   <button
                     key={diff}
-                    onClick={() => { soundManager.playClick() }}
+                    onClick={() => { soundManager.playClick(); setBotDifficulty(diff); setStage('BOT_GAME') }}
                     className="w-full flex justify-center items-center gap-2 rounded-lg text-sm font-semibold transition-all active:scale-[0.97]"
                     style={{
                       padding: '0.5rem 1.25rem',
@@ -456,6 +458,11 @@ export default function PlayOnline() {
         </div>
       </main>
     )
+  }
+
+  /* ════════ BOT GAME ════════ */
+  if (stage === 'BOT_GAME') {
+    return <BotGame difficulty={botDifficulty} playerName={name || 'Player'} onBack={() => setStage('XO_SETUP')} />
   }
 
   /* ════════ CATALOG (HUB) ════════ */
