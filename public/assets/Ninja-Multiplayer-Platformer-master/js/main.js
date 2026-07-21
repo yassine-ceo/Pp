@@ -250,13 +250,9 @@ document.head.appendChild(loadPlaystate);
 window.addEventListener('load', () => {
   const game = new window.Phaser.Game(960, 600, window.Phaser.AUTO, 'game');
   game.state.disableVisibilityChange = true;
-  // Fullscreen scaling: fill the viewport while maintaining aspect ratio
-  game.scale.scaleMode = window.Phaser.ScaleManager.FIT;
-  game.scale.setMinMax(480, 300, 960, 600);
+  game.scale.scaleMode = window.Phaser.ScaleManager.SHOW_ALL;
   game.scale.pageAlignHorizontally = true;
   game.scale.pageAlignVertically = true;
-  game.scale.windowConstraints.bottom = 'visual';
-  if (game.scale.refresh) game.scale.refresh();
   game.state.add('play', window.PlayState);
   game.state.add('loading', window.LoadingState);
   

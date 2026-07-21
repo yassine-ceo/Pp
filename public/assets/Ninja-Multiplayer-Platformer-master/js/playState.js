@@ -197,6 +197,10 @@ window.PlayState = {
 
   shutdown() {
     window.onBothPlayersFinished = null;
+    this._leftBtnBg = null;
+    this._leftBtnArrow = null;
+    this._rightBtnBg = null;
+    this._rightBtnArrow = null;
     if (this.touchGroup) {
       this.touchGroup.destroy();
       this.touchGroup = null;
@@ -237,6 +241,11 @@ window.PlayState = {
           const otherplayer = window.globalOtherHeros.get(uuid);
           if (!otherplayer) continue;
           this._moveRemotePlayer(otherplayer);
+        }
+        // Still update stooped message sync for spectator
+        if (window.globalWasHeroMoving && this.hero.body.velocity.x === 0 && this.hero.body.velocity.y === 0 && this.hero.body.touching.down) {
+          window.sendKeyMessage({ stopped: 'not moving' });
+          window.globalWasHeroMoving = false;
         }
         return;
       }
@@ -295,25 +304,23 @@ window.PlayState = {
         this.hero.move(0);
       }
 
-      // Remote player movement
-      for (const uuid of window.globalOtherHeros.keys()) {
-        const otherplayer = window.globalOtherHeros.get(uuid);
-        this._moveRemotePlayer(otherplayer);
-      }
-    }
-
-    // Stopped-message sync
-    if (this.hero && !this.spectatorMode) {
+      // Stopped-message sync
       if (window.globalWasHeroMoving && this.hero.body.velocity.x === 0 && this.hero.body.velocity.y === 0 && this.hero.body.touching.down) {
         window.sendKeyMessage({ stopped: 'not moving' });
         window.globalWasHeroMoving = false;
       } else if (window.globalWasHeroMoving || this.hero.body.velocity.x !== 0 || this.hero.body.velocity.y !== 0 || !this.hero.body.touching.down) {
         window.globalWasHeroMoving = true;
       }
-    }
 
-    // Update touch button visual feedback
-    this._updateTouchButtons();
+      // Remote player movement
+      for (const uuid of window.globalOtherHeros.keys()) {
+        const otherplayer = window.globalOtherHeros.get(uuid);
+        this._moveRemotePlayer(otherplayer);
+      }
+
+      // Update touch button visual feedback
+      this._updateTouchButtons();
+    }
   },
 
   _moveRemotePlayer(otherplayer) {
@@ -329,72 +336,63 @@ window.PlayState = {
   },
 
   _createTouchButtons() {
+    const isMobile = !this.game.device.desktop || this.game.device.touch;
+    if (!isMobile) return;
+
     this.touchGroup = this.game.add.group();
     this.touchGroup.fixedToCamera = true;
 
     const btnSize = 56;
     const margin = 16;
     const btnY = this.game.height - btnSize - margin;
-    const arrowColor = 0xffffff;
-    const bgAlpha = 0.35;
-    const bgColor = 0x000000;
 
-    // Left button background + arrow
-    this.leftBtnGfx = this.game.add.graphics(margin, btnY);
-    this.leftBtnGfx.beginFill(bgColor, bgAlpha);
-    this.leftBtnGfx.drawRoundedRect(0, 0, btnSize, btnSize, 10);
-    this.leftBtnGfx.endFill();
-    this.leftBtnGfx.beginFill(arrowColor, 0.8);
-    this.leftBtnGfx.moveTo(btnSize * 0.7, btnSize * 0.15);
-    this.leftBtnGfx.lineTo(btnSize * 0.2, btnSize * 0.5);
-    this.leftBtnGfx.lineTo(btnSize * 0.7, btnSize * 0.85);
-    this.leftBtnGfx.lineTo(btnSize * 0.7, btnSize * 0.15);
-    this.leftBtnGfx.endFill();
-    this.touchGroup.add(this.leftBtnGfx);
+    // Create each button as a pair of Graphics objects: bg rect + arrow triangle
+    // We create them once and only toggle alpha for visual feedback
+    this._createBtn('left', margin, btnY, btnSize, -1);
+    this._createBtn('right', margin + btnSize + 12, btnY, btnSize, 1);
+  },
 
-    // Right button background + arrow
-    this.rightBtnGfx = this.game.add.graphics(margin + btnSize + 12, btnY);
-    this.rightBtnGfx.beginFill(bgColor, bgAlpha);
-    this.rightBtnGfx.drawRoundedRect(0, 0, btnSize, btnSize, 10);
-    this.rightBtnGfx.endFill();
-    this.rightBtnGfx.beginFill(arrowColor, 0.8);
-    this.rightBtnGfx.moveTo(btnSize * 0.3, btnSize * 0.15);
-    this.rightBtnGfx.lineTo(btnSize * 0.8, btnSize * 0.5);
-    this.rightBtnGfx.lineTo(btnSize * 0.3, btnSize * 0.85);
-    this.rightBtnGfx.lineTo(btnSize * 0.3, btnSize * 0.15);
-    this.rightBtnGfx.endFill();
-    this.touchGroup.add(this.rightBtnGfx);
+  _createBtn(side, x, y, size, direction) {
+    // Background rectangle
+    const bg = this.game.add.graphics(x, y);
+    bg.beginFill(0x000000, 0.35);
+    bg.drawRoundedRect(0, 0, size, size, 10);
+    bg.endFill();
+    this.touchGroup.add(bg);
+
+    // Arrow triangle
+    const arrow = this.game.add.graphics(x, y);
+    arrow.beginFill(0xffffff, 0.8);
+    if (direction < 0) {
+      // Left arrow
+      arrow.moveTo(size * 0.7, size * 0.15);
+      arrow.lineTo(size * 0.2, size * 0.5);
+      arrow.lineTo(size * 0.7, size * 0.85);
+    } else {
+      // Right arrow
+      arrow.moveTo(size * 0.3, size * 0.15);
+      arrow.lineTo(size * 0.8, size * 0.5);
+      arrow.lineTo(size * 0.3, size * 0.85);
+    }
+    arrow.lineTo(size * 0.7, size * 0.15);
+    arrow.endFill();
+    this.touchGroup.add(arrow);
+
+    if (side === 'left') {
+      this._leftBtnBg = bg;
+      this._leftBtnArrow = arrow;
+    } else {
+      this._rightBtnBg = bg;
+      this._rightBtnArrow = arrow;
+    }
   },
 
   _updateTouchButtons() {
-    if (!this.leftBtnGfx || !this.rightBtnGfx) return;
-    const activeAlpha = 0.6;
-    const idleAlpha = 0.35;
-    // Redraw left button with active/idle alpha
-    const btnSize = 56;
-    const margin = 16;
-    const btnY = this.game.height - btnSize - margin;
-    this.leftBtnGfx.clear();
-    this.leftBtnGfx.beginFill(0x000000, this._touchLeft ? activeAlpha : idleAlpha);
-    this.leftBtnGfx.drawRoundedRect(0, 0, btnSize, btnSize, 10);
-    this.leftBtnGfx.endFill();
-    this.leftBtnGfx.beginFill(0xffffff, 0.8);
-    this.leftBtnGfx.moveTo(btnSize * 0.7, btnSize * 0.15);
-    this.leftBtnGfx.lineTo(btnSize * 0.2, btnSize * 0.5);
-    this.leftBtnGfx.lineTo(btnSize * 0.7, btnSize * 0.85);
-    this.leftBtnGfx.lineTo(btnSize * 0.7, btnSize * 0.15);
-    this.leftBtnGfx.endFill();
-
-    this.rightBtnGfx.clear();
-    this.rightBtnGfx.beginFill(0x000000, this._touchRight ? activeAlpha : idleAlpha);
-    this.rightBtnGfx.drawRoundedRect(0, 0, btnSize, btnSize, 10);
-    this.rightBtnGfx.endFill();
-    this.rightBtnGfx.beginFill(0xffffff, 0.8);
-    this.rightBtnGfx.moveTo(btnSize * 0.3, btnSize * 0.15);
-    this.rightBtnGfx.lineTo(btnSize * 0.8, btnSize * 0.5);
-    this.rightBtnGfx.lineTo(btnSize * 0.3, btnSize * 0.85);
-    this.rightBtnGfx.lineTo(btnSize * 0.3, btnSize * 0.15);
-    this.rightBtnGfx.endFill();
+    if (!this._leftBtnBg) return;
+    this._leftBtnBg.alpha = this._touchLeft ? 0.7 : 0.35;
+    if (this._rightBtnBg) {
+      this._rightBtnBg.alpha = this._touchRight ? 0.7 : 0.35;
+    }
   },
 
   _handleTouchInput() {
