@@ -127,8 +127,21 @@ window.createMyPubNub = function (currentLevel) {
     }
   });
 
+  // 4. Listen for both players finishing to transition the level
+  let finishedUnsubscribe = onValue(roomPlayersRef, (snap) => {
+    const players = snap.val() || {};
+    const uuids = Object.keys(players);
+    if (uuids.length >= 2) {
+      const allFinished = uuids.every(uuid => players[uuid].isFinished === true);
+      if (allFinished && typeof window.onBothPlayersFinished === 'function') {
+        window.onBothPlayersFinished();
+      }
+    }
+  });
+
   window.currentFirebaseUnsubscribe = () => {
     playersUnsubscribe();
+    if (finishedUnsubscribe) finishedUnsubscribe();
   };
 };
 
@@ -136,6 +149,43 @@ window.globalUnsubscribe = function () {
   if (window.currentFirebaseUnsubscribe) {
     window.currentFirebaseUnsubscribe();
   }
+};
+
+window.setPlayerFinished = (finished) => {
+  const parentDb = window.parent.__dungeonRunDb;
+  const refs = window.parent.__dungeonRunRefs;
+  if (parentDb && refs) {
+    const { ref, update } = refs;
+    const myPlayerRef = ref(parentDb, `platformerRooms/${roomCode}/players/${window.UniqueID}`);
+    update(myPlayerRef, { isFinished: finished });
+  }
+};
+
+window.resetPlayersFinished = (callback) => {
+  const parentDb = window.parent.__dungeonRunDb;
+  const refs = window.parent.__dungeonRunRefs;
+  if (!parentDb || !refs) {
+    if (callback) callback();
+    return;
+  }
+  const { ref, update, onValue } = refs;
+  const roomPlayersRef = ref(parentDb, `platformerRooms/${roomCode}/players`);
+  onValue(roomPlayersRef, (snap) => {
+    const players = snap.val() || {};
+    const updates = {};
+    for (const uuid of Object.keys(players)) {
+      updates[`${uuid}/isFinished`] = false;
+    }
+    if (Object.keys(updates).length > 0) {
+      update(roomPlayersRef, updates).then(() => {
+        if (callback) callback();
+      }).catch(() => {
+        if (callback) callback();
+      });
+    } else {
+      if (callback) callback();
+    }
+  }, { onlyOnce: true });
 };
 
 window.sendKeyMessage = (keyMessage) => {

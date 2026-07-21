@@ -137,6 +137,10 @@ window.PlayState = {
     this.coinPickupCount = 0;
     keyCollected = false;
     this.level = (data.level || 0);
+    this.isFinished = false;
+    this.spectatorMode = false;
+    this._transitioning = false;
+    this.waitingText = null;
   },
 
   create() {
@@ -168,6 +172,11 @@ window.PlayState = {
     // this._loadLevel(window.globalLevelState.value);
     // create UI score boards
     this._createHud();
+
+    // Callback invoked by main.js Firebase listener when both players finish
+    window.onBothPlayersFinished = () => {
+      this._performTransition();
+    };
   },
 
   update() {
@@ -180,7 +189,7 @@ window.PlayState = {
   },
 
   shutdown() {
-    // this.bgm.stop();
+    window.onBothPlayersFinished = null;
   },
 
   _canHeroEnterDoor(hero) {
@@ -212,6 +221,25 @@ window.PlayState = {
 
     //  logCurrentState(this.game);
     if (this.hero) { // Added this so we can control spawning of heros
+      // Skip local player input in spectator mode
+      if (this.spectatorMode) {
+        // Still update remote player movement
+        for (const uuid of window.globalOtherHeros.keys()) {
+          const otherplayer = window.globalOtherHeros.get(uuid);
+          if (!otherplayer) continue;
+          const JUMP_HOLD = 10;
+          if (Date.now() + JUMP_HOLD <= otherplayer.jumpStart) {
+          }
+          if (otherplayer.goingLeft) {
+            otherplayer.move(-1);
+          } else if (otherplayer.goingRight) {
+            otherplayer.move(1);
+          } else {
+            otherplayer.move(0);
+          }
+        }
+        return;
+      }
       // Mobile Controls
         if(this.game.input.pointer1.x < 399 && (this.game.input.pointer1.y > 400) && this.game.input.pointer1.isDown)
         {    
@@ -360,36 +388,67 @@ window.PlayState = {
   },
 
   _onHeroVsDoor(hero, door) {
-      // 'open' the door by changing its graphic and playing a sfx
+    if (this.isFinished || this._transitioning) return;
+    this.isFinished = true;
     door.frame = 1;
-      // this.sfx.door.play();
-      // play 'enter door' animation and change to the next level when it ends
     hero.freeze();
+
     this.game.add.tween(hero)
-      .to({ x: this.door.x, alpha: 0 }, 0, null, true)
-      .onComplete.addOnce(this._goToNextLevel, this);
+      .to({ x: this.door.x, alpha: 0 }, 500, null, true)
+      .onComplete.addOnce(() => {
+        hero.visible = false;
+        // Check if there is another player to wait for
+        if (window.globalOtherHeros && window.globalOtherHeros.size > 0) {
+          window.setPlayerFinished(true);
+          this._enterSpectatorMode();
+        } else {
+          window.setPlayerFinished(true);
+          this._performTransition();
+        }
+      }, this);
   },
 
   _onOtherHeroVsDoor(hero, door) {
-    // 'open' the door by changing its graphic and playing a sfx
     door.frame = 1;
-    // this.sfx.door.play();
-    // play 'enter door' animation and change to the next level when it ends
     hero.freeze();
     this.game.add.tween(hero)
       .to({ x: this.door.x, alpha: 0 }, 500, null, true);
   },
 
-  _goToNextLevel() {
+  _enterSpectatorMode() {
+    this.spectatorMode = true;
+    // Follow the other player with the camera
+    if (window.globalOtherHeros && window.globalOtherHeros.size > 0) {
+      const otherPlayer = window.globalOtherHeros.values().next().value;
+      if (otherPlayer) {
+        this.camera.follow(otherPlayer);
+      }
+    }
+    // Show waiting text
+    this.waitingText = this.game.add.text(
+      this.game.width / 2, this.game.height / 2,
+      'Waiting for your partner...',
+      { font: '30px Arial', fill: '#ffffff', stroke: '#000000', strokeThickness: 4 }
+    );
+    this.waitingText.anchor.set(0.5);
+    this.waitingText.fixedToCamera = true;
+  },
+
+  _performTransition() {
+    if (this._transitioning) return;
+    this._transitioning = true;
+    if (this.waitingText) {
+      this.waitingText.destroy();
+      this.waitingText = null;
+    }
     this.camera.fade('#000000');
     this.camera.onFadeComplete.addOnce(function () {
-      window.globalUnsubscribe();
-      window.updateOccupancyCounter = false;
-      if (this.level === 2) {
-        window.createMyPubNub(0);
-      } else {
-        window.createMyPubNub(this.level + 1);
-      }
+      const nextLevel = this.level >= 2 ? 0 : this.level + 1;
+      window.resetPlayersFinished(() => {
+        window.globalUnsubscribe();
+        window.updateOccupancyCounter = false;
+        window.createMyPubNub(nextLevel);
+      });
     }, this);
   },
 
