@@ -167,6 +167,9 @@ export default class LobbyScene extends Phaser.Scene {
       callback: () => this.syncPlayerState(),
       loop: true,
     })
+
+    // Signal scene is ready
+    this.game.events.emit('scene-ready', 'LobbyScene')
   }
 
   update(): void {

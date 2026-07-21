@@ -1,17 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { soundManager } from '@/lib/sound'
-import { createPlatformerRoom, joinPlatformerRoom } from './systems/NetworkSync'
+import { createPlatformerRoom, joinPlatformerRoom, checkPlatformerRoomExists } from './systems/NetworkSync'
 
 interface PlatformerLobbyProps {
   playerId: string
   playerName: string
-  onStartGame: (roomCode: string, isHost: boolean) => void
   onBack: () => void
 }
 
-export default function PlatformerLobby({ playerId, playerName, onStartGame, onBack }: PlatformerLobbyProps) {
+export default function PlatformerLobby({ playerId, playerName, onBack }: PlatformerLobbyProps) {
+  const router = useRouter()
   const [view, setView] = useState<'menu' | 'joining'>('menu')
   const [joinCode, setJoinCode] = useState('')
   const [loading, setLoading] = useState(false)
@@ -22,7 +23,7 @@ export default function PlatformerLobby({ playerId, playerName, onStartGame, onB
     setError(null)
     try {
       const code = await createPlatformerRoom(playerId, playerName)
-      onStartGame(code, true)
+      router.push(`/dungeonrun/room/${code}?host=1`)
     } catch {
       setError('Failed to create room. Try again.')
     } finally {
@@ -36,9 +37,15 @@ export default function PlatformerLobby({ playerId, playerName, onStartGame, onB
     setLoading(true)
     setError(null)
     try {
+      const exists = await checkPlatformerRoomExists(code)
+      if (!exists) {
+        setError('Room not found.')
+        setLoading(false)
+        return
+      }
       const ok = await joinPlatformerRoom(code, playerId, playerName)
       if (ok) {
-        onStartGame(code, false)
+        router.push(`/dungeonrun/room/${code}`)
       } else {
         setError('Room not found or already full.')
       }
@@ -60,11 +67,9 @@ export default function PlatformerLobby({ playerId, playerName, onStartGame, onB
         `
       }}
     >
-      {/* Warm glow */}
       <div className="absolute top-[-15%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[100px] pointer-events-none" style={{ background: 'rgba(180,130,60,0.07)' }} />
       <div className="absolute bottom-[-15%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[100px] pointer-events-none" style={{ background: 'rgba(200,160,80,0.05)' }} />
 
-      {/* Back */}
       <button onClick={onBack}
         className="absolute top-6 left-6 z-10 flex items-center justify-center w-10 h-10 rounded-full transition-all hover:scale-105 active:scale-95"
         style={{ color: '#d4a84b', border: '1px solid rgba(212,168,75,0.25)', background: 'rgba(20,12,8,0.6)' }}>

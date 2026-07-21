@@ -1,6 +1,6 @@
 'use client'
 
-import { ref, set, update, onValue, off, remove } from 'firebase/database'
+import { ref, set, update, onValue, off, remove, get, child } from 'firebase/database'
 import { db } from '@/lib/firebase'
 import type { PlatformerRoom, PlayerState } from '../types'
 
@@ -13,6 +13,15 @@ export function generateRoomCode(): string {
   return code
 }
 
+export async function checkPlatformerRoomExists(code: string): Promise<boolean> {
+  try {
+    const snap = await get(child(ref(db), `${ROOMS_PATH}/${code}/status`))
+    return snap.exists()
+  } catch {
+    return false
+  }
+}
+
 export async function createPlatformerRoom(hostId: string, hostName: string): Promise<string> {
   const code = generateRoomCode()
   const roomRef = ref(db, `${ROOMS_PATH}/${code}`)
@@ -20,10 +29,10 @@ export async function createPlatformerRoom(hostId: string, hostName: string): Pr
     id: hostId,
     name: hostName,
     x: 160,
-    y: 400,
+    y: 200,
     vx: 0,
     vy: 0,
-    grounded: true,
+    grounded: false,
     facing: 1,
     hp: 100,
     lastShootTime: 0,
@@ -44,21 +53,28 @@ export async function createPlatformerRoom(hostId: string, hostName: string): Pr
 
 export async function joinPlatformerRoom(code: string, playerId: string, playerName: string): Promise<boolean> {
   const roomRef = ref(db, `${ROOMS_PATH}/${code}`)
-  const playerState: PlayerState = {
-    id: playerId,
-    name: playerName,
-    x: 640,
-    y: 400,
-    vx: 0,
-    vy: 0,
-    grounded: true,
-    facing: -1,
-    hp: 100,
-    lastShootTime: 0,
-    shootFacing: -1,
-    roomId: code,
-  }
   try {
+    const snap = await get(roomRef)
+    if (!snap.exists()) return false
+    const room = snap.val() as PlatformerRoom
+    if (room.status !== 'waiting') return false
+    const players = room.players || {}
+    if (Object.keys(players).length >= 2 && !players[playerId]) return false
+
+    const playerState: PlayerState = {
+      id: playerId,
+      name: playerName,
+      x: 640,
+      y: 200,
+      vx: 0,
+      vy: 0,
+      grounded: false,
+      facing: -1,
+      hp: 100,
+      lastShootTime: 0,
+      shootFacing: -1,
+      roomId: code,
+    }
     await update(roomRef, { [`players/${playerId}`]: playerState })
     return true
   } catch {

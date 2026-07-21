@@ -2,6 +2,8 @@
 
 import { useRef, useCallback, useEffect } from 'react'
 
+const BOTTOM_OFFSET = 'calc(env(safe-area-inset-bottom, 8px) + 12px)'
+
 export default function TouchControls() {
   const touchState = useRef({ left: false, right: false, jump: false })
 
@@ -104,8 +106,9 @@ export default function TouchControls() {
 
   return (
     <div className="absolute inset-0 z-40" style={{ touchAction: 'none' }}>
-      {/* Bottom-left: movement buttons */}
-      <div className="absolute bottom-4 left-4 flex items-center gap-2.5">
+      {/* Bottom-left: movement buttons — positioned within safe zone */}
+      <div className="absolute flex items-center gap-2.5"
+        style={{ bottom: BOTTOM_OFFSET, left: '12px' }}>
         <button
           onPointerDown={handlePointerDown('left')}
           onPointerUp={handlePointerUp('left')}
@@ -130,8 +133,9 @@ export default function TouchControls() {
         </button>
       </div>
 
-      {/* Bottom-right: jump (corner) + shoot (above-left of jump) */}
-      <div className="absolute bottom-4 right-4 pointer-events-none">
+      {/* Bottom-right: jump + shoot — positioned within safe zone */}
+      <div className="absolute pointer-events-none"
+        style={{ bottom: BOTTOM_OFFSET, right: '12px' }}>
         <button
           onPointerDown={handlePointerDown('jump')}
           onPointerUp={handlePointerUp('jump')}

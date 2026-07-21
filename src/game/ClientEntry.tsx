@@ -6,7 +6,6 @@ import type { ComponentType } from 'react'
 interface LobbyProps {
   playerId: string
   playerName: string
-  onStartGame: (code: string, isHost: boolean) => void
   onBack: () => void
 }
 
@@ -20,10 +19,10 @@ interface GameProps {
 
 export const LobbyEntry: ComponentType<LobbyProps> = dynamic(
   () => import('./PlatformerLobby'),
-  { ssr: false }
+  { ssr: false },
 )
 
 export const GameEntry: ComponentType<GameProps> = dynamic(
   () => import('./DungeonRun'),
-  { ssr: false }
+  { ssr: false },
 )

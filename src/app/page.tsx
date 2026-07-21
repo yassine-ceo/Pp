@@ -6,9 +6,9 @@ import { useGameStore } from '@/stores/gameStore'
 import { soundManager } from '@/lib/sound'
 import HeroAnimation from '@/components/HeroAnimation'
 import BotGame from '@/components/ui/BotGame'
-import { LobbyEntry, GameEntry } from '@/game/ClientEntry'
+import { LobbyEntry } from '@/game/ClientEntry'
 
-type Stage = 'WELCOME' | 'CATALOG' | 'XO_SETUP' | 'BOT_GAME' | 'PLATFORMER_LOBBY' | 'PLATFORMER_GAME'
+type Stage = 'WELCOME' | 'CATALOG' | 'XO_SETUP' | 'BOT_GAME' | 'PLATFORMER_LOBBY'
 
 function tryFullscreen() {
   try {
@@ -92,8 +92,7 @@ export default function PlayOnline() {
   const [botPanel, setBotPanel] = useState(false)
   const [botDifficulty, setBotDifficulty] = useState<'Easy' | 'Medium' | 'Epic'>('Easy')
   const [joinCode, setJoinCode] = useState('')
-  const [platformerRoomCode, setPlatformerRoomCode] = useState('')
-  const [platformerIsHost, setPlatformerIsHost] = useState(false)
+
   const [deepRoom, setDeepRoom] = useState<string | null>(null)
   const [booted, setBooted] = useState(false)
   const [playedTimeMs, setPlayedTimeMs] = useState(0)
@@ -474,28 +473,7 @@ export default function PlayOnline() {
       <LobbyEntry
         playerId={playerId || ''}
         playerName={name || 'Player'}
-        onStartGame={(code, isHost) => {
-          setPlatformerRoomCode(code)
-          setPlatformerIsHost(isHost)
-          setStage('PLATFORMER_GAME')
-        }}
         onBack={() => setStage('CATALOG')}
-      />
-    )
-  }
-
-  /* ════════ PLATFORMER GAME ════════ */
-  if (stage === 'PLATFORMER_GAME') {
-    return (
-      <GameEntry
-        roomCode={platformerRoomCode}
-        playerId={playerId || ''}
-        playerName={name || 'Player'}
-        isHost={platformerIsHost}
-        onBack={() => {
-          setStage('CATALOG')
-          setPlatformerRoomCode('')
-        }}
       />
     )
   }

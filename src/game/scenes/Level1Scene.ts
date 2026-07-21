@@ -5,7 +5,7 @@ import { updatePlayerPosition } from '../systems/NetworkSync'
 
 const WORLD_W = 5000
 const WORLD_H = 600
-const GROUND_Y = 568
+const GROUND_Y = 440
 
 interface Level1InitData {
   roomCode?: string
@@ -51,6 +51,16 @@ export default class Level1Scene extends Phaser.Scene {
   private syncInterval = 50
   private onStateUpdate: ((data: Record<string, any>) => void) | null = null
 
+  private parachuting = false
+  private hasLanded = false
+  private parachuteSprite: Phaser.GameObjects.Graphics | null = null
+  private landingText: Phaser.GameObjects.Text | null = null
+  private readonly PARACHUTE_GRAVITY = 80
+  private readonly NORMAL_GRAVITY = 600
+  private readonly PARACHUTE_DESCENT_SPEED = 70
+  private readonly SPAWN_X = 80
+  private readonly SPAWN_Y_AIR = 60
+
   constructor() {
     super({ key: 'Level1Scene' })
   }
@@ -69,6 +79,8 @@ export default class Level1Scene extends Phaser.Scene {
     this.lastShootTimeProcessed = 0
     this.shootCooldown = false
     this.roomCode = data?.roomCode ?? ''
+    this.parachuting = true
+    this.hasLanded = false
   }
 
   setCallbacks(
@@ -109,7 +121,7 @@ export default class Level1Scene extends Phaser.Scene {
       this.add.image(cx, cy, 'cloud').setAlpha(0.5).setScale(0.5).setDepth(-5)
     }
 
-    // Platforms
+    // Platforms — raised for safe zone (bottom 25% empty)
     this.platforms = this.physics.add.staticGroup()
 
     const groundSegments: [number, number][] = [
@@ -121,22 +133,22 @@ export default class Level1Scene extends Phaser.Scene {
       }
     }
 
-    this.platforms.create(2300, 440, 'brick')
-    this.platforms.create(2360, 440, 'brick')
-    this.platforms.create(3580, 440, 'brick')
-    this.platforms.create(3640, 360, 'brick')
+    this.platforms.create(2300, 312, 'brick')
+    this.platforms.create(2360, 312, 'brick')
+    this.platforms.create(3580, 312, 'brick')
+    this.platforms.create(3640, 232, 'brick')
 
     const brickPositions: [number, number][] = [
-      [300, 420], [500, 340], [700, 420],
-      [1000, 400], [1150, 300], [1300, 420],
-      [1500, 340], [1700, 280], [1900, 400],
-      [2100, 340], [2250, 420],
-      [2550, 380], [2700, 300], [2850, 420],
-      [3050, 340], [3200, 260], [3400, 400],
-      [3550, 300],
-      [3850, 420], [4000, 340], [4150, 260],
-      [4350, 400], [4500, 320], [4650, 380],
-      [4850, 300], [4950, 420],
+      [300, 292], [500, 212], [700, 292],
+      [1000, 272], [1150, 172], [1300, 292],
+      [1500, 212], [1700, 152], [1900, 272],
+      [2100, 212], [2250, 292],
+      [2550, 252], [2700, 172], [2850, 292],
+      [3050, 212], [3200, 132], [3400, 272],
+      [3550, 172],
+      [3850, 292], [4000, 212], [4150, 132],
+      [4350, 272], [4500, 192], [4650, 252],
+      [4850, 172], [4950, 292],
     ]
     for (const [bx, by] of brickPositions) {
       this.platforms.create(bx, by, 'brick')
@@ -165,20 +177,29 @@ export default class Level1Scene extends Phaser.Scene {
       allowGravity: false,
     })
 
-    // Player
-    this.player = this.physics.add.sprite(80, GROUND_Y - 100, 'player')
+    // Player — spawn in air for parachute
+    this.player = this.physics.add.sprite(this.SPAWN_X, this.SPAWN_Y_AIR, 'player')
     this.player.setCollideWorldBounds(true)
     this.player.setDepth(2)
     const pBody = this.player.body as Phaser.Physics.Arcade.Body
     pBody.setSize(20, 40)
     pBody.setOffset(6, 8)
-    pBody.setGravityY(600)
+    pBody.setGravityY(this.PARACHUTE_GRAVITY)
 
     this.playerLabel = this.add.text(this.player.x, this.player.y - 36, 'You', {
       fontSize: '10px',
       color: '#d4a84b',
       fontFamily: 'monospace',
     }).setOrigin(0.5).setDepth(3)
+
+    // Parachute visual
+    this.parachuteSprite = this.add.graphics().setDepth(6)
+    this.landingText = this.add.text(WORLD_W / 2, 40, 'Parachuting...', {
+      fontSize: '12px',
+      color: '#ffffff',
+      fontFamily: 'monospace',
+      fontStyle: 'bold',
+    }).setOrigin(0.5).setDepth(10).setScrollFactor(0)
 
     // Remote player — visual-only ghost, zero physics interaction
     this.remotePlayer = this.physics.add.sprite(-100, -100, 'remotePlayer')
@@ -198,7 +219,7 @@ export default class Level1Scene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(3)
 
     // Colliders
-    this.physics.add.collider(this.player, this.platforms)
+    this.physics.add.collider(this.player, this.platforms, this.onPlayerLanded, undefined, this)
     this.physics.add.collider(this.bullets, this.platforms, this.onBulletHitPlatform, undefined, this)
     this.physics.add.overlap(this.bullets, this.player, this.onBulletHitLocal, undefined, this)
     this.physics.add.overlap(this.bullets, this.remotePlayer, this.onBulletHitRemote, undefined, this)
@@ -226,6 +247,8 @@ export default class Level1Scene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08)
     this.cameras.main.setDeadzone(80, 40)
 
+    // Parachute label directly above player (camera follows player, so visible)
+
     // Input
     if (this.input.keyboard) {
       this.cursors = this.input.keyboard.createCursorKeys()
@@ -244,6 +267,9 @@ export default class Level1Scene extends Phaser.Scene {
       callback: () => this.syncState(),
       loop: true,
     })
+
+    // Signal scene is ready for remote player instantiation
+    this.game.events.emit('scene-ready', 'Level1Scene')
   }
 
   update(): void {
@@ -252,30 +278,57 @@ export default class Level1Scene extends Phaser.Scene {
     const body = this.player.body as Phaser.Physics.Arcade.Body
     const grounded = body.blocked.down || body.touching.down
 
-    let vx = 0
-    if (this.cursors?.left.isDown || this.wasd?.A.isDown || this.moveLeft) vx = -speed
-    else if (this.cursors?.right.isDown || this.wasd?.D.isDown || this.moveRight) vx = speed
-    this.player.setVelocityX(vx)
+    // Parachute logic
+    if (this.parachuting) {
+      body.setGravityY(this.PARACHUTE_GRAVITY)
+      if (body.velocity.y < this.PARACHUTE_DESCENT_SPEED) {
+        body.setVelocityY(this.PARACHUTE_DESCENT_SPEED)
+      }
+      this.player.setVelocityX(0)
+      this.drawParachute()
+      if (this.landingText) {
+        this.landingText.setPosition(this.cameras.main.scrollX + WORLD_W / 2, this.cameras.main.scrollY + 40)
+      }
+      // Landing is handled by the collider callback
+    } else {
+      if (this.landingText) {
+        this.landingText.setText('')
+      }
+      if (this.parachuteSprite) {
+        this.parachuteSprite.clear()
+      }
 
-    const jump = this.cursors?.up.isDown || this.wasd?.W.isDown || this.jumpPressed
-    if (jump && grounded) {
-      this.player.setVelocityY(jumpForce)
+      // Normal movement
+      let vx = 0
+      if (this.cursors?.left.isDown || this.wasd?.A.isDown || this.moveLeft) vx = -speed
+      else if (this.cursors?.right.isDown || this.wasd?.D.isDown || this.moveRight) vx = speed
+      this.player.setVelocityX(vx)
+
+      const jump = this.cursors?.up.isDown || this.wasd?.W.isDown || this.jumpPressed
+      if (jump && grounded) {
+        this.player.setVelocityY(jumpForce)
+      }
+
+      if (vx < 0) this.player.setFlipX(true)
+      else if (vx > 0) this.player.setFlipX(false)
     }
-
-    if (vx < 0) this.player.setFlipX(true)
-    else if (vx > 0) this.player.setFlipX(false)
 
     this.playerLabel.setPosition(this.player.x, this.player.y - 36)
 
-    // Keyboard shoot
-    if (this.keyF && Phaser.Input.Keyboard.JustDown(this.keyF)) {
+    // Keyboard shoot (only when landed)
+    if (!this.parachuting && this.keyF && Phaser.Input.Keyboard.JustDown(this.keyF)) {
       this.fireBullet()
     }
 
     // Fall death zone
     if (this.player.y > WORLD_H + 50) {
-      this.player.setPosition(80, GROUND_Y - 100)
+      this.player.setPosition(this.SPAWN_X, this.SPAWN_Y_AIR)
       this.player.setVelocity(0, 0)
+      this.parachuting = true
+      this.hasLanded = false
+      const pBody = this.player.body as Phaser.Physics.Arcade.Body
+      pBody.setGravityY(this.PARACHUTE_GRAVITY)
+      if (this.landingText) this.landingText.setText('Parachuting...')
     }
 
     // Remote player — smooth lerp, ghost (no gravity, no moves, no collision)
@@ -299,10 +352,70 @@ export default class Level1Scene extends Phaser.Scene {
     this.drawHUD()
   }
 
+  // ---- Landing callback ----
+
+  private onPlayerLanded(): void {
+    if (this.parachuting) {
+      this.parachuting = false
+      this.hasLanded = true
+      const pBody = this.player.body as Phaser.Physics.Arcade.Body
+      pBody.setGravityY(this.NORMAL_GRAVITY)
+      if (this.parachuteSprite) this.parachuteSprite.clear()
+      if (this.landingText) this.landingText.setText('')
+      this.spawnLandingEffect(this.player.x, this.player.y)
+    }
+  }
+
+  // ---- Parachute visual ----
+
+  private drawParachute(): void {
+    if (!this.parachuteSprite) return
+    this.parachuteSprite.clear()
+    const px = this.player.x
+    const py = this.player.y
+    // Umbrella canopy (semi-circle)
+    this.parachuteSprite.fillStyle(0xd4a84b, 0.6)
+    this.parachuteSprite.beginPath()
+    this.parachuteSprite.arc(px, py - 42, 20, Math.PI, 0, false)
+    this.parachuteSprite.fillPath()
+    // Strings
+    this.parachuteSprite.lineStyle(1, 0xffdd88, 0.4)
+    this.parachuteSprite.beginPath()
+    this.parachuteSprite.moveTo(px - 18, py - 42)
+    this.parachuteSprite.lineTo(px - 10, py - 24)
+    this.parachuteSprite.moveTo(px - 9, py - 42)
+    this.parachuteSprite.lineTo(px - 5, py - 24)
+    this.parachuteSprite.moveTo(px + 9, py - 42)
+    this.parachuteSprite.lineTo(px + 5, py - 24)
+    this.parachuteSprite.moveTo(px + 18, py - 42)
+    this.parachuteSprite.lineTo(px + 10, py - 24)
+    this.parachuteSprite.strokePath()
+  }
+
+  // ---- Landing effect ----
+
+  private spawnLandingEffect(x: number, y: number): void {
+    for (let i = 0; i < 12; i++) {
+      const p = this.add.circle(x, y, 2 + Math.random() * 3, 0xeedd99, 1)
+      p.setDepth(5)
+      const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 0.8
+      const dist = 12 + Math.random() * 20
+      this.tweens.add({
+        targets: p,
+        x: x + Math.cos(angle) * dist,
+        y: y + Math.sin(angle) * dist,
+        alpha: 0,
+        scale: 0.2,
+        duration: 250 + Math.random() * 200,
+        onComplete: () => p.destroy(),
+      })
+    }
+  }
+
   // ---- Shooting ----
 
   fireBullet(): void {
-    if (this.shootCooldown) return
+    if (this.shootCooldown || this.parachuting) return
     this.shootCooldown = true
     this.time.delayedCall(300, () => { this.shootCooldown = false })
 
@@ -316,11 +429,9 @@ export default class Level1Scene extends Phaser.Scene {
     bullet.setVelocityX(dir * 700)
     bullet.setData('firedBy', 'local')
 
-    // Recoil flash
     this.player.setTint(0xffffff)
     this.time.delayedCall(60, () => this.player.clearTint())
 
-    // Sync shoot action via next state push
     this.lastShootTimeSent = Date.now()
   }
 
@@ -364,7 +475,6 @@ export default class Level1Scene extends Phaser.Scene {
     this.bullets.killAndHide(bullet)
     bullet.body!.enable = false
 
-    // Sync remote HP to Firebase
     if (this.remotePlayerId && this.roomCode) {
       updatePlayerPosition(this.roomCode, this.remotePlayerId, { hp: this.remoteHP }).catch(() => {})
     }
@@ -397,7 +507,6 @@ export default class Level1Scene extends Phaser.Scene {
     const barH = 10
     const barW = 100
 
-    // Local HP bar
     this.hudHP.clear()
     this.hudHP.fillStyle(0x333333)
     this.hudHP.fillRect(barX, 26, barW, barH)
@@ -407,7 +516,6 @@ export default class Level1Scene extends Phaser.Scene {
     this.hudHP.lineStyle(1, 0xffffff, 0.2)
     this.hudHP.strokeRect(barX, 26, barW, barH)
 
-    // Remote HP bar (only when connected)
     this.hudRemoteHP.clear()
     if (this.remoteConnected) {
       this.hudRemoteHP.fillStyle(0x333333)
@@ -438,7 +546,6 @@ export default class Level1Scene extends Phaser.Scene {
     }
     if (remoteId !== undefined) this.remotePlayerId = remoteId
 
-    // Handle remote shoot action
     if (lastShootTime && lastShootTime > this.lastShootTimeProcessed) {
       this.lastShootTimeProcessed = lastShootTime
       this.spawnRemoteBullet(x, y, shootFacing ?? facing)
@@ -454,6 +561,7 @@ export default class Level1Scene extends Phaser.Scene {
   }
 
   setActiveControls(controls: { left: boolean; right: boolean; jump: boolean }): void {
+    if (this.parachuting) return
     this.moveLeft = controls.left
     this.moveRight = controls.right
     this.jumpPressed = controls.jump

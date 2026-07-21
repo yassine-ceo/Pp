@@ -31,7 +31,11 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
   const unsubRef = useRef<(() => void) | null>(null)
   const cleanupRef = useRef(false)
   const currentSceneRef = useRef<'lobby' | 'level1'>('lobby')
-  const lastRemoteState = useRef<{ x: number; y: number; facing: number; hp: number; name: string; lastShootTime: number; shootFacing: number; remoteId: string } | null>(null)
+  const sceneReadyRef = useRef(false)
+  const pendingRemoteState = useRef<{
+    x: number; y: number; facing: number; hp: number; name: string;
+    lastShootTime: number; shootFacing: number; remoteId: string;
+  } | null>(null)
 
   const syncState = useCallback((data: Record<string, any>) => {
     if (cleanupRef.current) return
@@ -48,9 +52,24 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
     }).catch(() => {})
   }, [roomCode, playerId])
 
+  const applyRemoteState = useCallback(() => {
+    const s = pendingRemoteState.current
+    if (!s) return
+    if (currentSceneRef.current === 'lobby' && lobbyRef.current) {
+      lobbyRef.current.setRemotePosition(s.x, s.y, s.facing)
+    } else if (currentSceneRef.current === 'level1' && level1Ref.current) {
+      level1Ref.current.setRemotePosition(
+        s.x, s.y, s.facing,
+        s.hp, s.name,
+        s.lastShootTime, s.shootFacing, s.remoteId,
+      )
+    }
+  }, [])
+
   const doTransition = useCallback(() => {
     if (cleanupRef.current || currentSceneRef.current === 'level1') return
     currentSceneRef.current = 'level1'
+    sceneReadyRef.current = false
     onLevelStart()
     const game = gameRef.current
     if (!game) return
@@ -59,10 +78,6 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
     const l1 = game.scene.getScene('Level1Scene') as Level1Scene
     level1Ref.current = l1
     l1.setCallbacks(syncState)
-    if (lastRemoteState.current) {
-      const s = lastRemoteState.current
-      l1.setRemotePosition(s.x, s.y, s.facing, s.hp, s.name, s.lastShootTime, s.shootFacing, s.remoteId)
-    }
   }, [onLevelStart, syncState, roomCode])
 
   // Subscribe to Firebase room
@@ -80,23 +95,26 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
         onRemoteJoin()
 
         const [remoteId, remoteState] = otherPlayers[0]
-        lastRemoteState.current = {
+        const state = {
           x: remoteState.x, y: remoteState.y, facing: remoteState.facing,
           hp: remoteState.hp ?? 100, name: remoteState.name ?? '',
           lastShootTime: remoteState.lastShootTime ?? 0,
           shootFacing: remoteState.shootFacing ?? remoteState.facing,
           remoteId,
         }
+        pendingRemoteState.current = state
 
-        if (currentSceneRef.current === 'lobby' && lobbyRef.current) {
-          lobbyRef.current.setRemotePosition(remoteState.x, remoteState.y, remoteState.facing)
-        } else if (currentSceneRef.current === 'level1' && level1Ref.current) {
-          level1Ref.current.setRemotePosition(
-            remoteState.x, remoteState.y, remoteState.facing,
-            remoteState.hp ?? 100, remoteState.name ?? '',
-            remoteState.lastShootTime ?? 0, remoteState.shootFacing ?? remoteState.facing,
-            remoteId,
-          )
+        // Only apply if scene is ready
+        if (sceneReadyRef.current) {
+          if (currentSceneRef.current === 'lobby' && lobbyRef.current) {
+            lobbyRef.current.setRemotePosition(state.x, state.y, state.facing)
+          } else if (currentSceneRef.current === 'level1' && level1Ref.current) {
+            level1Ref.current.setRemotePosition(
+              state.x, state.y, state.facing,
+              state.hp, state.name,
+              state.lastShootTime, state.shootFacing, state.remoteId,
+            )
+          }
         }
 
         if (isHost && room.status === 'waiting' && remoteCount >= 1 && !hostHasTriggered) {
@@ -104,12 +122,13 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
           setRoomStatus(roomCode, 'starting').catch(() => {})
         }
       } else {
-        lastRemoteState.current = null
-
-        if (currentSceneRef.current === 'lobby' && lobbyRef.current) {
-          lobbyRef.current.setRemoteDisconnected()
-        } else if (currentSceneRef.current === 'level1' && level1Ref.current) {
-          level1Ref.current.setRemoteDisconnected()
+        pendingRemoteState.current = null
+        if (sceneReadyRef.current) {
+          if (currentSceneRef.current === 'lobby' && lobbyRef.current) {
+            lobbyRef.current.setRemoteDisconnected()
+          } else if (currentSceneRef.current === 'level1' && level1Ref.current) {
+            level1Ref.current.setRemoteDisconnected()
+          }
         }
       }
 
@@ -154,20 +173,30 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
     const game = new Phaser.Game(config)
     gameRef.current = game
 
+    // Listen for scene-ready events from scenes
+    const onSceneReady = (sceneKey: string) => {
+      if (sceneKey === 'LobbyScene') {
+        const lobby = game.scene.getScene('LobbyScene') as LobbyScene
+        lobbyRef.current = lobby
+        lobby.setCallbacks(syncState)
+        sceneReadyRef.current = true
+        applyRemoteState()
+      } else if (sceneKey === 'Level1Scene') {
+        const l1 = game.scene.getScene('Level1Scene') as Level1Scene
+        level1Ref.current = l1
+        sceneReadyRef.current = true
+        applyRemoteState()
+      }
+    }
+    game.events.on('scene-ready', onSceneReady)
+
     game.events.on('ready', () => {
       game.scene.start('LobbyScene', { roomCode, playerId, playerName, isHost })
-      const lobby = game.scene.getScene('LobbyScene') as LobbyScene
-      lobbyRef.current = lobby
-      lobby.setCallbacks(syncState)
-      if (lastRemoteState.current) {
-        lobby.setRemotePosition(
-          lastRemoteState.current.x, lastRemoteState.current.y, lastRemoteState.current.facing,
-        )
-      }
     })
 
     return () => {
       cleanupRef.current = true
+      game.events.off('scene-ready', onSceneReady)
       lobbyRef.current = null
       level1Ref.current = null
       game.destroy(true)
@@ -180,7 +209,7 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
         deletePlatformerRoom(roomCode).catch(() => {})
       }
     }
-  }, [roomCode, playerId, playerName, isHost, syncState])
+  }, [roomCode, playerId, playerName, isHost, syncState, applyRemoteState])
 
   // Expose control methods via window for TouchControls
   const setLobbyControls = useCallback((controls: { left: boolean; right: boolean; jump: boolean }) => {
