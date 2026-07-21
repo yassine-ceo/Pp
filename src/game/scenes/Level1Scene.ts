@@ -153,6 +153,7 @@ export default class Level1Scene extends Phaser.Scene {
     this.drawWorld()
     this.drawStartScreen()
     this.createGoombas()
+    this.setupBulletColliders()
     this.createHUD()
     this.setupMultiplayer()
   }
@@ -513,8 +514,6 @@ export default class Level1Scene extends Phaser.Scene {
       fontSize: '10px', color: '#4a90d9', fontFamily: 'monospace',
     }).setOrigin(0.5).setDepth(3)
 
-    // Colliders
-    this.physics.add.collider(this.bullets, this.platformGroup.getChildren(), this.onBulletHitPlatform, undefined, this)
     this.physics.add.overlap(this.bullets, this.player, this.onBulletHitLocal, undefined, this)
     this.physics.add.overlap(this.bullets, this.remotePlayer, this.onBulletHitRemote, undefined, this)
   }
@@ -543,6 +542,13 @@ export default class Level1Scene extends Phaser.Scene {
 
     this.physics.add.collider(this.goombasGroup.getChildren(), this.immovableBlocksGroup.getChildren())
     this.physics.add.collider(this.goombasGroup.getChildren(), this.fallProtectionGroup.getChildren())
+  }
+
+  // ========== BULLET COLLIDERS ==========
+
+  private setupBulletColliders(): void {
+    if (!this.platformGroup) return
+    this.physics.add.collider(this.bullets, this.platformGroup.getChildren(), this.onBulletHitPlatform, undefined, this)
   }
 
   // ========== HUD ==========
