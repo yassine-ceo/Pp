@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import PhaserGame from './PhaserGame'
+import VanillaGame from './VanillaGame'
 import TouchControls from './TouchControls'
 
 interface DungeonRunProps {
@@ -62,7 +62,7 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
         </button>
       </div>
 
-      <PhaserGame
+      <VanillaGame
         roomCode={roomCode}
         playerId={playerId}
         playerName={playerName}
