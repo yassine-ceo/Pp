@@ -81,6 +81,7 @@ export default class Level1Scene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, WORLD_W, WORLD_H)
     this.cameras.main.setBounds(0, 0, WORLD_W, WORLD_H)
     this.cameras.main.setBackgroundColor('#5c94fc')
+    try { (this.game.canvas as HTMLCanvasElement).style.backgroundColor = '#5c94fc' } catch {}
 
     // Parallax hills (far background)
     const hills = this.add.graphics()

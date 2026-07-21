@@ -65,6 +65,7 @@ export default class LobbyScene extends Phaser.Scene {
     const h = Number(this.game.config.height)
 
     this.cameras.main.setBackgroundColor('#0d0806')
+    try { (this.game.canvas as HTMLCanvasElement).style.backgroundColor = '#0d0806' } catch {}
 
     // Background wall
     for (let x = 0; x < w; x += 32) {

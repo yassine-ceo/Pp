@@ -34,7 +34,7 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
   }, [roomCode])
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-[#0d0806]">
+    <div className="relative w-screen h-screen overflow-hidden">
       {/* Top status bar — glassmorphism */}
       <div className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 backdrop-blur-xl"
         style={{ background: 'rgba(13,8,6,0.7)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>

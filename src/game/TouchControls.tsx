@@ -45,35 +45,36 @@ export default function TouchControls() {
     w.__phaserControls?.current?.fireShoot?.()
   }, [])
 
-  const btnClass = 'select-none touch-none flex items-center justify-center rounded-2xl backdrop-blur-xl transition-all active:scale-90'
+  const btnClass = 'select-none touch-none flex items-center justify-center rounded-2xl backdrop-blur-md transition-all active:scale-90 pointer-events-auto'
+
   const arrowBtnStyle: React.CSSProperties = {
-    background: 'rgba(255,255,255,0.06)',
+    background: 'rgba(255,255,255,0.08)',
     border: '1px solid rgba(255,255,255,0.12)',
-    boxShadow: '0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08)',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06)',
     WebkitTapHighlightColor: 'transparent',
     width: 'auto',
-    height: '56px',
-    padding: '0 20px',
-    minWidth: '80px',
+    height: '52px',
+    padding: '0 18px',
+    minWidth: '72px',
   }
 
   const jumpBtnStyle: React.CSSProperties = {
-    background: 'rgba(212,168,75,0.12)',
-    border: '1px solid rgba(212,168,75,0.25)',
-    boxShadow: '0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(212,168,75,0.08)',
+    background: 'rgba(212,168,75,0.10)',
+    border: '1px solid rgba(212,168,75,0.2)',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(212,168,75,0.06)',
     WebkitTapHighlightColor: 'transparent',
-    width: '72px',
-    height: '72px',
+    width: '68px',
+    height: '68px',
     borderRadius: '1rem',
   }
 
   const shootBtnStyle: React.CSSProperties = {
-    background: 'rgba(255,80,40,0.12)',
-    border: '1px solid rgba(255,80,40,0.25)',
-    boxShadow: '0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,80,40,0.08)',
+    background: 'rgba(255,80,40,0.10)',
+    border: '1px solid rgba(255,80,40,0.2)',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,80,40,0.06)',
     WebkitTapHighlightColor: 'transparent',
-    width: '64px',
-    height: '64px',
+    width: '58px',
+    height: '58px',
     borderRadius: '1rem',
   }
 
@@ -102,8 +103,9 @@ export default function TouchControls() {
   }, [])
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-40" style={{ touchAction: 'none' }}>
-      <div className="absolute left-4 bottom-8 flex items-center gap-3 pointer-events-auto">
+    <div className="absolute inset-0 z-40" style={{ touchAction: 'none' }}>
+      {/* Bottom-left: movement buttons */}
+      <div className="absolute bottom-4 left-4 flex items-center gap-2.5">
         <button
           onPointerDown={handlePointerDown('left')}
           onPointerUp={handlePointerUp('left')}
@@ -111,7 +113,7 @@ export default function TouchControls() {
           className={btnClass}
           style={arrowBtnStyle}
         >
-          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" style={{ color: 'rgba(255,255,255,0.6)' }}>
+          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" style={{ color: 'rgba(255,255,255,0.55)' }}>
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </button>
@@ -122,22 +124,14 @@ export default function TouchControls() {
           className={btnClass}
           style={arrowBtnStyle}
         >
-          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" style={{ color: 'rgba(255,255,255,0.6)' }}>
+          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" style={{ color: 'rgba(255,255,255,0.55)' }}>
             <path d="M9 18l6-6-6-6" />
           </svg>
         </button>
       </div>
 
-      <div className="absolute right-4 bottom-8 flex flex-col items-center gap-3 pointer-events-auto">
-        <button
-          onPointerDown={handleShoot}
-          className={btnClass}
-          style={shootBtnStyle}
-        >
-          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" style={{ color: '#ff5028' }}>
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-          </svg>
-        </button>
+      {/* Bottom-right: jump (corner) + shoot (above-left of jump) */}
+      <div className="absolute bottom-4 right-4 pointer-events-none">
         <button
           onPointerDown={handlePointerDown('jump')}
           onPointerUp={handlePointerUp('jump')}
@@ -145,9 +139,18 @@ export default function TouchControls() {
           className={btnClass}
           style={jumpBtnStyle}
         >
-          <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24" style={{ color: '#d4a84b' }}>
+          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" style={{ color: '#d4a84b' }}>
             <path d="M12 3l-6 8h12l-6-8z" />
             <rect x="5" y="13" width="14" height="3" rx="1" />
+          </svg>
+        </button>
+        <button
+          onPointerDown={handleShoot}
+          className={btnClass}
+          style={{ ...shootBtnStyle, position: 'absolute', bottom: '76px', right: '10px' }}
+        >
+          <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" style={{ color: '#ff5028' }}>
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
           </svg>
         </button>
       </div>
