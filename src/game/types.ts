@@ -1,0 +1,36 @@
+'use client'
+
+export type PlatformerRoomStatus = 'waiting' | 'starting' | 'playing' | 'finished'
+
+export interface PlayerState {
+  id: string
+  name: string
+  x: number
+  y: number
+  vx: number
+  vy: number
+  grounded: boolean
+  facing: number
+  hp: number
+  lastShootTime: number
+  shootFacing: number
+  roomId: string
+}
+
+export interface PlatformerRoom {
+  code: string
+  status: PlatformerRoomStatus
+  hostId: string
+  players: Record<string, PlayerState>
+  level: number
+  createdAt: number
+}
+
+export type GamepadAction = 'left' | 'right' | 'jump' | 'shoot'
+
+export interface InputState {
+  left: boolean
+  right: boolean
+  jump: boolean
+  shoot: boolean
+}

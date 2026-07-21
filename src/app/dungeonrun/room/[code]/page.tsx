@@ -1,10 +1,9 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
-import DungeonRun from '@/game/DungeonRun'
+import dynamic from 'next/dynamic'
+
+const DungeonRun = dynamic(() => import('@/game/DungeonRun'), { ssr: false })
 
 export default function DungeonRunRoomPage() {
-  const router = useRouter()
-
-  return <DungeonRun onBack={() => router.push('/')} />
+  return <DungeonRun />
 }
