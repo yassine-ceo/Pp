@@ -165,7 +165,7 @@ export default class Level1Scene extends Phaser.Scene {
     })
 
     // Player
-    this.player = this.physics.add.sprite(80, GROUND_Y - 60, 'player')
+    this.player = this.physics.add.sprite(80, GROUND_Y - 100, 'player')
     this.player.setCollideWorldBounds(true)
     this.player.setDepth(2)
     const pBody = this.player.body as Phaser.Physics.Arcade.Body
@@ -179,12 +179,13 @@ export default class Level1Scene extends Phaser.Scene {
       fontFamily: 'monospace',
     }).setOrigin(0.5).setDepth(3)
 
-    // Remote player — physics sprite, immovable, no gravity (for overlap detection only)
+    // Remote player — visual-only ghost, zero physics interaction
     this.remotePlayer = this.physics.add.sprite(-100, -100, 'remotePlayer')
     this.remotePlayer.setVisible(true)
     this.remotePlayer.setDepth(2)
     const rBody = this.remotePlayer.body as Phaser.Physics.Arcade.Body
     rBody.allowGravity = false
+    rBody.moves = false
     rBody.immovable = true
     rBody.setSize(20, 40)
     rBody.setOffset(6, 8)
@@ -272,12 +273,12 @@ export default class Level1Scene extends Phaser.Scene {
 
     // Fall death zone
     if (this.player.y > WORLD_H + 50) {
-      this.player.setPosition(80, GROUND_Y - 60)
+      this.player.setPosition(80, GROUND_Y - 100)
       this.player.setVelocity(0, 0)
     }
 
-    // Remote player — smooth lerp (direct position, no velocity)
-    if (this.remoteConnected) {
+    // Remote player — smooth lerp, ghost (no gravity, no moves, no collision)
+    if (this.remoteConnected && this.remotePlayer?.active) {
       this.remotePlayer.x += (this.remoteTarget.x - this.remotePlayer.x) * 0.12
       this.remotePlayer.y += (this.remoteTarget.y - this.remotePlayer.y) * 0.12
       this.remoteLabel.setPosition(this.remotePlayer.x, this.remotePlayer.y - 36)
@@ -423,6 +424,7 @@ export default class Level1Scene extends Phaser.Scene {
   setRemotePosition(x: number, y: number, facing: number, hp?: number, name?: string, lastShootTime?: number, shootFacing?: number, remoteId?: string): void {
     this.remoteTarget.x = x
     this.remoteTarget.y = y
+    if (!this.remotePlayer) { this.remoteConnected = true; return }
     this.remotePlayer.setVisible(true)
     this.remotePlayer.setFlipX(facing < 0)
     this.remoteConnected = true
@@ -430,8 +432,8 @@ export default class Level1Scene extends Phaser.Scene {
     if (hp !== undefined) this.remoteHP = hp
     if (name !== undefined) {
       this.remoteName = name
-      this.remoteLabel.setText(name)
-      this.hudRemoteName.setText(name)
+      if (this.remoteLabel) this.remoteLabel.setText(name)
+      if (this.hudRemoteName) this.hudRemoteName.setText(name)
     }
     if (remoteId !== undefined) this.remotePlayerId = remoteId
 
@@ -444,9 +446,10 @@ export default class Level1Scene extends Phaser.Scene {
 
   setRemoteDisconnected(): void {
     this.remoteConnected = false
+    if (!this.remotePlayer) return
     this.remotePlayer.setPosition(-100, -100)
-    this.remoteLabel.setPosition(-100, -100)
-    this.hudRemoteName.setText('')
+    if (this.remoteLabel) this.remoteLabel.setPosition(-100, -100)
+    if (this.hudRemoteName) this.hudRemoteName.setText('')
   }
 
   setActiveControls(controls: { left: boolean; right: boolean; jump: boolean }): void {
