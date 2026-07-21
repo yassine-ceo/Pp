@@ -140,14 +140,18 @@ window.PlayState = {
     this.isFinished = false;
     this.spectatorMode = false;
     this._transitioning = false;
+    this._finishedTransition = false;
     this.waitingText = null;
+    this._touchLeft = false;
+    this._touchRight = false;
+    this._touchJump = false;
   },
 
   create() {
     window.globalGameState = this;
     // console.log('window.globalGameState created' , this.level);
     // fade in  (from black)
-    this.camera.flash('#000000');
+    this.camera.flash(0x000000, 500);
     // create sound entities
     this.sfx = {
       jump: this.game.add.audio('sfx:jump'),
@@ -173,6 +177,9 @@ window.PlayState = {
     // create UI score boards
     this._createHud();
 
+    // Set up mobile touch controls (PNG-style arrow buttons)
+    this._createTouchButtons();
+
     // Callback invoked by main.js Firebase listener when both players finish
     window.onBothPlayersFinished = () => {
       this._performTransition();
@@ -190,6 +197,10 @@ window.PlayState = {
 
   shutdown() {
     window.onBothPlayersFinished = null;
+    if (this.touchGroup) {
+      this.touchGroup.destroy();
+      this.touchGroup = null;
+    }
   },
 
   _canHeroEnterDoor(hero) {
@@ -219,84 +230,28 @@ window.PlayState = {
   _handleInput() {
     handleKeyMessages();
 
-    //  logCurrentState(this.game);
-    if (this.hero) { // Added this so we can control spawning of heros
-      // Skip local player input in spectator mode
+    if (this.hero) {
+      // Skip local player input in spectator mode but still process remote movement
       if (this.spectatorMode) {
-        // Still update remote player movement
         for (const uuid of window.globalOtherHeros.keys()) {
           const otherplayer = window.globalOtherHeros.get(uuid);
           if (!otherplayer) continue;
-          const JUMP_HOLD = 10;
-          if (Date.now() + JUMP_HOLD <= otherplayer.jumpStart) {
-          }
-          if (otherplayer.goingLeft) {
-            otherplayer.move(-1);
-          } else if (otherplayer.goingRight) {
-            otherplayer.move(1);
-          } else {
-            otherplayer.move(0);
-          }
+          this._moveRemotePlayer(otherplayer);
         }
         return;
       }
-      // Mobile Controls
-        if(this.game.input.pointer1.x < 399 && (this.game.input.pointer1.y > 400) && this.game.input.pointer1.isDown)
-        {    
-          console.log("isDown")
-          if (leftSideVar === true){
-            leftSideVar = false
-            window.sendKeyMessage({ left: 'down' });
-            console.log("leftDown")
-          }
-        }
-        if(this.game.input.pointer1.isUp && leftSideVar === false)
-        {  
-          leftSideVar = true;  
-          window.sendKeyMessage({ left: 'up' });
-          console.log("leftUp")
-        }
-        if(this.game.input.pointer1.x > 400 && (this.game.input.pointer1.y > 400) && this.game.input.pointer1.isDown)           
-        {                
-          if (rightSideVar === true){
-            rightSideVar = false
-            window.sendKeyMessage({ right: 'down' });
-            console.log("rightDown")
-          }          
-        }
-        if(this.game.input.pointer1.isUp && rightSideVar === false)
-        {  
-          rightSideVar = true;  
-          window.sendKeyMessage({ right: 'up' });
-          console.log("rightUp")
-        }
-        if((this.game.input.activePointer.y < 401) && this.game.input.activePointer.isDown)
-        {
-          if (this.hero.body.touching.down) {
-            console.log("jump")
-            if(jumpVar === true){
-              jumpVar = false;
-              window.sendKeyMessage({ up: 'down' });
-              window.globalMyHero.jump();
-            }
-          }
-        }
-        //if(this.game.input.activePointer.isUp && jumpVar === false)
-        //{  
-        //  jumpVar = true;  
-       //   window.sendKeyMessage({ up: 'up' });
-       // }
-      ///
 
+      // --- Touch controls (mobile) ---
+      this._handleTouchInput();
+
+      // --- Keyboard controls ---
       if (this.keys.left.isDown) {
         if (!keyStates.leftIsDown) {
-          // console.log('left pushed');
           window.sendKeyMessage({ left: 'down' });
         }
         keyStates.leftIsDown = true;
       } else {
         if (keyStates.leftIsDown) {
-          // console.log('left un-pushed');
           window.sendKeyMessage({ left: 'up' });
         }
         keyStates.leftIsDown = false;
@@ -304,13 +259,11 @@ window.PlayState = {
 
       if (this.keys.right.isDown) {
         if (!keyStates.rightIsDown) {
-          // console.log('right pushed');
           window.sendKeyMessage({ right: 'down' });
         }
         keyStates.rightIsDown = true;
       } else {
         if (keyStates.rightIsDown) {
-          // console.log('right un-pushed');
           window.sendKeyMessage({ right: 'up' });
         }
         keyStates.rightIsDown = false;
@@ -325,50 +278,196 @@ window.PlayState = {
           keyStates.upIsDown = true;
         } else {
           if (keyStates.upIsDown) {
-            // console.log('up un-pushed');
             window.sendKeyMessage({ up: 'up' });
           }
           keyStates.upIsDown = false;
         }
       }
 
-      if (this.keys.left.isDown || (this.game.input.activePointer.x < 399 && (this.game.input.activePointer.y > 400) && this.game.input.activePointer.isDown)) { // move hero left
+      // Move local hero (keyboard OR touch)
+      const moveLeft = this.keys.left.isDown || this._touchLeft;
+      const moveRight = this.keys.right.isDown || this._touchRight;
+      if (moveLeft) {
         this.hero.move(-1);
-      } else if (this.keys.right.isDown || ((this.game.input.activePointer.y > 400) && this.game.input.activePointer.isDown)) { // move hero right
+      } else if (moveRight) {
         this.hero.move(1);
-      } else { // stop
+      } else {
         this.hero.move(0);
       }
 
-      // handle jump
-      const JUMP_HOLD = 10;// 200; // ms
-      if (this.keys.up.downDuration(JUMP_HOLD)) {
-        // let didJump = this.hero.jump();
-        // if (didJump) { this.sfx.jump.play();}
-      }
-
-
+      // Remote player movement
       for (const uuid of window.globalOtherHeros.keys()) {
         const otherplayer = window.globalOtherHeros.get(uuid);
-        if (Date.now() + JUMP_HOLD <= otherplayer.jumpStart) {
-          // otherplayer.jump();
-        }
-        if (otherplayer.goingLeft) { // move hero left
-          otherplayer.move(-1);
-        } else if (otherplayer.goingRight) { // move hero right
-          otherplayer.move(1);
-        } else { // stop
-          otherplayer.move(0);
-        }
+        this._moveRemotePlayer(otherplayer);
       }
     }
 
-    if (window.globalWasHeroMoving && this.hero.body.velocity.x === 0 && this.hero.body.velocity.y === 0 && this.hero.body.touching.down) {
-      window.sendKeyMessage({ stopped: 'not moving' });
-      console.log('stopped');
-      window.globalWasHeroMoving = false;
-    } else if (window.globalWasHeroMoving || this.hero.body.velocity.x !== 0 || this.hero.body.velocity.y !== 0 || !this.hero.body.touching.down) {
-      window.globalWasHeroMoving = true;
+    // Stopped-message sync
+    if (this.hero && !this.spectatorMode) {
+      if (window.globalWasHeroMoving && this.hero.body.velocity.x === 0 && this.hero.body.velocity.y === 0 && this.hero.body.touching.down) {
+        window.sendKeyMessage({ stopped: 'not moving' });
+        window.globalWasHeroMoving = false;
+      } else if (window.globalWasHeroMoving || this.hero.body.velocity.x !== 0 || this.hero.body.velocity.y !== 0 || !this.hero.body.touching.down) {
+        window.globalWasHeroMoving = true;
+      }
+    }
+
+    // Update touch button visual feedback
+    this._updateTouchButtons();
+  },
+
+  _moveRemotePlayer(otherplayer) {
+    if (Date.now() + 10 <= otherplayer.jumpStart) {
+    }
+    if (otherplayer.goingLeft) {
+      otherplayer.move(-1);
+    } else if (otherplayer.goingRight) {
+      otherplayer.move(1);
+    } else {
+      otherplayer.move(0);
+    }
+  },
+
+  _createTouchButtons() {
+    this.touchGroup = this.game.add.group();
+    this.touchGroup.fixedToCamera = true;
+
+    const btnSize = 56;
+    const margin = 16;
+    const btnY = this.game.height - btnSize - margin;
+    const arrowColor = 0xffffff;
+    const bgAlpha = 0.35;
+    const bgColor = 0x000000;
+
+    // Left button background + arrow
+    this.leftBtnGfx = this.game.add.graphics(margin, btnY);
+    this.leftBtnGfx.beginFill(bgColor, bgAlpha);
+    this.leftBtnGfx.drawRoundedRect(0, 0, btnSize, btnSize, 10);
+    this.leftBtnGfx.endFill();
+    this.leftBtnGfx.beginFill(arrowColor, 0.8);
+    this.leftBtnGfx.moveTo(btnSize * 0.7, btnSize * 0.15);
+    this.leftBtnGfx.lineTo(btnSize * 0.2, btnSize * 0.5);
+    this.leftBtnGfx.lineTo(btnSize * 0.7, btnSize * 0.85);
+    this.leftBtnGfx.lineTo(btnSize * 0.7, btnSize * 0.15);
+    this.leftBtnGfx.endFill();
+    this.touchGroup.add(this.leftBtnGfx);
+
+    // Right button background + arrow
+    this.rightBtnGfx = this.game.add.graphics(margin + btnSize + 12, btnY);
+    this.rightBtnGfx.beginFill(bgColor, bgAlpha);
+    this.rightBtnGfx.drawRoundedRect(0, 0, btnSize, btnSize, 10);
+    this.rightBtnGfx.endFill();
+    this.rightBtnGfx.beginFill(arrowColor, 0.8);
+    this.rightBtnGfx.moveTo(btnSize * 0.3, btnSize * 0.15);
+    this.rightBtnGfx.lineTo(btnSize * 0.8, btnSize * 0.5);
+    this.rightBtnGfx.lineTo(btnSize * 0.3, btnSize * 0.85);
+    this.rightBtnGfx.lineTo(btnSize * 0.3, btnSize * 0.15);
+    this.rightBtnGfx.endFill();
+    this.touchGroup.add(this.rightBtnGfx);
+  },
+
+  _updateTouchButtons() {
+    if (!this.leftBtnGfx || !this.rightBtnGfx) return;
+    const activeAlpha = 0.6;
+    const idleAlpha = 0.35;
+    // Redraw left button with active/idle alpha
+    const btnSize = 56;
+    const margin = 16;
+    const btnY = this.game.height - btnSize - margin;
+    this.leftBtnGfx.clear();
+    this.leftBtnGfx.beginFill(0x000000, this._touchLeft ? activeAlpha : idleAlpha);
+    this.leftBtnGfx.drawRoundedRect(0, 0, btnSize, btnSize, 10);
+    this.leftBtnGfx.endFill();
+    this.leftBtnGfx.beginFill(0xffffff, 0.8);
+    this.leftBtnGfx.moveTo(btnSize * 0.7, btnSize * 0.15);
+    this.leftBtnGfx.lineTo(btnSize * 0.2, btnSize * 0.5);
+    this.leftBtnGfx.lineTo(btnSize * 0.7, btnSize * 0.85);
+    this.leftBtnGfx.lineTo(btnSize * 0.7, btnSize * 0.15);
+    this.leftBtnGfx.endFill();
+
+    this.rightBtnGfx.clear();
+    this.rightBtnGfx.beginFill(0x000000, this._touchRight ? activeAlpha : idleAlpha);
+    this.rightBtnGfx.drawRoundedRect(0, 0, btnSize, btnSize, 10);
+    this.rightBtnGfx.endFill();
+    this.rightBtnGfx.beginFill(0xffffff, 0.8);
+    this.rightBtnGfx.moveTo(btnSize * 0.3, btnSize * 0.15);
+    this.rightBtnGfx.lineTo(btnSize * 0.8, btnSize * 0.5);
+    this.rightBtnGfx.lineTo(btnSize * 0.3, btnSize * 0.85);
+    this.rightBtnGfx.lineTo(btnSize * 0.3, btnSize * 0.15);
+    this.rightBtnGfx.endFill();
+  },
+
+  _handleTouchInput() {
+    if (this.game.device.desktop && !this.game.device.touch) return;
+
+    const pointer = this.game.input.activePointer;
+
+    if (!pointer.isDown) {
+      if (this._touchLeft) {
+        this._touchLeft = false;
+        window.sendKeyMessage({ left: 'up' });
+      }
+      if (this._touchRight) {
+        this._touchRight = false;
+        window.sendKeyMessage({ right: 'up' });
+      }
+      if (this._touchJump) {
+        this._touchJump = false;
+        window.sendKeyMessage({ up: 'up' });
+      }
+      return;
+    }
+
+    const btnSize = 56;
+    const margin = 16;
+    const btnY = this.game.height - btnSize - margin;
+    const x = pointer.x;
+    const y = pointer.y;
+
+    const onLeftBtn = x >= margin && x <= margin + btnSize && y >= btnY && y <= btnY + btnSize;
+    const onRightBtn = x >= margin + btnSize + 12 && x <= margin + 2 * btnSize + 12 && y >= btnY && y <= btnY + btnSize;
+
+    if (onLeftBtn) {
+      if (!this._touchLeft) {
+        this._touchLeft = true;
+        window.sendKeyMessage({ left: 'down' });
+      }
+      if (this._touchRight) {
+        this._touchRight = false;
+        window.sendKeyMessage({ right: 'up' });
+      }
+      if (this._touchJump) {
+        this._touchJump = false;
+        window.sendKeyMessage({ up: 'up' });
+      }
+    } else if (onRightBtn) {
+      if (!this._touchRight) {
+        this._touchRight = true;
+        window.sendKeyMessage({ right: 'down' });
+      }
+      if (this._touchLeft) {
+        this._touchLeft = false;
+        window.sendKeyMessage({ left: 'up' });
+      }
+      if (this._touchJump) {
+        this._touchJump = false;
+        window.sendKeyMessage({ up: 'up' });
+      }
+    } else {
+      // Only trigger jump on a fresh press (not when sliding off a button)
+      if (pointer.justPressed() && !this._touchJump && this.hero && this.hero.body.touching.down) {
+        this._touchJump = true;
+        window.sendKeyMessage({ up: 'down' });
+        window.globalMyHero.jump();
+      }
+      if (this._touchLeft) {
+        this._touchLeft = false;
+        window.sendKeyMessage({ left: 'up' });
+      }
+      if (this._touchRight) {
+        this._touchRight = false;
+        window.sendKeyMessage({ right: 'up' });
+      }
     }
   },
 
@@ -437,19 +536,40 @@ window.PlayState = {
   _performTransition() {
     if (this._transitioning) return;
     this._transitioning = true;
+    this._finishedTransition = false;
     if (this.waitingText) {
       this.waitingText.destroy();
       this.waitingText = null;
     }
-    this.camera.fade('#000000');
+
+    // Safety timeout: if fade or Firebase hangs, force the transition after 5s
+    const safetyTimer = this.game.time.events.add(5000, function () {
+      if (!this._finishedTransition) {
+        this._forceTransition();
+      }
+    }, this);
+
+    this.camera.fade(0x000000, 1000);
     this.camera.onFadeComplete.addOnce(function () {
+      this.game.time.events.remove(safetyTimer);
+      if (this._finishedTransition) return;
       const nextLevel = this.level >= 2 ? 0 : this.level + 1;
-      window.resetPlayersFinished(() => {
+      window.resetPlayersFinished(function () {
+        if (this._finishedTransition) return;
+        this._finishedTransition = true;
         window.globalUnsubscribe();
         window.updateOccupancyCounter = false;
         window.createMyPubNub(nextLevel);
-      });
+      }.bind(this));
     }, this);
+  },
+
+  _forceTransition() {
+    if (this._finishedTransition) return;
+    this._finishedTransition = true;
+    window.globalUnsubscribe();
+    window.updateOccupancyCounter = false;
+    window.createMyPubNub(this.level >= 2 ? 0 : this.level + 1);
   },
 
   _loadLevel(data) {

@@ -168,24 +168,28 @@ window.resetPlayersFinished = (callback) => {
     if (callback) callback();
     return;
   }
-  const { ref, update, onValue } = refs;
+  const { ref, update } = refs;
   const roomPlayersRef = ref(parentDb, `platformerRooms/${roomCode}/players`);
-  onValue(roomPlayersRef, (snap) => {
-    const players = snap.val() || {};
-    const updates = {};
-    for (const uuid of Object.keys(players)) {
+  const updates = {};
+  // Reset isFinished for local player
+  updates[`${window.UniqueID}/isFinished`] = false;
+  // Reset isFinished for all known remote players
+  if (window.globalOtherHeros) {
+    for (const uuid of window.globalOtherHeros.keys()) {
       updates[`${uuid}/isFinished`] = false;
     }
-    if (Object.keys(updates).length > 0) {
-      update(roomPlayersRef, updates).then(() => {
-        if (callback) callback();
-      }).catch(() => {
-        if (callback) callback();
-      });
+  }
+  try {
+    const result = update(roomPlayersRef, updates);
+    if (result && typeof result.then === 'function') {
+      result.then(function () { if (callback) callback(); })
+            .catch(function () { if (callback) callback(); });
     } else {
       if (callback) callback();
     }
-  }, { onlyOnce: true });
+  } catch (e) {
+    if (callback) callback();
+  }
 };
 
 window.sendKeyMessage = (keyMessage) => {
@@ -246,6 +250,13 @@ document.head.appendChild(loadPlaystate);
 window.addEventListener('load', () => {
   const game = new window.Phaser.Game(960, 600, window.Phaser.AUTO, 'game');
   game.state.disableVisibilityChange = true;
+  // Fullscreen scaling: fill the viewport while maintaining aspect ratio
+  game.scale.scaleMode = window.Phaser.ScaleManager.FIT;
+  game.scale.setMinMax(480, 300, 960, 600);
+  game.scale.pageAlignHorizontally = true;
+  game.scale.pageAlignVertically = true;
+  game.scale.windowConstraints.bottom = 'visual';
+  if (game.scale.refresh) game.scale.refresh();
   game.state.add('play', window.PlayState);
   game.state.add('loading', window.LoadingState);
   
