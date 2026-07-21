@@ -8,6 +8,11 @@ window.LoadingState = { // Create an object with all of the loading information 
   init() {
     // keep crispy-looking pixels
     this.game.renderer.renderSession.roundPixels = true; // Make the phaser sprites look smoother
+    // Scale config must be set inside a state, not right after game creation (Phaser 2)
+    this.game.scale.scaleMode = window.Phaser.ScaleManager.SHOW_ALL;
+    this.game.scale.pageAlignHorizontally = true;
+    this.game.scale.pageAlignVertically = true;
+    this.game.scale.forceOrientation(true, false);
   },
 
   preload() {

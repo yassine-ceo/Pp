@@ -178,7 +178,7 @@ window.PlayState = {
     this._createHud();
 
     // Set up mobile touch controls (PNG-style arrow buttons)
-    this._createTouchButtons();
+    try { this._createTouchButtons(); } catch (e) { console.warn('Touch buttons skipped:', e); }
 
     // Callback invoked by main.js Firebase listener when both players finish
     window.onBothPlayersFinished = () => {
@@ -214,13 +214,13 @@ window.PlayState = {
   _handleCollisions() {
     for (let i = 0; i < 2; i++) { // prevent collisions for pushing thru
       this.game.physics.arcade.collide(this.hero, this.platforms);
-      for (const uuid of window.globalOtherHeros.keys()) {
+      if (window.globalOtherHeros) { for (const uuid of window.globalOtherHeros.keys()) {
         const otherplayer = window.globalOtherHeros.get(uuid);
         this.game.physics.arcade.collide(otherplayer, this.platforms, null, null, this);
         this.game.physics.arcade.overlap(otherplayer, this.coins, this._onHeroVsCoin, null, this);
         this.game.physics.arcade.overlap(otherplayer, this.key, this._onHeroVsKey, null, this);
         this.game.physics.arcade.overlap(otherplayer, this.door, this._onOtherHeroVsDoor, this._canHeroEnterDoor, this);
-      }
+      } }
       // hero vs coins (pick up)
       this.game.physics.arcade.overlap(this.hero, this.coins, this._onHeroVsCoin, null, this);
       // hero vs key (pick up)
