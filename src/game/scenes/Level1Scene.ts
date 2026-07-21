@@ -4,8 +4,8 @@ import * as Phaser from 'phaser'
 import { updatePlayerPosition } from '../systems/NetworkSync'
 
 const WORLD_W = 5000
-const WORLD_H = 600
-const GROUND_Y = 440
+const WORLD_H = 640
+const GROUND_Y = 460
 
 interface Level1InitData {
   roomCode?: string
@@ -13,7 +13,7 @@ interface Level1InitData {
 
 export default class Level1Scene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Sprite
-  private remotePlayer!: Phaser.Physics.Arcade.Sprite
+  private remotePlayer!: Phaser.GameObjects.Sprite
   private platforms!: Phaser.Physics.Arcade.StaticGroup
   private bullets!: Phaser.Physics.Arcade.Group
   private playerLabel!: Phaser.GameObjects.Text
@@ -121,12 +121,23 @@ export default class Level1Scene extends Phaser.Scene {
       this.add.image(cx, cy, 'cloud').setAlpha(0.5).setScale(0.5).setDepth(-5)
     }
 
-    // Platforms — raised for safe zone (bottom 25% empty)
+    // Platforms
     this.platforms = this.physics.add.staticGroup()
 
     const groundSegments: [number, number][] = [
       [0, 2240], [2420, 3520], [3700, WORLD_W],
     ]
+
+    // Solid dirt fill below ground — fills from top-of-ground to world bottom
+    const dirtFill = this.add.graphics()
+    dirtFill.fillStyle(0x8B4513)
+    const fillTopY = GROUND_Y - 32
+    for (const [start, end] of groundSegments) {
+      dirtFill.fillRect(start, fillTopY, end - start, WORLD_H - fillTopY)
+    }
+    dirtFill.setDepth(-1)
+
+    // Grass-topped ground tiles (one row at the surface)
     for (const [start, end] of groundSegments) {
       for (let x = start; x < end; x += 32) {
         this.platforms.create(x + 16, GROUND_Y, 'ground')
@@ -201,16 +212,10 @@ export default class Level1Scene extends Phaser.Scene {
       fontStyle: 'bold',
     }).setOrigin(0.5).setDepth(10).setScrollFactor(0)
 
-    // Remote player — visual-only ghost, zero physics interaction
-    this.remotePlayer = this.physics.add.sprite(-100, -100, 'remotePlayer')
+    // Remote player — pure visual, NO physics body. Zero gravity, zero collision.
+    this.remotePlayer = this.add.sprite(-100, -100, 'remotePlayer')
     this.remotePlayer.setVisible(true)
     this.remotePlayer.setDepth(2)
-    const rBody = this.remotePlayer.body as Phaser.Physics.Arcade.Body
-    rBody.allowGravity = false
-    rBody.moves = false
-    rBody.immovable = true
-    rBody.setSize(20, 40)
-    rBody.setOffset(6, 8)
 
     this.remoteLabel = this.add.text(-100, -100, '', {
       fontSize: '10px',
@@ -218,11 +223,10 @@ export default class Level1Scene extends Phaser.Scene {
       fontFamily: 'monospace',
     }).setOrigin(0.5).setDepth(3)
 
-    // Colliders
+    // Colliders (local player only — remote has no physics body)
     this.physics.add.collider(this.player, this.platforms, this.onPlayerLanded, undefined, this)
     this.physics.add.collider(this.bullets, this.platforms, this.onBulletHitPlatform, undefined, this)
     this.physics.add.overlap(this.bullets, this.player, this.onBulletHitLocal, undefined, this)
-    this.physics.add.overlap(this.bullets, this.remotePlayer, this.onBulletHitRemote, undefined, this)
 
     // HUD — fixed to camera
     this.hudName = this.add.text(12, 12, 'You', {
@@ -246,8 +250,6 @@ export default class Level1Scene extends Phaser.Scene {
     // Camera
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08)
     this.cameras.main.setDeadzone(80, 40)
-
-    // Parachute label directly above player (camera follows player, so visible)
 
     // Input
     if (this.input.keyboard) {
@@ -289,7 +291,6 @@ export default class Level1Scene extends Phaser.Scene {
       if (this.landingText) {
         this.landingText.setPosition(this.cameras.main.scrollX + WORLD_W / 2, this.cameras.main.scrollY + 40)
       }
-      // Landing is handled by the collider callback
     } else {
       if (this.landingText) {
         this.landingText.setText('')
@@ -331,17 +332,41 @@ export default class Level1Scene extends Phaser.Scene {
       if (this.landingText) this.landingText.setText('Parachuting...')
     }
 
-    // Remote player — smooth lerp, ghost (no gravity, no moves, no collision)
+    // Remote player — smooth lerp on pure visual sprite (zero physics, zero gravity)
     if (this.remoteConnected && this.remotePlayer?.active) {
       this.remotePlayer.x += (this.remoteTarget.x - this.remotePlayer.x) * 0.12
       this.remotePlayer.y += (this.remoteTarget.y - this.remotePlayer.y) * 0.12
+
+      // Clamp remote Y so it never appears below ground surface
+      const maxRemoteY = GROUND_Y - 20
+      if (this.remotePlayer.y > maxRemoteY) {
+        this.remotePlayer.y = maxRemoteY
+      }
+
       this.remoteLabel.setPosition(this.remotePlayer.x, this.remotePlayer.y - 36)
     }
 
-    // Clean up out-of-bounds bullets
+    // Bullet lifecycle + manual remote-player hit detection (remote has no physics body)
     this.bullets.getChildren().forEach((b) => {
       const bullet = b as Phaser.Physics.Arcade.Sprite
       if (!bullet.active) return
+
+      // Manual distance check: local bullet vs remote visual sprite
+      if (this.remoteConnected && bullet.getData('firedBy') === 'local') {
+        const dist = Phaser.Math.Distance.Between(bullet.x, bullet.y, this.remotePlayer.x, this.remotePlayer.y)
+        if (dist < 24) {
+          this.remoteHP = Math.max(0, this.remoteHP - 10)
+          this.spawnImpact(bullet.x, this.remotePlayer.y)
+          this.bullets.killAndHide(bullet)
+          bullet.body!.enable = false
+          if (this.remotePlayerId && this.roomCode) {
+            updatePlayerPosition(this.roomCode, this.remotePlayerId, { hp: this.remoteHP }).catch(() => {})
+          }
+          return
+        }
+      }
+
+      // Out-of-bounds cleanup
       if (bullet.x < -50 || bullet.x > WORLD_W + 50 || bullet.y < -50 || bullet.y > WORLD_H + 50) {
         this.bullets.killAndHide(bullet)
         bullet.body!.enable = false
@@ -373,12 +398,10 @@ export default class Level1Scene extends Phaser.Scene {
     this.parachuteSprite.clear()
     const px = this.player.x
     const py = this.player.y
-    // Umbrella canopy (semi-circle)
     this.parachuteSprite.fillStyle(0xd4a84b, 0.6)
     this.parachuteSprite.beginPath()
     this.parachuteSprite.arc(px, py - 42, 20, Math.PI, 0, false)
     this.parachuteSprite.fillPath()
-    // Strings
     this.parachuteSprite.lineStyle(1, 0xffdd88, 0.4)
     this.parachuteSprite.beginPath()
     this.parachuteSprite.moveTo(px - 18, py - 42)
@@ -465,19 +488,6 @@ export default class Level1Scene extends Phaser.Scene {
     bullet.body!.enable = false
     this.player.setTint(0xff4444)
     this.time.delayedCall(150, () => this.player.clearTint())
-  }
-
-  private onBulletHitRemote(obj1: any): void {
-    const bullet = obj1 as Phaser.Physics.Arcade.Sprite
-    if (!bullet.active || bullet.getData('firedBy') !== 'local') return
-    this.remoteHP = Math.max(0, this.remoteHP - 10)
-    this.spawnImpact(bullet.x, this.remotePlayer.y)
-    this.bullets.killAndHide(bullet)
-    bullet.body!.enable = false
-
-    if (this.remotePlayerId && this.roomCode) {
-      updatePlayerPosition(this.roomCode, this.remotePlayerId, { hp: this.remoteHP }).catch(() => {})
-    }
   }
 
   // ---- Visual effects ----

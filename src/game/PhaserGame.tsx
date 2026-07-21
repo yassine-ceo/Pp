@@ -23,6 +23,9 @@ interface PhaserGameProps {
   onError: (msg: string) => void
 }
 
+const CANVAS_W = 360
+const CANVAS_H = 640
+
 export default function PhaserGame({ roomCode, playerId, playerName, isHost, onRemoteJoin, onLevelStart, onError }: PhaserGameProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
@@ -104,7 +107,6 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
         }
         pendingRemoteState.current = state
 
-        // Only apply if scene is ready
         if (sceneReadyRef.current) {
           if (currentSceneRef.current === 'lobby' && lobbyRef.current) {
             lobbyRef.current.setRemotePosition(state.x, state.y, state.facing)
@@ -148,15 +150,11 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
   useEffect(() => {
     if (!containerRef.current || gameRef.current) return
 
-    const parent = containerRef.current
-    const w = parent.clientWidth || window.innerWidth
-    const h = parent.clientHeight || window.innerHeight
-
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
-      width: Math.min(w, 800),
-      height: Math.min(h, 600),
-      parent,
+      width: CANVAS_W,
+      height: CANVAS_H,
+      parent: containerRef.current,
       backgroundColor: '#0d0806',
       physics: {
         default: 'arcade',
