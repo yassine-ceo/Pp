@@ -204,16 +204,16 @@ export default class Level1Scene extends Phaser.Scene {
     // HUD — fixed to camera
     this.hudName = this.add.text(12, 12, 'You', {
       fontSize: '11px',
-      color: '#ffffff',
+      color: '#000000',
       fontFamily: 'monospace',
       fontStyle: 'bold',
     }).setScrollFactor(0).setDepth(100)
 
     this.hudHP = this.add.graphics().setScrollFactor(0).setDepth(100)
 
-    this.hudRemoteName = this.add.text(12, 38, '', {
+    this.hudRemoteName = this.add.text(12, 48, '', {
       fontSize: '11px',
-      color: '#4a90d9',
+      color: '#000000',
       fontFamily: 'monospace',
       fontStyle: 'bold',
     }).setScrollFactor(0).setDepth(100)
@@ -310,6 +310,7 @@ export default class Level1Scene extends Phaser.Scene {
 
     bullet.setActive(true).setVisible(true)
     bullet.body!.enable = true
+    bullet.body!.setSize(8, 8)
     bullet.setVelocityX(dir * 700)
     bullet.setData('firedBy', 'local')
 
@@ -327,6 +328,7 @@ export default class Level1Scene extends Phaser.Scene {
 
     bullet.setActive(true).setVisible(true)
     bullet.body!.enable = true
+    bullet.body!.setSize(8, 8)
     bullet.setVelocityX(facing * 700)
     bullet.setData('firedBy', 'remote')
   }
@@ -389,26 +391,30 @@ export default class Level1Scene extends Phaser.Scene {
   // ---- HUD ----
 
   private drawHUD(): void {
+    const barX = 12
+    const barH = 10
+    const barW = 100
+
     // Local HP bar
     this.hudHP.clear()
     this.hudHP.fillStyle(0x333333)
-    this.hudHP.fillRect(0, 0, 100, 10)
+    this.hudHP.fillRect(barX, 26, barW, barH)
     const localPct = this.localHP / this.localMaxHP
     this.hudHP.fillStyle(localPct > 0.3 ? 0xff3333 : 0xff8800)
-    this.hudHP.fillRect(0, 0, 100 * localPct, 10)
+    this.hudHP.fillRect(barX, 26, barW * localPct, barH)
     this.hudHP.lineStyle(1, 0xffffff, 0.2)
-    this.hudHP.strokeRect(0, 0, 100, 10)
+    this.hudHP.strokeRect(barX, 26, barW, barH)
 
     // Remote HP bar (only when connected)
     this.hudRemoteHP.clear()
     if (this.remoteConnected) {
       this.hudRemoteHP.fillStyle(0x333333)
-      this.hudRemoteHP.fillRect(0, 0, 100, 10)
+      this.hudRemoteHP.fillRect(barX, 62, barW, barH)
       const remotePct = this.remoteHP / this.localMaxHP
       this.hudRemoteHP.fillStyle(remotePct > 0.3 ? 0xff3333 : 0xff8800)
-      this.hudRemoteHP.fillRect(0, 0, 100 * remotePct, 10)
+      this.hudRemoteHP.fillRect(barX, 62, barW * remotePct, barH)
       this.hudRemoteHP.lineStyle(1, 0xffffff, 0.2)
-      this.hudRemoteHP.strokeRect(0, 0, 100, 10)
+      this.hudRemoteHP.strokeRect(barX, 62, barW, barH)
     }
   }
 
