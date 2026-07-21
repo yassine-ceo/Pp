@@ -35,6 +35,7 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
   const cleanupRef = useRef(false)
   const currentSceneRef = useRef<'lobby' | 'level1'>('lobby')
   const sceneReadyRef = useRef(false)
+  const latestRoomRef = useRef<PlatformerRoom | null>(null)
   const pendingRemoteState = useRef<{
     x: number; y: number; facing: number; hp: number; name: string;
     lastShootTime: number; shootFacing: number; remoteId: string;
@@ -76,12 +77,20 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
     onLevelStart()
     const game = gameRef.current
     if (!game) return
+
+    // Extract player state for hydration (skip parachute on reconnect)
+    const myState = latestRoomRef.current?.players?.[playerId]
+    const initData: any = { roomCode }
+    if (myState) {
+      initData.playerState = { x: myState.x, y: myState.y }
+    }
+
     game.scene.stop('LobbyScene')
-    game.scene.start('Level1Scene', { roomCode })
+    game.scene.start('Level1Scene', initData)
     const l1 = game.scene.getScene('Level1Scene') as Level1Scene
     level1Ref.current = l1
     l1.setCallbacks(syncState)
-  }, [onLevelStart, syncState, roomCode])
+  }, [onLevelStart, syncState, roomCode, playerId])
 
   // Subscribe to Firebase room
   useEffect(() => {
@@ -90,6 +99,7 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
 
     const unsub = subscribePlatformerRoom(roomCode, (room: PlatformerRoom | null) => {
       if (cleanupRef.current || !room) return
+      latestRoomRef.current = room
 
       const otherPlayers = Object.entries(room.players).filter(([id]) => id !== playerId)
       const remoteCount = otherPlayers.length
