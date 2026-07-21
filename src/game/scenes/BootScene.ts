@@ -33,6 +33,14 @@ export default class BootScene extends Phaser.Scene {
     g.generateTexture('remotePlayer', 32, 48)
     g.clear()
 
+    // Bullet texture (8x8)
+    g.fillStyle(0xffdd44)
+    g.fillCircle(4, 4, 4)
+    g.fillStyle(0xffffff)
+    g.fillCircle(3, 3, 2)
+    g.generateTexture('bullet', 8, 8)
+    g.clear()
+
     // Floor tile (32x32) — for LobbyScene
     g.fillStyle(0x3a2a1a)
     g.fillRect(0, 0, 32, 32)

@@ -31,9 +31,9 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
   const unsubRef = useRef<(() => void) | null>(null)
   const cleanupRef = useRef(false)
   const currentSceneRef = useRef<'lobby' | 'level1'>('lobby')
-  const lastRemoteState = useRef<{ x: number; y: number; facing: number } | null>(null)
+  const lastRemoteState = useRef<{ x: number; y: number; facing: number; hp: number; name: string; lastShootTime: number; shootFacing: number; remoteId: string } | null>(null)
 
-  const syncState = useCallback((data: { x: number; y: number; vx: number; vy: number; grounded: boolean; facing: number }) => {
+  const syncState = useCallback((data: Record<string, any>) => {
     if (cleanupRef.current) return
     updatePlayerPosition(roomCode, playerId, {
       x: Math.round(data.x),
@@ -42,6 +42,9 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
       vy: Math.round(data.vy),
       grounded: data.grounded,
       facing: data.facing,
+      hp: data.hp ?? 100,
+      lastShootTime: data.lastShootTime ?? 0,
+      shootFacing: data.shootFacing ?? 1,
     }).catch(() => {})
   }, [roomCode, playerId])
 
@@ -52,14 +55,15 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
     const game = gameRef.current
     if (!game) return
     game.scene.stop('LobbyScene')
-    game.scene.start('Level1Scene')
+    game.scene.start('Level1Scene', { roomCode })
     const l1 = game.scene.getScene('Level1Scene') as Level1Scene
     level1Ref.current = l1
     l1.setCallbacks(syncState)
     if (lastRemoteState.current) {
-      l1.setRemotePosition(lastRemoteState.current.x, lastRemoteState.current.y, lastRemoteState.current.facing)
+      const s = lastRemoteState.current
+      l1.setRemotePosition(s.x, s.y, s.facing, s.hp, s.name, s.lastShootTime, s.shootFacing, s.remoteId)
     }
-  }, [onLevelStart, syncState])
+  }, [onLevelStart, syncState, roomCode])
 
   // Subscribe to Firebase room
   useEffect(() => {
@@ -75,13 +79,24 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
       if (remoteCount > 0) {
         onRemoteJoin()
 
-        const [, remoteState] = otherPlayers[0]
-        lastRemoteState.current = { x: remoteState.x, y: remoteState.y, facing: remoteState.facing }
+        const [remoteId, remoteState] = otherPlayers[0]
+        lastRemoteState.current = {
+          x: remoteState.x, y: remoteState.y, facing: remoteState.facing,
+          hp: remoteState.hp ?? 100, name: remoteState.name ?? '',
+          lastShootTime: remoteState.lastShootTime ?? 0,
+          shootFacing: remoteState.shootFacing ?? remoteState.facing,
+          remoteId,
+        }
 
         if (currentSceneRef.current === 'lobby' && lobbyRef.current) {
           lobbyRef.current.setRemotePosition(remoteState.x, remoteState.y, remoteState.facing)
         } else if (currentSceneRef.current === 'level1' && level1Ref.current) {
-          level1Ref.current.setRemotePosition(remoteState.x, remoteState.y, remoteState.facing)
+          level1Ref.current.setRemotePosition(
+            remoteState.x, remoteState.y, remoteState.facing,
+            remoteState.hp ?? 100, remoteState.name ?? '',
+            remoteState.lastShootTime ?? 0, remoteState.shootFacing ?? remoteState.facing,
+            remoteId,
+          )
         }
 
         if (isHost && room.status === 'waiting' && remoteCount >= 1 && !hostHasTriggered) {
@@ -145,7 +160,9 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
       lobbyRef.current = lobby
       lobby.setCallbacks(syncState)
       if (lastRemoteState.current) {
-        lobby.setRemotePosition(lastRemoteState.current.x, lastRemoteState.current.y, lastRemoteState.current.facing)
+        lobby.setRemotePosition(
+          lastRemoteState.current.x, lastRemoteState.current.y, lastRemoteState.current.facing,
+        )
       }
     })
 
@@ -174,8 +191,14 @@ export default function PhaserGame({ roomCode, playerId, playerName, isHost, onR
     level1Ref.current?.setActiveControls(controls)
   }, [])
 
-  const apiRef = useRef({ setLobbyControls, setLevelControls, currentSceneRef })
-  apiRef.current = { setLobbyControls, setLevelControls, currentSceneRef }
+  const fireShoot = useCallback(() => {
+    if (currentSceneRef.current === 'level1' && level1Ref.current) {
+      level1Ref.current.fireBullet()
+    }
+  }, [])
+
+  const apiRef = useRef({ setLobbyControls, setLevelControls, currentSceneRef, fireShoot })
+  apiRef.current = { setLobbyControls, setLevelControls, currentSceneRef, fireShoot }
 
   useEffect(() => {
     const w = window as any

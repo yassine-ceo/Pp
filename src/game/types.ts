@@ -11,6 +11,9 @@ export interface PlayerState {
   vy: number
   grounded: boolean
   facing: number
+  hp: number
+  lastShootTime: number
+  shootFacing: number
   roomId: string
 }
 
@@ -23,10 +26,11 @@ export interface PlatformerRoom {
   createdAt: number
 }
 
-export type GamepadAction = 'left' | 'right' | 'jump'
+export type GamepadAction = 'left' | 'right' | 'jump' | 'shoot'
 
 export interface InputState {
   left: boolean
   right: boolean
   jump: boolean
+  shoot: boolean
 }

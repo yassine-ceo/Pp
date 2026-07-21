@@ -39,6 +39,12 @@ export default function TouchControls() {
     updatePhaser()
   }, [updatePhaser])
 
+  const handleShoot = useCallback((e: React.PointerEvent) => {
+    e.preventDefault()
+    const w = window as any
+    w.__phaserControls?.current?.fireShoot?.()
+  }, [])
+
   const btnClass = 'select-none touch-none flex items-center justify-center rounded-2xl backdrop-blur-xl transition-all active:scale-90'
   const arrowBtnStyle: React.CSSProperties = {
     background: 'rgba(255,255,255,0.06)',
@@ -58,6 +64,16 @@ export default function TouchControls() {
     WebkitTapHighlightColor: 'transparent',
     width: '72px',
     height: '72px',
+    borderRadius: '1rem',
+  }
+
+  const shootBtnStyle: React.CSSProperties = {
+    background: 'rgba(255,80,40,0.12)',
+    border: '1px solid rgba(255,80,40,0.25)',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,80,40,0.08)',
+    WebkitTapHighlightColor: 'transparent',
+    width: '64px',
+    height: '64px',
     borderRadius: '1rem',
   }
 
@@ -112,7 +128,16 @@ export default function TouchControls() {
         </button>
       </div>
 
-      <div className="absolute right-4 bottom-8 pointer-events-auto">
+      <div className="absolute right-4 bottom-8 flex flex-col items-center gap-3 pointer-events-auto">
+        <button
+          onPointerDown={handleShoot}
+          className={btnClass}
+          style={shootBtnStyle}
+        >
+          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" style={{ color: '#ff5028' }}>
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+        </button>
         <button
           onPointerDown={handlePointerDown('jump')}
           onPointerUp={handlePointerUp('jump')}

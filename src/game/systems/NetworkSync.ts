@@ -25,6 +25,9 @@ export async function createPlatformerRoom(hostId: string, hostName: string): Pr
     vy: 0,
     grounded: true,
     facing: 1,
+    hp: 100,
+    lastShootTime: 0,
+    shootFacing: 1,
     roomId: code,
   }
   const room: PlatformerRoom = {
@@ -50,6 +53,9 @@ export async function joinPlatformerRoom(code: string, playerId: string, playerN
     vy: 0,
     grounded: true,
     facing: -1,
+    hp: 100,
+    lastShootTime: 0,
+    shootFacing: -1,
     roomId: code,
   }
   try {
