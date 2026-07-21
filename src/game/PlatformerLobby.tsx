@@ -1,7 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { soundManager } from '@/lib/sound'
+import { createPlatformerRoom, joinPlatformerRoom, checkPlatformerRoomExists } from './systems/NetworkSync'
 
 interface PlatformerLobbyProps {
   playerId: string
@@ -9,12 +11,53 @@ interface PlatformerLobbyProps {
   onBack: () => void
 }
 
-export default function PlatformerLobby({ onBack }: PlatformerLobbyProps) {
+export default function PlatformerLobby({ playerId, playerName, onBack }: PlatformerLobbyProps) {
   const router = useRouter()
+  const [view, setView] = useState<'menu' | 'joining'>('menu')
+  const [joinCode, setJoinCode] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handlePlay = () => {
+  const handleCreate = async () => {
     soundManager.playClick()
-    router.push('/dungeonrun/room/fireboy')
+    setLoading(true)
+    setError(null)
+    try {
+      const code = await createPlatformerRoom(playerId, playerName)
+      router.push(`/dungeonrun/room/${code}?host=1`)
+    } catch (err) {
+      console.error(err)
+      setError('Failed to create room. Try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleJoin = async () => {
+    soundManager.playClick()
+    const code = joinCode.trim().toUpperCase()
+    if (code.length < 4) return
+    setLoading(true)
+    setError(null)
+    try {
+      const exists = await checkPlatformerRoomExists(code)
+      if (!exists) {
+        setError('Room not found.')
+        setLoading(false)
+        return
+      }
+      const ok = await joinPlatformerRoom(code, playerId, playerName)
+      if (ok) {
+        router.push(`/dungeonrun/room/${code}`)
+      } else {
+        setError('Room already full or has started.')
+      }
+    } catch (err) {
+      console.error(err)
+      setError('Failed to join room. Try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -48,17 +91,56 @@ export default function PlatformerLobby({ onBack }: PlatformerLobbyProps) {
         </div>
 
         <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-br from-[#f5e6c8] via-[#d4a84b] to-[#b8860b] text-center mb-1">
-          Fireboy &amp; Watergirl
+          Ninja Platformer
         </h2>
         <p className="text-[0.6rem] font-bold uppercase tracking-[0.2em] mb-10" style={{ color: 'rgba(212,168,75,0.5)' }}>
-          Local Co-op
+          Multiplayer CO-OP
         </p>
 
-        <button onClick={handlePlay}
-          className="w-full max-w-[220px] flex justify-center items-center gap-2 rounded-xl text-sm font-semibold transition-all active:scale-[0.97]"
-          style={{ padding: '0.7rem 1.5rem', background: 'linear-gradient(to bottom, #2a1a10, #1a0f0a)', border: '1px solid rgba(212,168,75,0.35)', boxShadow: 'inset 0 1px 0 rgba(212,168,75,0.12), 0 2px 6px rgba(0,0,0,0.4)', color: '#d4a84b' }}>
-          Play
-        </button>
+        {error && (
+          <p className="text-xs mb-4 text-center" style={{ color: 'rgba(255,100,100,0.7)' }}>{error}</p>
+        )}
+
+        {view === 'menu' && (
+          <div className="flex flex-col items-center gap-4 w-full max-w-[220px]">
+            <button onClick={handleCreate} disabled={loading}
+              className="w-full flex justify-center items-center gap-2 rounded-xl text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-40"
+              style={{ padding: '0.7rem 1.5rem', background: 'linear-gradient(to bottom, #2a1a10, #1a0f0a)', border: '1px solid rgba(212,168,75,0.35)', boxShadow: 'inset 0 1px 0 rgba(212,168,75,0.12), 0 2px 6px rgba(0,0,0,0.4)', color: '#d4a84b' }}>
+              {loading ? 'Creating...' : 'Create Room'}
+            </button>
+            <button onClick={() => { soundManager.playClick(); setView('joining'); setError(null) }}
+              className="w-full flex justify-center items-center gap-2 rounded-xl text-sm font-semibold transition-all active:scale-[0.97]"
+              style={{ padding: '0.7rem 1.5rem', background: 'linear-gradient(to bottom, #1f120c, #140b07)', border: '1px solid rgba(212,168,75,0.2)', color: 'rgba(212,168,75,0.7)' }}>
+              Join Room Code
+            </button>
+          </div>
+        )}
+
+        {view === 'joining' && (
+          <div className="flex flex-col items-center gap-4 w-full max-w-[220px]">
+            <input
+              type="text"
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+              onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+              placeholder="ROOM CODE"
+              maxLength={4}
+              autoFocus
+              className="w-full text-center text-lg font-bold outline-none tracking-[0.3em] placeholder:text-[rgba(212,168,75,0.2)]"
+              style={{ background: 'rgba(10,6,4,0.6)', border: '1px solid rgba(212,168,75,0.2)', borderRadius: '0.5rem', padding: '0.7rem 1rem', color: '#d4a84b' }}
+            />
+            <button onClick={handleJoin} disabled={loading || joinCode.trim().length < 4}
+              className="w-full flex justify-center items-center gap-2 rounded-xl text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-30"
+              style={{ padding: '0.7rem 1.5rem', background: 'linear-gradient(to bottom, #2a1a10, #1a0f0a)', border: `1px solid ${joinCode.trim().length >= 4 ? 'rgba(212,168,75,0.35)' : 'rgba(212,168,75,0.1)'}`, boxShadow: joinCode.trim().length >= 4 ? 'inset 0 1px 0 rgba(212,168,75,0.12), 0 2px 6px rgba(0,0,0,0.4)' : 'none', color: joinCode.trim().length >= 4 ? '#d4a84b' : 'rgba(212,168,75,0.3)' }}>
+              {loading ? 'Joining...' : 'Join'}
+            </button>
+            <button onClick={() => { soundManager.playClick(); setView('menu'); setError(null) }}
+              className="text-xs font-semibold transition-all"
+              style={{ color: 'rgba(212,168,75,0.4)' }}>
+              Back
+            </button>
+          </div>
+        )}
       </div>
     </main>
   )
