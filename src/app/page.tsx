@@ -6,9 +6,9 @@ import { useGameStore } from '@/stores/gameStore'
 import { soundManager } from '@/lib/sound'
 import HeroAnimation from '@/components/HeroAnimation'
 import BotGame from '@/components/ui/BotGame'
-import { LobbyEntry } from '@/game/ClientEntry'
+import DungeonRun from '@/game/DungeonRun'
 
-type Stage = 'WELCOME' | 'CATALOG' | 'XO_SETUP' | 'BOT_GAME' | 'PLATFORMER_LOBBY'
+type Stage = 'WELCOME' | 'CATALOG' | 'XO_SETUP' | 'BOT_GAME' | 'DUNGEON_RUN'
 
 function tryFullscreen() {
   try {
@@ -467,15 +467,9 @@ export default function PlayOnline() {
     return <BotGame difficulty={botDifficulty} playerName={name || 'Player'} onBack={() => setStage('XO_SETUP')} />
   }
 
-  /* ════════ PLATFORMER LOBBY ════════ */
-  if (stage === 'PLATFORMER_LOBBY') {
-    return (
-      <LobbyEntry
-        playerId={playerId || ''}
-        playerName={name || 'Player'}
-        onBack={() => setStage('CATALOG')}
-      />
-    )
+  /* ════════ DUNGEON RUN ════════ */
+  if (stage === 'DUNGEON_RUN') {
+    return <DungeonRun onBack={() => setStage('CATALOG')} />
   }
 
   /* ════════ CATALOG (HUB) ════════ */
@@ -544,7 +538,7 @@ export default function PlayOnline() {
                 <div className="absolute inset-x-0 bottom-2 w-full flex flex-col items-center pb-12 px-3">
                   <h3 className="text-white font-bold text-lg w-[92%] text-left mb-2">{title}</h3>
                   <button
-                    onClick={isXOArena ? openSetup : isDungeonRun ? (() => { soundManager.playClick(); setStage('PLATFORMER_LOBBY') }) : undefined}
+                    onClick={isXOArena ? openSetup : isDungeonRun ? (() => { soundManager.playClick(); setStage('DUNGEON_RUN') }) : undefined}
                     className={`w-[92%] flex justify-center items-center gap-2 rounded-full backdrop-blur-md border text-white font-semibold text-xs shadow-lg transition-transform active:scale-95 ${active ? 'bg-white/20 border-white/20 cursor-pointer' : 'bg-white/5 border-white/5 opacity-50 cursor-not-allowed'}`}
                     style={{ height: '26px' }}
                     disabled={!active}
