@@ -24,7 +24,7 @@ interface PhaserGameProps {
 }
 
 const CANVAS_W = 360
-const CANVAS_H = 640
+const CANVAS_H = 740
 
 export default function PhaserGame({ roomCode, playerId, playerName, isHost, onRemoteJoin, onLevelStart, onError }: PhaserGameProps) {
   const containerRef = useRef<HTMLDivElement>(null)
