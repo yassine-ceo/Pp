@@ -2,7 +2,7 @@
 
 import { useRef, useCallback, useEffect } from 'react'
 
-const BOTTOM_OFFSET = 'calc(env(safe-area-inset-bottom, 8px) + 12px)'
+const BOTTOM_OFFSET = '96px'
 
 export default function TouchControls() {
   const touchState = useRef({ left: false, right: false, jump: false })

@@ -57,9 +57,10 @@ export async function joinPlatformerRoom(code: string, playerId: string, playerN
     const snap = await get(roomRef)
     if (!snap.exists()) return false
     const room = snap.val() as PlatformerRoom
-    if (room.status !== 'waiting') return false
+    if (room.status !== 'waiting' && room.status !== 'starting') return false
     const players = room.players || {}
-    if (Object.keys(players).length >= 2 && !players[playerId]) return false
+    if (players[playerId]) return true
+    if (Object.keys(players).length >= 2) return false
 
     const playerState: PlayerState = {
       id: playerId,

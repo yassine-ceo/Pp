@@ -3,7 +3,11 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import { ref, get, child } from 'firebase/database'
+import { db } from '@/lib/firebase'
 import { checkPlatformerRoomExists, joinPlatformerRoom } from '@/game/systems/NetworkSync'
+
+const ROOMS_PATH = 'platformerRooms'
 
 const DungeonRun = dynamic(() => import('@/game/DungeonRun'), { ssr: false })
 
@@ -47,11 +51,14 @@ export default function DungeonRunRoomPage() {
         return
       }
       if (!isHost) {
-        const name = localStorage.getItem('xo playerName') || 'Player'
-        const joined = await joinPlatformerRoom(code, playerId, name)
-        if (!joined) {
-          setError('Unable to join room. It may be full or has already started.')
-          return
+        const snap = await get(child(ref(db), `${ROOMS_PATH}/${code}/players/${playerId}`))
+        if (!snap.exists()) {
+          const name = localStorage.getItem('xo playerName') || 'Player'
+          const joined = await joinPlatformerRoom(code, playerId, name)
+          if (!joined) {
+            setError('Unable to join room. It may be full or has already started.')
+            return
+          }
         }
       }
       setReady(true)
