@@ -1,18 +1,23 @@
 <!doctype html>
-<!-- force deploy -->
 <html>
 <head>
     <title>Ninja Multiplayer Platformer</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui" />
     <style>
-    body {
+    html, body {
       margin: 0 !important;
       padding: 0 !important;
-      background-color: #111111;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
-      width: 100vw;
-      height: 100vh;
+      background-color: #111111;
+      touch-action: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    body {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -23,6 +28,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      position: relative;
     }
     canvas {
       display: block;
@@ -30,13 +36,136 @@
       max-width: 100%;
       max-height: 100%;
     }
+
+    /* ============================================================
+       Mobile overlay controls — hidden on desktop (no pointer:coarse)
+       ============================================================ */
+    #mobile-controls {
+      display: none;
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 200;
+      pointer-events: none;
+      height: 140px;
+      padding: 0 20px 24px;
+      box-sizing: border-box;
+    }
+
+    #mobile-controls .ctrl-btn {
+      pointer-events: auto;
+      position: absolute;
+      bottom: 24px;
+      width: 76px;
+      height: 76px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.08s ease, transform 0.08s ease;
+    }
+    #mobile-controls .ctrl-btn svg {
+      width: 32px;
+      height: 32px;
+      fill: rgba(255,255,255,0.8);
+      pointer-events: none;
+    }
+    #mobile-controls .ctrl-btn:active,
+    #mobile-controls .ctrl-btn.active {
+      background: rgba(255,255,255,0.30);
+      transform: scale(0.92);
+    }
+    #mobile-controls .ctrl-btn-left {
+      left: 24px;
+    }
+    #mobile-controls .ctrl-btn-right {
+      left: 116px;
+    }
+
+    @media (pointer: coarse) {
+      #mobile-controls {
+        display: block;
+      }
+      /* Shift the game canvas upward so content isn't hidden by controls */
+      canvas {
+        margin-top: -60px;
+      }
+    }
     </style>
 </head>
 <body>
   <div id="game"></div>
 
+  <!-- Mobile overlay controls -->
+  <div id="mobile-controls">
+    <button id="btn-left" class="ctrl-btn ctrl-btn-left" aria-label="Left">
+      <svg viewBox="0 0 24 24"><polygon points="16,4 6,12 16,20 14,20 4,12 14,4"/></svg>
+    </button>
+    <button id="btn-right" class="ctrl-btn ctrl-btn-right" aria-label="Right">
+      <svg viewBox="0 0 24 24"><polygon points="8,4 18,12 8,20 10,20 20,12 10,4"/></svg>
+    </button>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/2.6.2/phaser.min.js"></script>
   <script src="./js/chatEngine.js"></script>
   <script src="./js/main.js"></script>
+
+  <!-- HTML overlay button wiring (runs after main.js so sendKeyMessage is available) -->
+  <script>
+  (function() {
+    var leftBtn = document.getElementById('btn-left');
+    var rightBtn = document.getElementById('btn-right');
+    if (!leftBtn || !rightBtn) return;
+
+    function onLeftStart(e) {
+      e.preventDefault();
+      window._htmlLeft = true;
+      if (window.sendKeyMessage) window.sendKeyMessage({ left: 'down' });
+      leftBtn.classList.add('active');
+    }
+    function onLeftEnd(e) {
+      e.preventDefault();
+      window._htmlLeft = false;
+      if (window.sendKeyMessage) window.sendKeyMessage({ left: 'up' });
+      leftBtn.classList.remove('active');
+    }
+    function onRightStart(e) {
+      e.preventDefault();
+      window._htmlRight = true;
+      if (window.sendKeyMessage) window.sendKeyMessage({ right: 'down' });
+      rightBtn.classList.add('active');
+    }
+    function onRightEnd(e) {
+      e.preventDefault();
+      window._htmlRight = false;
+      if (window.sendKeyMessage) window.sendKeyMessage({ right: 'up' });
+      rightBtn.classList.remove('active');
+    }
+
+    /* Touch events */
+    leftBtn.addEventListener('touchstart', onLeftStart, { passive: false });
+    leftBtn.addEventListener('touchend', onLeftEnd, { passive: false });
+    leftBtn.addEventListener('touchcancel', onLeftEnd, { passive: false });
+    rightBtn.addEventListener('touchstart', onRightStart, { passive: false });
+    rightBtn.addEventListener('touchend', onRightEnd, { passive: false });
+    rightBtn.addEventListener('touchcancel', onRightEnd, { passive: false });
+
+    /* Mouse fallback (for dev tools / touch laptop) */
+    leftBtn.addEventListener('mousedown', onLeftStart);
+    leftBtn.addEventListener('mouseup', onLeftEnd);
+    leftBtn.addEventListener('mouseleave', onLeftEnd);
+    rightBtn.addEventListener('mousedown', onRightStart);
+    rightBtn.addEventListener('mouseup', onRightEnd);
+    rightBtn.addEventListener('mouseleave', onRightEnd);
+  })();
+  </script>
 </body>
 </html>

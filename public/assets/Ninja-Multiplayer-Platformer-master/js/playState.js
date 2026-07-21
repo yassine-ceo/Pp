@@ -177,8 +177,8 @@ window.PlayState = {
     // create UI score boards
     this._createHud();
 
-    // Set up mobile touch controls (PNG-style arrow buttons)
-    try { this._createTouchButtons(); } catch (e) { console.warn('Touch buttons skipped:', e); }
+    // Mobile touch controls are handled via HTML overlay buttons in index.html
+    // (No Phaser-rendered buttons needed)
 
     // Callback invoked by main.js Firebase listener when both players finish
     window.onBothPlayersFinished = () => {
@@ -197,14 +197,6 @@ window.PlayState = {
 
   shutdown() {
     window.onBothPlayersFinished = null;
-    this._leftBtnBg = null;
-    this._leftBtnArrow = null;
-    this._rightBtnBg = null;
-    this._rightBtnArrow = null;
-    if (this.touchGroup) {
-      this.touchGroup.destroy();
-      this.touchGroup = null;
-    }
   },
 
   _canHeroEnterDoor(hero) {
@@ -293,9 +285,9 @@ window.PlayState = {
         }
       }
 
-      // Move local hero (keyboard OR touch)
-      const moveLeft = this.keys.left.isDown || this._touchLeft;
-      const moveRight = this.keys.right.isDown || this._touchRight;
+      // Move local hero (keyboard OR HTML overlay buttons)
+      const moveLeft = this.keys.left.isDown || window._htmlLeft;
+      const moveRight = this.keys.right.isDown || window._htmlRight;
       if (moveLeft) {
         this.hero.move(-1);
       } else if (moveRight) {
@@ -317,9 +309,6 @@ window.PlayState = {
         const otherplayer = window.globalOtherHeros.get(uuid);
         this._moveRemotePlayer(otherplayer);
       }
-
-      // Update touch button visual feedback
-      this._updateTouchButtons();
     }
   },
 
@@ -336,135 +325,31 @@ window.PlayState = {
   },
 
   _createTouchButtons() {
-    const isMobile = !this.game.device.desktop || this.game.device.touch;
-    if (!isMobile) return;
-
-    this.touchGroup = this.game.add.group();
-    this.touchGroup.fixedToCamera = true;
-
-    const btnSize = 56;
-    const margin = 16;
-    const btnY = this.game.height - btnSize - margin;
-
-    // Create each button as a pair of Graphics objects: bg rect + arrow triangle
-    // We create them once and only toggle alpha for visual feedback
-    this._createBtn('left', margin, btnY, btnSize, -1);
-    this._createBtn('right', margin + btnSize + 12, btnY, btnSize, 1);
-  },
-
-  _createBtn(side, x, y, size, direction) {
-    // Background rectangle
-    const bg = this.game.add.graphics(x, y);
-    bg.beginFill(0x000000, 0.35);
-    bg.drawRoundedRect(0, 0, size, size, 10);
-    bg.endFill();
-    this.touchGroup.add(bg);
-
-    // Arrow triangle
-    const arrow = this.game.add.graphics(x, y);
-    arrow.beginFill(0xffffff, 0.8);
-    if (direction < 0) {
-      // Left arrow
-      arrow.moveTo(size * 0.7, size * 0.15);
-      arrow.lineTo(size * 0.2, size * 0.5);
-      arrow.lineTo(size * 0.7, size * 0.85);
-    } else {
-      // Right arrow
-      arrow.moveTo(size * 0.3, size * 0.15);
-      arrow.lineTo(size * 0.8, size * 0.5);
-      arrow.lineTo(size * 0.3, size * 0.85);
-    }
-    arrow.lineTo(size * 0.7, size * 0.15);
-    arrow.endFill();
-    this.touchGroup.add(arrow);
-
-    if (side === 'left') {
-      this._leftBtnBg = bg;
-      this._leftBtnArrow = arrow;
-    } else {
-      this._rightBtnBg = bg;
-      this._rightBtnArrow = arrow;
-    }
+    // Replaced by HTML overlay buttons in index.html
   },
 
   _updateTouchButtons() {
-    if (!this._leftBtnBg) return;
-    this._leftBtnBg.alpha = this._touchLeft ? 0.7 : 0.35;
-    if (this._rightBtnBg) {
-      this._rightBtnBg.alpha = this._touchRight ? 0.7 : 0.35;
-    }
+    // Replaced by HTML overlay buttons in index.html
+    // Visual feedback handled via CSS :active/.active on the HTML buttons
   },
 
   _handleTouchInput() {
     if (this.game.device.desktop && !this.game.device.touch) return;
 
+    // HTML overlay buttons in index.html handle left/right via window._htmlLeft/_htmlRight.
+    // This method only handles jump via canvas tap.
     const pointer = this.game.input.activePointer;
 
-    if (!pointer.isDown) {
-      if (this._touchLeft) {
-        this._touchLeft = false;
-        window.sendKeyMessage({ left: 'up' });
-      }
-      if (this._touchRight) {
-        this._touchRight = false;
-        window.sendKeyMessage({ right: 'up' });
-      }
-      if (this._touchJump) {
-        this._touchJump = false;
-        window.sendKeyMessage({ up: 'up' });
-      }
-      return;
+    if (pointer.justPressed() && !this._touchJump && this.hero && this.hero.body.touching.down) {
+      this._touchJump = true;
+      window.sendKeyMessage({ up: 'down' });
+      window.globalMyHero.jump();
     }
 
-    const btnSize = 56;
-    const margin = 16;
-    const btnY = this.game.height - btnSize - margin;
-    const x = pointer.x;
-    const y = pointer.y;
-
-    const onLeftBtn = x >= margin && x <= margin + btnSize && y >= btnY && y <= btnY + btnSize;
-    const onRightBtn = x >= margin + btnSize + 12 && x <= margin + 2 * btnSize + 12 && y >= btnY && y <= btnY + btnSize;
-
-    if (onLeftBtn) {
-      if (!this._touchLeft) {
-        this._touchLeft = true;
-        window.sendKeyMessage({ left: 'down' });
-      }
-      if (this._touchRight) {
-        this._touchRight = false;
-        window.sendKeyMessage({ right: 'up' });
-      }
+    if (!pointer.isDown) {
       if (this._touchJump) {
         this._touchJump = false;
         window.sendKeyMessage({ up: 'up' });
-      }
-    } else if (onRightBtn) {
-      if (!this._touchRight) {
-        this._touchRight = true;
-        window.sendKeyMessage({ right: 'down' });
-      }
-      if (this._touchLeft) {
-        this._touchLeft = false;
-        window.sendKeyMessage({ left: 'up' });
-      }
-      if (this._touchJump) {
-        this._touchJump = false;
-        window.sendKeyMessage({ up: 'up' });
-      }
-    } else {
-      // Only trigger jump on a fresh press (not when sliding off a button)
-      if (pointer.justPressed() && !this._touchJump && this.hero && this.hero.body.touching.down) {
-        this._touchJump = true;
-        window.sendKeyMessage({ up: 'down' });
-        window.globalMyHero.jump();
-      }
-      if (this._touchLeft) {
-        this._touchLeft = false;
-        window.sendKeyMessage({ left: 'up' });
-      }
-      if (this._touchRight) {
-        this._touchRight = false;
-        window.sendKeyMessage({ right: 'up' });
       }
     }
   },
