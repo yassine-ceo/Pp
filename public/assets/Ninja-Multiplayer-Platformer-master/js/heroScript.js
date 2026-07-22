@@ -19,6 +19,32 @@ window.Hero = class Hero extends window.Phaser.Sprite {
     this.animations.add('fall', [4]);
     // starting animation
     this.animations.play('stop');
+
+    // HP system (used in level 3)
+    this.maxHp = 100;
+    this.isInvincible = false;
+  }
+
+  takeDamage(amount, knockbackDir) {
+    if (this.isInvincible || this.isFrozen) return;
+    this.hp = Math.max(0, this.hp - amount);
+    this.isInvincible = true;
+
+    // knockback
+    if (knockbackDir !== undefined) {
+      this.body.velocity.x = knockbackDir * 300;
+    }
+    this.body.velocity.y = -200;
+
+    // invincibility flash (1.5s)
+    var flashTimer = this.game.time.events.loop(100, function () {
+      this.visible = !this.visible;
+    }, this);
+    this.game.time.events.add(1500, function () {
+      this.game.time.events.remove(flashTimer);
+      this.visible = true;
+      this.isInvincible = false;
+    }, this);
   }
 
   move(direction) {

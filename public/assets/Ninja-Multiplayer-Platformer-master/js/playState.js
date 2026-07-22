@@ -145,11 +145,18 @@ window.PlayState = {
     this._touchLeft = false;
     this._touchRight = false;
     this._touchJump = false;
+    // HP system (used in level 3)
+    this.hp = 100;
+    this.maxHp = 100;
+    this._bombGroups = [];
   },
 
   create() {
     window.globalGameState = this;
-    // console.log('window.globalGameState created' , this.level);
+    // HP system setup for level 3
+    if (this.level === 3) {
+      this._level3Hp = 100;
+    }
     // fade in  (from black)
     this.camera.flash(0x000000, 500);
     // create sound entities
@@ -189,6 +196,8 @@ window.PlayState = {
     // update scoreboards
     this.coinFont.text = `x${this.coinPickupCount}`;
     this.keyIcon.frame = keyCollected ? 1 : 0;
+    // update HP bar (level 3)
+    this._updateHpBar();
   },
 
   shutdown() {
@@ -220,6 +229,22 @@ window.PlayState = {
       // hero vs spider (death/respawn)
       if (this.spiders) {
         this.game.physics.arcade.overlap(this.hero, this.spiders, this._onHeroVsSpider, null, this);
+      }
+
+      // Level 3: crawler collision
+      if (this.level === 3 && this.crawlers) {
+        this.game.physics.arcade.overlap(this.hero, this.crawlers, this._onHeroVsCrawler, null, this);
+      }
+
+      // Level 3: bomb collision
+      if (this.level === 3 && this.bombs) {
+        this.game.physics.arcade.overlap(this.hero, this.bombs, this._onHeroVsBomb, null, this);
+        this.game.physics.arcade.collide(this.bombs, this.platforms, this._onBombHitGround, null, this);
+      }
+
+      // Level 3: HP pickup collision
+      if (this.level === 3 && this.hpPickups) {
+        this.game.physics.arcade.overlap(this.hero, this.hpPickups, this._onHeroVsHpPickup, null, this);
       }
     }
   },
@@ -502,12 +527,49 @@ window.PlayState = {
     this._spawnKey(data.key.x, data.key.y);
     this._spawnDoor(data.door.x, data.door.y);
 
-    // spawn spiders
-    if (data.spiders && data.spiders.length > 0) {
-      this.spiders = this.game.add.group();
-      data.spiders.forEach(function (spiderData) {
-        this._spawnSpider(spiderData);
-      }, this);
+    // Level 3: horizontal side-scroller setup
+    if (this.level === 3) {
+      // Set world bounds for scrolling
+      this.game.world.setBounds(0, 0, 3840, 600);
+      this.game.camera.follow(this.hero, window.Phaser.Camera.FOLLOW_PLATFORMER);
+      this.camera.deadzone = new window.Phaser.Rectangle(200, 100, 560, 200);
+
+      // Spawn crawlers
+      if (data.crawlers && data.crawlers.length > 0) {
+        this.crawlers = this.game.add.group();
+        data.crawlers.forEach(function (cd) {
+          this._spawnCrawler(cd);
+        }, this);
+      }
+
+      // Spawn bombers
+      if (data.bombers && data.bombers.length > 0) {
+        this.bombers = this.game.add.group();
+        this.bombs = this.game.add.group();
+        data.bombers.forEach(function (bd) {
+          this._spawnBomber(bd);
+        }, this);
+      }
+
+      // Spawn HP pickups
+      if (data.hpPickups && data.hpPickups.length > 0) {
+        this.hpPickups = this.game.add.group();
+        data.hpPickups.forEach(function (hd) {
+          this._spawnHpPickup(hd);
+        }, this);
+      }
+
+      // Set hero HP
+      this.hero.hp = this._level3Hp || 100;
+      this.hero.maxHp = 100;
+    } else {
+      // Standard spiders for non-level-3
+      if (data.spiders && data.spiders.length > 0) {
+        this.spiders = this.game.add.group();
+        data.spiders.forEach(function (spiderData) {
+          this._spawnSpider(spiderData);
+        }, this);
+      }
     }
 
     // enable gravity
@@ -751,6 +813,46 @@ window.PlayState = {
     this.hud.add(coinScoreImg);
     this.hud.add(this.keyIcon);
     this.hud.position.set(10, 10);
+
+    // HP bar (level 3 only)
+    if (this.level === 3) {
+      var barY = 42;
+      var barW = 120;
+      var barH = 12;
+      // Background
+      this.hpBarBg = this.game.add.graphics(10, barY);
+      this.hpBarBg.beginFill(0x333333, 0.8);
+      this.hpBarBg.drawRoundedRect(0, 0, barW, barH, 3);
+      this.hpBarBg.endFill();
+      // Border
+      this.hpBarBg.lineStyle(1, 0xffffff, 0.6);
+      this.hpBarBg.drawRoundedRect(0, 0, barW, barH, 3);
+      this.hpBarBg.fixedToCamera = true;
+
+      // Fill bar
+      this.hpBarFill = this.game.add.graphics(10, barY);
+      this.hpBarFill.fixedToCamera = true;
+      this._updateHpBar();
+
+      // HP text
+      this.hpText = this.game.add.text(10 + barW + 6, barY, 'HP', {
+        font: '11px Arial', fill: '#ffffff'
+      });
+      this.hpText.fixedToCamera = true;
+    }
+  },
+
+  _updateHpBar() {
+    if (!this.hpBarFill || !this.hero) return;
+    var barW = 120;
+    var barH = 12;
+    var ratio = this.hero.hp / this.hero.maxHp;
+    this.hpBarFill.clear();
+    // Color: green > yellow > red
+    var color = ratio > 0.6 ? 0x44cc44 : (ratio > 0.3 ? 0xcccc44 : 0xcc4444);
+    this.hpBarFill.beginFill(color, 0.9);
+    this.hpBarFill.drawRoundedRect(0, 0, barW * ratio, barH, 3);
+    this.hpBarFill.endFill();
   },
 
   _spawnSpider(spiderData) {
@@ -794,6 +896,160 @@ window.PlayState = {
       hero.body.allowGravity = true;
       hero.alive = true;
       hero.visible = true;
+    }, this);
+  },
+
+  // ===========================================================================
+  // Level 3: Crawler enemy
+  // ===========================================================================
+  _spawnCrawler(data) {
+    var crawler = this.crawlers.create(data.x, data.y, 'crawler', 0);
+    crawler.anchor.setTo(0.5, 0.5);
+    this.game.physics.enable(crawler);
+    crawler.body.allowGravity = false;
+    crawler.body.immovable = true;
+
+    var speed = data.speed || 50;
+    var patrolDuration = Math.abs(data.maxX - data.minX) / speed * 1000;
+
+    // Patrol velocity switching
+    crawler.body.velocity.x = speed;
+    crawler.patrolDir = 1;
+    crawler.patrolTimer = this.game.time.events.loop(patrolDuration, function () {
+      crawler.patrolDir *= -1;
+      crawler.body.velocity.x = speed * crawler.patrolDir;
+      crawler.scale.x = -crawler.patrolDir;
+    }, this);
+
+    // 2-frame animation
+    crawler.animFrame = 0;
+    crawler.animTimer = this.game.time.events.loop(250, function () {
+      crawler.animFrame = crawler.animFrame === 0 ? 1 : 0;
+      crawler.frame = crawler.animFrame;
+    }, this);
+  },
+
+  _onHeroVsCrawler(hero, crawler) {
+    if (!hero.alive || hero.isInvincible) return;
+    hero.takeDamage(15, hero.x < crawler.x ? -1 : 1);
+    // Check death
+    if (hero.hp <= 0) {
+      this._restartLevel3();
+    }
+  },
+
+  // ===========================================================================
+  // Level 3: Bomber enemy (aerial bird)
+  // ===========================================================================
+  _spawnBomber(data) {
+    var bomber = this.bombers.create(data.x, data.y, 'bomber');
+    bomber.anchor.setTo(0.5, 0.5);
+    this.game.physics.enable(bomber);
+    bomber.body.allowGravity = false;
+    bomber.body.immovable = true;
+    bomber.body.velocity.x = data.speedX || 80;
+
+    // Flip sprite based on direction
+    if (bomber.body.velocity.x < 0) {
+      bomber.scale.x = -1;
+    }
+
+    // Drop bombs on interval
+    bomber.dropInterval = data.dropInterval || 3000;
+    bomber.dropTimer = this.game.time.events.loop(bomber.dropInterval, function () {
+      if (this.hero && this.hero.alive) {
+        this._spawnBomb(bomber.x, bomber.y + 12);
+      }
+    }, this);
+  },
+
+  _spawnBomb(x, y) {
+    var bomb = this.bombs.create(x, y, 'bomb');
+    bomb.anchor.setTo(0.5, 0.5);
+    this.game.physics.enable(bomb);
+    bomb.body.gravity.y = 400;
+    bomb.body.velocity.x = this.game.rnd.realInRange(-30, 30);
+    bomb.checkWorldBounds = true;
+    bomb.outOfBoundsKill = true;
+  },
+
+  _onHeroVsBomb(hero, bomb) {
+    if (!hero.alive || hero.isInvincible) return;
+    this._spawnExplosion(bomb.x, bomb.y);
+    bomb.kill();
+    hero.takeDamage(25, hero.x < bomb.x ? -1 : 1);
+    if (hero.hp <= 0) {
+      this._restartLevel3();
+    }
+  },
+
+  _onBombHitGround(bomb, platform) {
+    if (!bomb.alive) return;
+    this._spawnExplosion(bomb.x, bomb.y);
+    bomb.kill();
+  },
+
+  _spawnExplosion(x, y) {
+    // Simple flash effect
+    var flash = this.game.add.graphics(x - 16, y - 16);
+    flash.beginFill(0xff6600, 0.7);
+    flash.drawCircle(16, 16, 32);
+    flash.endFill();
+    flash.beginFill(0xffcc00, 0.5);
+    flash.drawCircle(16, 16, 20);
+    flash.endFill();
+
+    this.game.add.tween(flash)
+      .to({ alpha: 0 }, 300, null, true)
+      .onComplete.addOnce(function () {
+        flash.destroy();
+      });
+  },
+
+  // ===========================================================================
+  // Level 3: Health pickups
+  // ===========================================================================
+  _spawnHpPickup(data) {
+    var pickup = this.hpPickups.create(data.x, data.y, 'hpPickup');
+    pickup.anchor.setTo(0.5, 0.5);
+    this.game.physics.enable(pickup);
+    pickup.body.allowGravity = false;
+    pickup.healAmount = data.amount || 25;
+
+    // Floating animation
+    pickup.origY = data.y;
+    this.game.add.tween(pickup)
+      .to({ y: pickup.origY - 6 }, 1000, window.Phaser.Easing.Sinusoidal.InOut)
+      .yoyo(true)
+      .loop()
+      .start();
+  },
+
+  _onHeroVsHpPickup(hero, pickup) {
+    if (!pickup.alive) return;
+    hero.hp = Math.min(hero.maxHp, hero.hp + pickup.healAmount);
+    pickup.kill();
+  },
+
+  // ===========================================================================
+  // Level 3: Death / Restart
+  // ===========================================================================
+  _restartLevel3() {
+    if (this._transitioning) return;
+    this._transitioning = true;
+
+    // Death screen
+    this.camera.fade(0x000000, 800);
+    this.camera.onFadeComplete.addOnce(function () {
+      // Reset HP
+      this._level3Hp = 100;
+      // Reload level 3
+      window.globalLevelState = null;
+      window.gameStarted = false;
+      window.globalUnsubscribe();
+      window.resetPlayersFinished(function () {
+        window.createMyPubNub(3);
+      });
     }, this);
   }
 };
