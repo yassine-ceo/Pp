@@ -34,6 +34,9 @@ window.Hero = class Hero extends window.Phaser.Sprite {
     } else if (this.body.velocity.x > 0) {
       this.scale.x = 1;
     }
+    if (this.nameText) {
+      this.nameText.scale.x = this.scale.x;
+    }
   }
 
   jump() {

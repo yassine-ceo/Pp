@@ -489,6 +489,7 @@ window.PlayState = {
     const playerText = this.game.add.text(0, -45, '', { fill: '#000000', fontSize: '15px' });
     playerText.anchor.set(0.5);
     this.hero2.addChild(playerText);
+    this.hero2.nameText = playerText;
     this.game.add.existing(this.hero2);
     window.globalOtherHeros.set(uuid, this.hero2);
   },
@@ -505,6 +506,7 @@ window.PlayState = {
     const playerText = this.game.add.text(0, -45, 'me', { fill: '#000000', fontSize: '15px' });
     playerText.anchor.set(0.5);
     this.hero.addChild(playerText);
+    this.hero.nameText = playerText;
     // console.log(playerText.position.x, playerText.position.y);
     window.globalMyHero = this.hero;
     window.globalOtherHeros = this.otherHeros = new Map();
