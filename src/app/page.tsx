@@ -8,7 +8,7 @@ import HeroAnimation from '@/components/HeroAnimation'
 import BotGame from '@/components/ui/BotGame'
 import { LobbyEntry } from '@/game/ClientEntry'
 import { db } from '@/lib/firebase'
-import { ref, update, onValue, increment } from 'firebase/database'
+import { ref, update, onValue, increment, set } from 'firebase/database'
 
 type Stage = 'WELCOME' | 'CATALOG' | 'XO_SETUP' | 'BOT_GAME' | 'PLATFORMER_LOBBY'
 
@@ -99,6 +99,7 @@ export default function PlayOnline() {
   const [booted, setBooted] = useState(false)
   const [playedTimeMs, setPlayedTimeMs] = useState(0)
   const [playCounts, setPlayCounts] = useState<Record<string, number>>({})
+  const [userIp, setUserIp] = useState<string | null>(null)
   const nameRef = useRef<HTMLInputElement>(null)
 
   const level = Math.floor(playedTimeMs / (30 * 60 * 1000)) + 1
@@ -134,6 +135,16 @@ export default function PlayOnline() {
       }
     }
   }, [deepRoom, booted, router])
+
+  /* ── Fetch public IP for account recovery ── */
+  useEffect(() => {
+    const cached = localStorage.getItem('xo userIp')
+    if (cached) { setUserIp(cached); return }
+    fetch('https://api.ipify.org?format=json')
+      .then((r) => r.json())
+      .then((d) => { setUserIp(d.ip); localStorage.setItem('xo userIp', d.ip) })
+      .catch(() => { /* ip fetch failed, proceed without IP recovery */ })
+  }, [])
 
   useEffect(() => {
     if (stage === 'WELCOME') {
@@ -183,9 +194,46 @@ export default function PlayOnline() {
     const t = name.trim()
     if (!t) return
     soundManager.playClick()
-    setPlayerName(t)
-    localStorage.setItem('xo playerName', t)
-    setStage('CATALOG')
+
+    const doProceed = (id: string) => {
+      setPlayerId(id)
+      setPlayerName(t)
+      localStorage.setItem('xo playerName', t)
+      localStorage.setItem('xo playerId', id)
+      setStage('CATALOG')
+    }
+
+    // IP-based account lookup first
+    if (userIp) {
+      const ipKey = userIp.replace(/\./g, '_')
+      const accountRef = ref(db, `ipAccounts/${ipKey}`)
+      onValue(accountRef, (snap) => {
+        const data = snap.val()
+        if (data?.playerId) {
+          update(accountRef, { username: t, lastSeen: Date.now() })
+          doProceed(data.playerId)
+        } else {
+          const newId = crypto.randomUUID()
+          set(accountRef, {
+            playerId: newId,
+            username: t,
+            ip: userIp,
+            firstSeen: Date.now(),
+            lastSeen: Date.now(),
+          })
+          doProceed(newId)
+        }
+      }, { onlyOnce: true })
+      return
+    }
+
+    // No IP — use or create local ID
+    const existingId = localStorage.getItem('xo playerId')
+    if (existingId) {
+      doProceed(existingId)
+    } else {
+      doProceed(crypto.randomUUID())
+    }
   }
 
   const openSetup = () => {
