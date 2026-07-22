@@ -390,7 +390,11 @@ window.PlayState = {
     door.frame = 1;
     hero.freeze();
     this.game.add.tween(hero)
-      .to({ x: this.door.x, alpha: 0 }, 500, null, true);
+      .to({ x: this.door.x, alpha: 0 }, 500, null, true)
+      .onComplete.addOnce(() => {
+        hero.visible = false;
+        if (hero.body) hero.body.enable = false;
+      }, this);
   },
 
   _enterSpectatorMode() {

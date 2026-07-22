@@ -88,6 +88,20 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
 
   const safeRight = 'max(16px, env(safe-area-inset-right, 16px))'
 
+  const handleExit = useCallback(() => {
+    if (document.fullscreenElement) {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      } else if ((document as any).webkitExitFullscreen) {
+        (document as any).webkitExitFullscreen();
+      }
+    }
+    if (screen.orientation && (screen.orientation as any).unlock) {
+      (screen.orientation as any).unlock();
+    }
+    onBack();
+  }, [onBack])
+
   return (
     <div className="relative w-screen h-screen bg-black overflow-hidden">
       <iframe
@@ -159,7 +173,7 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
           style={{ left: 'auto', right: safeRight, width: '120px' }}
         >
           <button
-            onClick={onBack}
+            onClick={handleExit}
             className="pointer-events-auto w-28 py-2.5 bg-red-950/40 hover:bg-red-900/60 border border-red-500/20 backdrop-blur-md text-red-100 rounded-xl text-xs font-black tracking-widest transition-all active:scale-95 shadow-lg flex items-center justify-center text-center touch-none select-none"
           >
             EXIT

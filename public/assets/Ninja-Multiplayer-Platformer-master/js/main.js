@@ -107,6 +107,12 @@ window.createMyPubNub = function (currentLevel) {
           otherPlayer.children[0].text = pData.name || 'Player';
         }
 
+        // If the remote player finished (entered door), hide their sprite
+        if (otherPlayer && pData.isFinished && otherPlayer.visible) {
+          otherPlayer.visible = false;
+          if (otherPlayer.body) otherPlayer.body.enable = false;
+        }
+
         // Format update message to feed into the game's native interpolation queue
         const messageEvent = {
           channel: window.currentChannelName,
