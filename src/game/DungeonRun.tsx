@@ -167,7 +167,7 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
         ref={iframeRef}
         src={gameUrl}
         className="w-full h-full border-0"
-        title="Ninja Multiplayer Platformer"
+        title="AtlasJumper"
         allow="fullscreen; screen-wake-lock"
         style={{ display: 'block' }}
       />

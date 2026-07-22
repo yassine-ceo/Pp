@@ -91,7 +91,7 @@ export default function PlatformerLobby({ playerId, playerName, onBack }: Platfo
         </div>
 
         <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-br from-[#f5e6c8] via-[#d4a84b] to-[#b8860b] text-center mb-1">
-          Ninja Platformer
+          AtlasJumper
         </h2>
         <p className="text-[0.6rem] font-bold uppercase tracking-[0.2em] mb-10" style={{ color: 'rgba(212,168,75,0.5)' }}>
           Multiplayer CO-OP
