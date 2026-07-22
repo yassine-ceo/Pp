@@ -46,27 +46,24 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
 
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
     if (isMobile) {
-      const lockLandscapeAndFullscreen = async () => {
+      const triggerMobileFullscreenLandscape = async () => {
         try {
-          const docEl = document.documentElement as any
-          if (docEl.requestFullscreen) await docEl.requestFullscreen()
-          else if (docEl.mozRequestFullScreen) await docEl.mozRequestFullScreen()
-          else if (docEl.webkitRequestFullscreen) await docEl.webkitRequestFullscreen()
-          else if (docEl.msRequestFullscreen) await docEl.msRequestFullscreen()
-
-          const screenObj = window.screen as any
-          if (screenObj.orientation && screenObj.orientation.lock) {
-            await screenObj.orientation.lock('landscape')
-              .catch(() => screenObj.orientation.lock('landscape-primary'))
-              .catch((err: any) => console.warn('Orientation lock rejected:', err))
-          } else if (screenObj.lockOrientation) screenObj.lockOrientation('landscape')
-          else if (screenObj.mozLockOrientation) screenObj.mozLockOrientation('landscape')
-          else if (screenObj.msLockOrientation) screenObj.msLockOrientation('landscape')
-        } catch (error) {
-          console.error('Fullscreen/orientation lock failed:', error)
+          const doc = document.documentElement as any;
+          if (doc.requestFullscreen) {
+            await doc.requestFullscreen();
+          } else if (doc.webkitRequestFullscreen) {
+            await doc.webkitRequestFullscreen();
+          } else if (doc.msRequestFullscreen) {
+            await doc.msRequestFullscreen();
+          }
+          if (screen.orientation && (screen.orientation as any).lock) {
+            await (screen.orientation as any).lock('landscape').catch(() => {});
+          }
+        } catch (err) {
+          console.warn('Orientation lock / Fullscreen request bypassed:', err);
         }
       }
-      lockLandscapeAndFullscreen()
+      triggerMobileFullscreenLandscape()
     }
 
     return () => {
