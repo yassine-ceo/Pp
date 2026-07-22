@@ -117,6 +117,22 @@ window.createMyPubNub = function (currentLevel) {
           if (otherPlayer.body) otherPlayer.body.enable = false;
         }
 
+        // Chat message bubble for remote player
+        if (otherPlayer && pData.chatMessage && pData.chatMessage.text) {
+          if (window.globalGameState) {
+            window.globalGameState._showSpeechBubble(otherPlayer, pData.chatMessage.text, pData.chatMessage.id);
+          }
+        }
+
+        // Typing indicator for remote player
+        if (otherPlayer && window.globalGameState) {
+          if (pData.isTyping) {
+            window.globalGameState._showTypingIndicator(otherPlayer);
+          } else {
+            window.globalGameState._hideTypingIndicator(otherPlayer);
+          }
+        }
+
         // Format update message to feed into the game's native interpolation queue
         const messageEvent = {
           channel: window.currentChannelName,
@@ -221,6 +237,45 @@ window.sendKeyMessage = (keyMessage) => {
   }
 };
 
+window.sendChatMessage = (text) => {
+  try {
+    const parentDb = window.parent.__dungeonRunDb;
+    const refs = window.parent.__dungeonRunRefs;
+    if (parentDb && refs) {
+      const { ref, update } = refs;
+      const myPlayerRef = ref(parentDb, `platformerRooms/${roomCode}/players/${window.UniqueID}`);
+      const chatId = Date.now().toString();
+      update(myPlayerRef, {
+        chatMessage: { text, id: chatId, timestamp: Date.now() }
+      });
+      // Also show bubble on local player immediately
+      if (window.globalGameState && window.globalMyHero) {
+        window.globalGameState._showSpeechBubble(window.globalMyHero, text, chatId);
+      }
+      // Clear after 5s
+      setTimeout(() => {
+        update(myPlayerRef, { chatMessage: null });
+      }, 5000);
+    }
+  } catch (err) {
+    console.error("Error sending chat message:", err);
+  }
+};
+
+window.setTyping = (isTyping) => {
+  try {
+    const parentDb = window.parent.__dungeonRunDb;
+    const refs = window.parent.__dungeonRunRefs;
+    if (parentDb && refs) {
+      const { ref, update } = refs;
+      const myPlayerRef = ref(parentDb, `platformerRooms/${roomCode}/players/${window.UniqueID}`);
+      update(myPlayerRef, { isTyping: isTyping || null });
+    }
+  } catch (err) {
+    console.error("Error setting typing status:", err);
+  }
+};
+
 window.fireCoins = () => {
   try {
     const parentDb = window.parent.__dungeonRunDb;
@@ -248,6 +303,10 @@ window.addEventListener('message', function (e) {
   } else if (data.action === 'MOVE_RIGHT') {
     window._htmlRight = data.isDown;
     if (window.sendKeyMessage) window.sendKeyMessage({ right: data.isDown ? 'down' : 'up' });
+  } else if (data.action === 'CHAT_MESSAGE') {
+    if (window.sendChatMessage) window.sendChatMessage(data.text);
+  } else if (data.action === 'TYPING') {
+    if (window.setTyping) window.setTyping(data.isTyping);
   }
 });
 

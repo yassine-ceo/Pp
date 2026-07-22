@@ -532,6 +532,87 @@ window.PlayState = {
     }
   },
 
+  _showSpeechBubble(hero, text, msgId) {
+    if (!hero) return;
+    if (hero._chatMsgId === msgId) return;
+    hero._chatMsgId = msgId;
+
+    if (hero._chatBubble) {
+      hero._chatBubble.destroy();
+      hero._chatBubble = null;
+    }
+    if (hero._chatBubbleTimer) {
+      clearTimeout(hero._chatBubbleTimer);
+    }
+
+    var padding = 8;
+    var maxWidth = 160;
+    var bubbleText = this.game.add.text(0, 0, text, {
+      font: '13px Arial', fill: '#ffffff', wordWrap: true, wordWrapWidth: maxWidth
+    });
+    bubbleText.anchor.set(0.5, 1);
+
+    var bw = Math.min(bubbleText.width + padding * 2, maxWidth + padding * 2);
+    var bh = bubbleText.height + padding * 2;
+
+    var bg = this.game.add.graphics(0, 0);
+    bg.beginFill(0x000000, 0.85);
+    bg.drawRoundedRect(-bw / 2, -bh, bw, bh, 6);
+    bg.endFill();
+    bg.beginFill(0xffffff, 0.15);
+    bg.drawRoundedRect(-bw / 2, -bh, bw, bh, 6);
+    bg.endFill();
+
+    var group = this.game.add.group();
+    group.add(bg);
+    group.add(bubbleText);
+
+    group.y = -80;
+    hero.addChild(group);
+    hero._chatBubble = group;
+
+    hero._chatBubbleTimer = setTimeout(function () {
+      if (hero._chatBubble) {
+        hero._chatBubble.destroy();
+        hero._chatBubble = null;
+      }
+      hero._chatMsgId = null;
+    }, 5000);
+  },
+
+  _showTypingIndicator(hero) {
+    if (!hero || hero._typingVisible) return;
+    hero._typingVisible = true;
+
+    if (hero._typingText) {
+      hero._typingText.destroy();
+      hero._typingText = null;
+    }
+
+    var dots = this.game.add.text(0, 0, '...', {
+      font: '18px Arial', fill: '#ffffff'
+    });
+    dots.anchor.set(0.5, 1);
+    dots.y = -65;
+    hero.addChild(dots);
+    hero._typingText = dots;
+
+    this.game.add.tween(dots)
+      .to({ alpha: 0.3 }, 600, null, true)
+      .yoyo(true)
+      .loop()
+      .start();
+  },
+
+  _hideTypingIndicator(hero) {
+    if (!hero) return;
+    hero._typingVisible = false;
+    if (hero._typingText) {
+      hero._typingText.destroy();
+      hero._typingText = null;
+    }
+  },
+
   _nameTextStyle() {
     if (this.level === 2) {
       return { fill: '#ffffff', stroke: '#000000', strokeThickness: 3, fontSize: '15px' };

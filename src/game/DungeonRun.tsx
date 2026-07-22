@@ -17,6 +17,11 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
   const [isTouchDevice, setIsTouchDevice] = useState(false)
   const [connectedPlayers, setConnectedPlayers] = useState(1)
   const [copied, setCopied] = useState(false)
+  const [chatOpen, setChatOpen] = useState(false)
+  const [chatText, setChatText] = useState('')
+  const chatInputRef = useRef<HTMLInputElement>(null)
+  const typingSentRef = useRef(false)
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout>>()
 
   // Detect touch device
   useEffect(() => {
@@ -102,6 +107,60 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
     onBack();
   }, [onBack])
 
+  const postChat = useCallback((text: string) => {
+    iframeRef.current?.contentWindow?.postMessage({ action: 'CHAT_MESSAGE', text }, '*')
+  }, [])
+
+  const postTyping = useCallback((isTyping: boolean) => {
+    iframeRef.current?.contentWindow?.postMessage({ action: 'TYPING', isTyping }, '*')
+  }, [])
+
+  const openChat = useCallback(() => {
+    setChatOpen(true)
+    setChatText('')
+    setTimeout(() => chatInputRef.current?.focus(), 150)
+  }, [])
+
+  const closeChat = useCallback(() => {
+    setChatOpen(false)
+    chatInputRef.current?.blur()
+    if (typingSentRef.current) {
+      typingSentRef.current = false
+      postTyping(false)
+    }
+    clearTimeout(typingTimerRef.current)
+  }, [postTyping])
+
+  const sendChat = useCallback(() => {
+    const text = chatText.trim()
+    if (!text) return
+    postChat(text)
+    closeChat()
+  }, [chatText, postChat, closeChat])
+
+  const handleChatChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setChatText(e.target.value)
+    if (!typingSentRef.current) {
+      typingSentRef.current = true
+      postTyping(true)
+    }
+    clearTimeout(typingTimerRef.current)
+    typingTimerRef.current = setTimeout(() => {
+      typingSentRef.current = false
+      postTyping(false)
+    }, 2000)
+  }, [postTyping])
+
+  const handleChatKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      sendChat()
+    }
+    if (e.key === 'Escape') {
+      closeChat()
+    }
+  }, [sendChat, closeChat])
+
   return (
     <div className="relative w-screen h-screen bg-black overflow-hidden">
       <iframe
@@ -177,6 +236,38 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
             className="pointer-events-auto w-28 py-2.5 bg-red-950/40 hover:bg-red-900/60 border border-red-500/20 backdrop-blur-md text-red-100 rounded-xl text-xs font-black tracking-widest transition-all active:scale-95 shadow-lg flex items-center justify-center text-center touch-none select-none"
           >
             EXIT
+          </button>
+        </div>
+      )}
+
+      {/* Chat button — bottom-left corner */}
+      <button
+        onClick={openChat}
+        className="fixed bottom-4 left-4 z-[99999] w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-md flex items-center justify-center active:bg-white/25 touch-none select-none transition-all"
+        aria-label="Chat"
+      >
+        <svg className="w-5 h-5 fill-white/80 pointer-events-none" viewBox="0 0 24 24">
+          <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+        </svg>
+      </button>
+
+      {/* Chat input bar */}
+      {chatOpen && (
+        <div className="fixed bottom-0 left-0 right-0 z-[99999] p-3 bg-black/80 backdrop-blur-md border-t border-white/10 flex items-center gap-2">
+          <input
+            ref={chatInputRef}
+            type="text"
+            value={chatText}
+            onChange={handleChatChange}
+            onKeyDown={handleChatKeyDown}
+            placeholder="Type a message..."
+            className="flex-1 bg-white/10 border border-white/10 rounded-lg px-3 py-2.5 text-white text-sm outline-none placeholder:text-white/30"
+          />
+          <button
+            onClick={sendChat}
+            className="px-4 py-2.5 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg text-blue-300 text-sm font-semibold active:scale-95 transition-all touch-none select-none"
+          >
+            Send
           </button>
         </div>
       )}
