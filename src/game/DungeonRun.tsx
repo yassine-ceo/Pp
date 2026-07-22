@@ -157,16 +157,20 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
 
       {/* EXIT button — bottom of right black bar */}
       {isTouchDevice && (
-        <button
-          onClick={onBack}
-          style={{ right: safeRight }}
-          className="fixed bottom-8 z-[99999] bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg transition-transform active:scale-95 flex items-center gap-1.5 touch-none select-none"
+        <div
+          className="fixed bottom-8 z-[99999] pointer-events-none flex items-center justify-center"
+          style={{ left: 'auto', right: safeRight, width: '120px' }}
         >
-          <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-          </svg>
-          <span className="text-sm">EXIT</span>
-        </button>
+          <button
+            onClick={onBack}
+            className="pointer-events-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-red-950/30 hover:bg-red-500/20 border border-red-500/25 hover:border-red-500/40 backdrop-blur-md text-red-400 rounded-xl text-xs font-semibold tracking-wider transition-all active:scale-95 shadow-lg shadow-red-950/20 touch-none select-none"
+          >
+            <svg className="w-3.5 h-3.5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            <span>EXIT</span>
+          </button>
+        </div>
       )}
     </div>
   )
