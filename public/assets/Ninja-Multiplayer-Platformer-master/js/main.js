@@ -20,6 +20,7 @@ window.UniqueID = playerId;
 
 window.createMyPubNub = function (currentLevel) {
   window.globalCurrentLevel = currentLevel;
+  console.log('[createMyPubNub] level:', currentLevel, 'gameStarted:', window.gameStarted);
 
   // Clean up any previous listeners
   if (window.currentFirebaseUnsubscribe) {
@@ -66,7 +67,10 @@ window.createMyPubNub = function (currentLevel) {
     // Trigger game load once
     if (!window.gameStarted) {
       window.gameStarted = true;
+      console.log('[createMyPubNub] calling StartLoading for level:', currentLevel);
       window.StartLoading();
+    } else {
+      console.log('[createMyPubNub] gameStarted already true, skipping StartLoading');
     }
   }, { onlyOnce: true });
 

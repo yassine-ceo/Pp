@@ -418,6 +418,7 @@ window.PlayState = {
 
   _performTransition() {
     if (this._transitioning) return;
+    console.log('[transition] performTransition called, level:', this.level);
     this._transitioning = true;
     this._finishedTransition = false;
     if (this.waitingText) {
@@ -428,31 +429,44 @@ window.PlayState = {
     // Safety timeout: if fade or Firebase hangs, force the transition after 5s
     const safetyTimer = this.game.time.events.add(5000, function () {
       if (!this._finishedTransition) {
+        console.warn('[transition] safety timer fired, forcing transition');
         this._forceTransition();
       }
     }, this);
 
     this.camera.fade(0x000000, 1000);
     this.camera.onFadeComplete.addOnce(function () {
+      console.log('[transition] camera fade complete');
       this.game.time.events.remove(safetyTimer);
       if (this._finishedTransition) return;
+      this._finishedTransition = true;
+
       const nextLevel = this.level >= 2 ? 0 : this.level + 1;
+      console.log('[transition] next level:', nextLevel);
+
+      window.globalUnsubscribe();
+      window.updateOccupancyCounter = false;
+
       window.resetPlayersFinished(function () {
-        if (this._finishedTransition) return;
-        this._finishedTransition = true;
-        window.globalUnsubscribe();
-        window.updateOccupancyCounter = false;
+        console.log('[transition] resetPlayersFinished done');
+        window.gameStarted = false;
+        window.globalLevelState = null;
         window.createMyPubNub(nextLevel);
-      }.bind(this));
+      });
     }, this);
   },
 
   _forceTransition() {
     if (this._finishedTransition) return;
+    console.warn('[transition] forceTransition, level:', this.level);
     this._finishedTransition = true;
     window.globalUnsubscribe();
     window.updateOccupancyCounter = false;
-    window.createMyPubNub(this.level >= 2 ? 0 : this.level + 1);
+    window.resetPlayersFinished(function () {
+      window.gameStarted = false;
+      window.globalLevelState = null;
+      window.createMyPubNub(this.level >= 2 ? 0 : this.level + 1);
+    }.bind(this));
   },
 
   _loadLevel(data) {

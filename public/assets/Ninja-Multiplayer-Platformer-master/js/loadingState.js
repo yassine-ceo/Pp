@@ -52,6 +52,7 @@ window.LoadingState = { // Create an object with all of the loading information 
   },
 
   create() {
+    console.log('[loadingState] starting play state, level:', window.globalCurrentLevel);
     this.game.state.start('play', true, false, { level: window.globalCurrentLevel }); // Start Game
   }
 };
