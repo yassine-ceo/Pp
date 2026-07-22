@@ -7,6 +7,8 @@ import { soundManager } from '@/lib/sound'
 import HeroAnimation from '@/components/HeroAnimation'
 import BotGame from '@/components/ui/BotGame'
 import { LobbyEntry } from '@/game/ClientEntry'
+import { db } from '@/lib/firebase'
+import { ref, update, onValue, increment } from 'firebase/database'
 
 type Stage = 'WELCOME' | 'CATALOG' | 'XO_SETUP' | 'BOT_GAME' | 'PLATFORMER_LOBBY'
 
@@ -96,6 +98,7 @@ export default function PlayOnline() {
   const [deepRoom, setDeepRoom] = useState<string | null>(null)
   const [booted, setBooted] = useState(false)
   const [playedTimeMs, setPlayedTimeMs] = useState(0)
+  const [playCounts, setPlayCounts] = useState<Record<string, number>>({})
   const nameRef = useRef<HTMLInputElement>(null)
 
   const level = Math.floor(playedTimeMs / (30 * 60 * 1000)) + 1
@@ -137,6 +140,15 @@ export default function PlayOnline() {
       setTimeout(() => nameRef.current?.focus(), 300)
     }
   }, [stage])
+
+  /* ── Global play counts ── */
+  useEffect(() => {
+    const countsRef = ref(db, 'gameStats/playCounts')
+    const unsub = onValue(countsRef, (snap) => {
+      setPlayCounts(snap.val() || {})
+    })
+    return unsub
+  }, [])
 
   /* ── Background leveling timer ── */
   useEffect(() => {
@@ -524,21 +536,14 @@ export default function PlayOnline() {
             {/* Structural spacer — forces first card down past the fixed header */}
             <div className="h-14 w-full block clear-both" />
             {[
-              { id: 'xo-arena', title: 'XO Arena', img: '/avatars/xo-background.png', active: true, onPlay: 'xo' },
-              { id: 'atlas-jumper', title: 'AtlasJumper', img: '/assets/Ninja-Multiplayer-Platformer-master/images/AtlasJumper-CardBackground.png', active: true, onPlay: 'atlas' },
-              { id: 'locked3', title: 'Coming Soon...', img: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop', active: false, onPlay: null },
-              { id: 'locked4', title: 'Coming Soon...', img: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop', active: false, onPlay: null },
-              { id: 'locked5', title: 'Coming Soon...', img: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop', active: false, onPlay: null },
+              { id: 'xo-arena', title: 'XO Arena', img: '/avatars/xo-background.png', active: true, onPlay: () => { update(ref(db, 'gameStats/playCounts'), { 'xo-arena': increment(1) }); openSetup() } },
+              { id: 'atlas-jumper', title: 'AtlasJumper', img: '/assets/Ninja-Multiplayer-Platformer-master/images/AtlasJumper-CardBackground.png', active: true, onPlay: () => { update(ref(db, 'gameStats/playCounts'), { 'atlas-jumper': increment(1) }); soundManager.playClick(); setStage('PLATFORMER_LOBBY') } },
+              { id: 'locked3', title: 'Coming Soon...', img: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop', active: false },
+              { id: 'locked4', title: 'Coming Soon...', img: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop', active: false },
+              { id: 'locked5', title: 'Coming Soon...', img: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop', active: false },
             ]
-              .map((g) => ({ ...g, count: parseInt(localStorage.getItem('playCount:' + g.id) || '0', 10) }))
-              .sort((a, b) => b.count - a.count)
+              .sort((a, b) => (playCounts[b.id] || 0) - (playCounts[a.id] || 0))
               .map((g) => {
-                const handlePlay = () => {
-                  const k = 'playCount:' + g.id
-                  localStorage.setItem(k, String(parseInt(localStorage.getItem(k) || '0', 10) + 1))
-                  if (g.onPlay === 'xo') { openSetup() }
-                  else if (g.onPlay === 'atlas') { soundManager.playClick(); setStage('PLATFORMER_LOBBY') }
-                }
                 return (
               <div key={g.id}
                 className="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-900 border border-white/10 w-[85%] max-w-sm mx-auto"
@@ -553,7 +558,7 @@ export default function PlayOnline() {
                 <div className="absolute inset-x-0 bottom-2 w-full flex flex-col items-center pb-12 px-3">
                   <h3 className="text-white font-bold text-lg w-[92%] text-left mb-2">{g.title}</h3>
                   <button
-                    onClick={handlePlay}
+                    onClick={g.onPlay}
                     className={`w-[92%] flex justify-center items-center gap-2 rounded-full backdrop-blur-md border text-white font-semibold text-xs shadow-lg transition-transform active:scale-95 ${g.active ? 'bg-white/20 border-white/20 cursor-pointer' : 'bg-white/5 border-white/5 opacity-50 cursor-not-allowed'}`}
                     style={{ height: '26px' }}
                     disabled={!g.active}
