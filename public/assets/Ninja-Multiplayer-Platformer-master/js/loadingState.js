@@ -27,6 +27,8 @@ window.LoadingState = { // Create an object with all of the loading information 
     this.game.load.image('font:numbers', 'images/numbers.png');
     this.game.load.image('icon:coin', 'images/coin_icon.png');
     this.game.load.image('background', 'images/bg.png');
+    this.game.load.image('bg1', 'images/bg1.png');
+    this.game.load.image('bg2', 'images/bg2.png');
     this.game.load.image('invisible-wall', 'images/invisible_wall.png');
     this.game.load.image('ground', 'images/ground.png');
     this.game.load.image('grass:8x1', 'images/grass_8x1.png');

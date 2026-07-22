@@ -161,10 +161,7 @@ window.PlayState = {
       door: this.game.add.audio('sfx:door')
     };
     // create level entities and decoration
-    var bg = this.game.add.image(0, 0, 'background');
-    bg.width = this.game.width;
-    bg.height = this.game.height;
-    bg.sendToBack();
+    this._createBackground();
     if (window.globalLevelState === null) {
       window.globalLevelState = {
         time: 0,
@@ -499,6 +496,36 @@ window.PlayState = {
     // enable gravity
     const GRAVITY = 1200;
     this.game.physics.arcade.gravity.y = GRAVITY;
+  },
+
+  _createBackground() {
+    if (this.level === 0) {
+      var bg = this.game.add.image(0, 0, 'background');
+      bg.width = this.game.width;
+      bg.height = this.game.height;
+      return;
+    }
+
+    if (this.level === 1) {
+      var sunset = this.game.add.image(0, 0, 'bg1');
+      sunset.width = this.game.width;
+      sunset.height = this.game.height;
+      var day = this.game.add.image(0, 0, 'background');
+      day.width = this.game.width;
+      day.height = this.game.height;
+      this.game.add.tween(day).to({ alpha: 0 }, 3000, window.Phaser.Easing.Linear.None, true);
+      return;
+    }
+
+    if (this.level === 2) {
+      var night = this.game.add.image(0, 0, 'bg2');
+      night.width = this.game.width;
+      night.height = this.game.height;
+      var sunset2 = this.game.add.image(0, 0, 'bg1');
+      sunset2.width = this.game.width;
+      sunset2.height = this.game.height;
+      this.game.add.tween(sunset2).to({ alpha: 0 }, 3000, window.Phaser.Easing.Linear.None, true);
+    }
   },
 
   _addOtherCharacter(uuid) {
