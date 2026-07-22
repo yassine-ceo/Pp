@@ -103,13 +103,25 @@
     /* Landscape on mobile: buttons move to side letterbox margins */
     @media (pointer: coarse) and (orientation: landscape) {
       #mobile-controls {
-        height: auto;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         padding: 0;
+        box-sizing: border-box;
       }
       #mobile-controls .ctrl-btn {
+        pointer-events: auto;
+        position: absolute;
         bottom: auto;
         top: 50%;
-        margin-top: -36px;
+        transform: translateY(-50%);
+        margin-top: 0;
         width: 48px;
         height: 72px;
         border-radius: 12px;
@@ -120,14 +132,14 @@
       }
       #mobile-controls .ctrl-btn:active,
       #mobile-controls .ctrl-btn.active {
-        transform: scale(0.92);
+        transform: translateY(-50%) scale(0.92);
       }
       #mobile-controls .ctrl-btn-left {
-        left: 18px;
+        left: 15px;
         right: auto;
       }
       #mobile-controls .ctrl-btn-right {
-        right: 22px;
+        right: 15px;
         left: auto;
       }
       canvas {
