@@ -161,7 +161,10 @@ window.PlayState = {
       door: this.game.add.audio('sfx:door')
     };
     // create level entities and decoration
-    this.game.add.image(0, 0, 'background');
+    var bg = this.game.add.image(0, 0, 'background');
+    bg.width = this.game.width;
+    bg.height = this.game.height;
+    bg.sendToBack();
     if (window.globalLevelState === null) {
       window.globalLevelState = {
         time: 0,
