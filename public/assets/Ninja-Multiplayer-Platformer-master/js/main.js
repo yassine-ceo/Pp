@@ -276,4 +276,19 @@ window.addEventListener('load', () => {
     game.state.start('loading');
     window.initChatEngine();
   };
+
+  // Global DOM audio unlock for browser autoplay policy
+  const unlockAudio = () => {
+    if (game && game.sound && game.sound.context) {
+      if (game.sound.context.state === 'suspended') {
+        game.sound.context.resume().then(() => {
+          console.log('AudioContext unlocked');
+        });
+      }
+    }
+    window.removeEventListener('click', unlockAudio);
+    window.removeEventListener('touchstart', unlockAudio);
+  };
+  window.addEventListener('click', unlockAudio);
+  window.addEventListener('touchstart', unlockAudio);
 });

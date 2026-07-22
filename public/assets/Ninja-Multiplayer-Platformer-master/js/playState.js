@@ -173,13 +173,6 @@ window.PlayState = {
     // create UI score boards
     this._createHud();
 
-    // Unlock Web Audio context on first user interaction (autoplay policy)
-    this.game.input.onDown.addOnce(() => {
-      if (this.game.sound.context && this.game.sound.context.state === 'suspended') {
-        this.game.sound.context.resume();
-      }
-    });
-
     // Mobile touch controls are handled via HTML overlay buttons in index.html
     // (No Phaser-rendered buttons needed)
 
