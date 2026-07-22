@@ -75,13 +75,8 @@ window.createMyPubNub = function (currentLevel) {
     const players = snap.val() || {};
 
     // Update Room & Player info text indicators on the screen
-    const playerCount = Object.keys(players).length;
-    window.text1 = `Room Code: ${roomCode}`;
-    window.text2 = `Players Connected: ${playerCount}/2`;
-    window.text3 = isHost ? "Role: Host (Ninja P1)" : "Role: Guest (Ninja P2)";
-    if (window.textObject1) window.textObject1.setText(window.text1);
-    if (window.textObject2) window.textObject2.setText(window.text2);
-    if (window.textObject3) window.textObject3.setText(window.text3);
+    var playerCount = Object.keys(players).length;
+    try { window.parent.postMessage({ action: 'PLAYER_COUNT', count: playerCount }, '*'); } catch (e) {}
 
     // Remove characters of players who left
     if (window.globalOtherHeros) {

@@ -162,10 +162,6 @@ window.PlayState = {
     };
     // create level entities and decoration
     this.game.add.image(0, 0, 'background');
-    window.textObject1 = this.game.add.text(700, 5, window.text1, { font: 'Bold 200px Arial', fill: '#000000', fontSize: '20px' });
-    window.textObject2 = this.game.add.text(700, 35, window.text2, { font: 'Bold 200px Arial', fill: '#000000', fontSize: '20px' });
-    window.textObject3 = this.game.add.text(700, 65, window.text3, { font: 'Bold 200px Arial', fill: '#000000', fontSize: '20px' });
-    // console.log(window.text);
     if (window.globalLevelState === null) {
       window.globalLevelState = {
         time: 0,
