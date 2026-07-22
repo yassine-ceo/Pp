@@ -527,8 +527,8 @@ export default function PlayOnline() {
               const isXOArena = index === 0
               const isDungeonRun = index === 1
               const isLocked = index > 1
-              const title = isXOArena ? 'XO Arena' : isDungeonRun ? 'Dungeon Run' : 'Coming Soon...'
-              const imgSrc = isXOArena ? '/avatars/xo-background.png' : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop'
+              const title = isXOArena ? 'XO Arena' : isDungeonRun ? 'AtlasJumper' : 'Coming Soon...'
+              const imgSrc = isXOArena ? '/avatars/xo-background.png' : isDungeonRun ? '/assets/Ninja-Multiplayer-Platformer-master/images/AtlasJumper-CardBackground.png' : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop'
               const active = isXOArena || isDungeonRun
               return (
               <div key={i}
