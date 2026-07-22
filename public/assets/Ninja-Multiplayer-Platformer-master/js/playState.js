@@ -173,6 +173,13 @@ window.PlayState = {
     // create UI score boards
     this._createHud();
 
+    // Unlock Web Audio context on first user interaction (autoplay policy)
+    this.game.input.onDown.addOnce(() => {
+      if (this.game.sound.context && this.game.sound.context.state === 'suspended') {
+        this.game.sound.context.resume();
+      }
+    });
+
     // Mobile touch controls are handled via HTML overlay buttons in index.html
     // (No Phaser-rendered buttons needed)
 
@@ -528,13 +535,20 @@ window.PlayState = {
     }
   },
 
+  _nameTextStyle() {
+    if (this.level === 2) {
+      return { fill: '#ffffff', stroke: '#000000', strokeThickness: 3, fontSize: '15px' };
+    }
+    return { fill: '#000000', stroke: '#ffffff', strokeThickness: 3, fontSize: '15px' };
+  },
+
   _addOtherCharacter(uuid) {
     // console.log('Added another character to game');
     if (window.globalOtherHeros.has(uuid)) { return; }
     // console.log('_addOtherCharacter', uuid);
     this.hero2 = new window.Hero(this.game, 10, 10);
     this.hero2.lastKeyFrame = 0;
-    const playerText = this.game.add.text(0, -45, '', { fill: '#000000', fontSize: '15px' });
+    const playerText = this.game.add.text(0, -45, '', this._nameTextStyle());
     playerText.anchor.set(0.5);
     this.hero2.addChild(playerText);
     this.hero2.nameText = playerText;
@@ -551,7 +565,7 @@ window.PlayState = {
   _spawnCharacters(data) {
     this.hero = new window.Hero(this.game, 10, 10);
     this.hero.body.bounce.setTo(0);
-    const playerText = this.game.add.text(0, -45, 'me', { fill: '#000000', fontSize: '15px' });
+    const playerText = this.game.add.text(0, -45, 'me', this._nameTextStyle());
     playerText.anchor.set(0.5);
     this.hero.addChild(playerText);
     this.hero.nameText = playerText;
