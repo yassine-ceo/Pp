@@ -9,10 +9,11 @@ interface DungeonRunProps {
   playerId: string
   playerName: string
   isHost: boolean
+  startLevel?: number
   onBack: () => void
 }
 
-export default function DungeonRun({ roomCode, playerId, playerName, isHost, onBack }: DungeonRunProps) {
+export default function DungeonRun({ roomCode, playerId, playerName, isHost, startLevel = 0, onBack }: DungeonRunProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isTouchDevice, setIsTouchDevice] = useState(false)
   const [connectedPlayers, setConnectedPlayers] = useState(1)
@@ -77,7 +78,7 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
     }
   }, [])
 
-  const gameUrl = `/assets/Ninja-Multiplayer-Platformer-master/index.html?roomCode=${encodeURIComponent(roomCode)}&playerId=${encodeURIComponent(playerId)}&playerName=${encodeURIComponent(playerName)}&isHost=${isHost ? '1' : '0'}`
+  const gameUrl = `/assets/Ninja-Multiplayer-Platformer-master/index.html?roomCode=${encodeURIComponent(roomCode)}&playerId=${encodeURIComponent(playerId)}&playerName=${encodeURIComponent(playerName)}&isHost=${isHost ? '1' : '0'}&startLevel=${startLevel}`
 
   const postMsg = useCallback((action: string, isDown: boolean) => {
     iframeRef.current?.contentWindow?.postMessage({ action, isDown }, '*')

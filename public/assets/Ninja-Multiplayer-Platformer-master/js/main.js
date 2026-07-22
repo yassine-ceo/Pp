@@ -15,6 +15,7 @@ const roomCode = urlParams.get('roomCode') || 'LOCAL';
 const playerId = urlParams.get('playerId') || 'localPlayer';
 const playerName = urlParams.get('playerName') || 'Ninja';
 const isHost = urlParams.get('isHost') === '1';
+const startLevel = parseInt(urlParams.get('startLevel') || '0', 10);
 
 window.UniqueID = playerId;
 
@@ -337,7 +338,7 @@ window.addEventListener('load', () => {
   game.state.add('play', window.PlayState);
   game.state.add('loading', window.LoadingState);
   
-  window.createMyPubNub(0); // Initialize first level (index 0)
+  window.createMyPubNub(startLevel); // Initialize at selected level (default 0)
 
   window.StartLoading = function () {
     game.state.start('loading');

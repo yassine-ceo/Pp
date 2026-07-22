@@ -485,7 +485,7 @@ window.PlayState = {
       if (this._finishedTransition) return;
       this._finishedTransition = true;
 
-      const nextLevel = this.level >= 3 ? 0 : this.level + 1;
+      const nextLevel = this.level >= 4 ? 0 : this.level + 1;
       console.log('[transition] next level:', nextLevel);
 
       window.globalUnsubscribe();
@@ -509,7 +509,7 @@ window.PlayState = {
     window.resetPlayersFinished(function () {
       window.gameStarted = false;
       window.globalLevelState = null;
-      window.createMyPubNub(this.level >= 3 ? 0 : this.level + 1);
+      window.createMyPubNub(this.level >= 4 ? 0 : this.level + 1);
     }.bind(this));
   },
 
@@ -592,6 +592,13 @@ window.PlayState = {
       this._createParallaxBackground();
       this._spawnBirds();
       this._createWaterfall();
+      return;
+    }
+
+    if (this.level === 4) {
+      var bg4 = this.game.add.image(0, 0, 'background');
+      bg4.width = this.game.width;
+      bg4.height = this.game.height;
       return;
     }
 

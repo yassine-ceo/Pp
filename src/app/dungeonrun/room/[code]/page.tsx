@@ -17,6 +17,7 @@ export default function DungeonRunRoomPage() {
   const searchParams = useSearchParams()
   const code = (params?.code as string) || ''
   const isHost = searchParams.get('host') === '1'
+  const startLevel = parseInt(searchParams.get('startLevel') || '0', 10)
 
   const [playerId, setPlayerId] = useState('')
   const [playerName, setPlayerName] = useState('')
@@ -100,6 +101,7 @@ export default function DungeonRunRoomPage() {
       playerId={playerId}
       playerName={playerName}
       isHost={isHost}
+      startLevel={startLevel}
       onBack={() => router.push('/')}
     />
   )

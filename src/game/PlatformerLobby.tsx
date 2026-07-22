@@ -17,6 +17,8 @@ export default function PlatformerLobby({ playerId, playerName, onBack }: Platfo
   const [joinCode, setJoinCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedLevel, setSelectedLevel] = useState(0)
+  const [showLevelSelect, setShowLevelSelect] = useState(false)
 
   const handleCreate = async () => {
     soundManager.playClick()
@@ -24,7 +26,7 @@ export default function PlatformerLobby({ playerId, playerName, onBack }: Platfo
     setError(null)
     try {
       const code = await createPlatformerRoom(playerId, playerName)
-      router.push(`/dungeonrun/room/${code}?host=1`)
+      router.push(`/dungeonrun/room/${code}?host=1&startLevel=${selectedLevel}`)
     } catch (err) {
       console.error(err)
       setError('Failed to create room. Try again.')
@@ -48,7 +50,7 @@ export default function PlatformerLobby({ playerId, playerName, onBack }: Platfo
       }
       const ok = await joinPlatformerRoom(code, playerId, playerName)
       if (ok) {
-        router.push(`/dungeonrun/room/${code}`)
+        router.push(`/dungeonrun/room/${code}?startLevel=${selectedLevel}`)
       } else {
         setError('Room already full or has started.')
       }
@@ -59,6 +61,9 @@ export default function PlatformerLobby({ playerId, playerName, onBack }: Platfo
       setLoading(false)
     }
   }
+
+  const levelNames = ['Level 1', 'Level 2', 'Level 3', 'Level 4']
+  const levelLabels = ['Meadow', 'Sunset', 'Wilds', 'Summit']
 
   return (
     <main className="relative w-screen h-screen flex flex-col items-center justify-center overflow-hidden"
@@ -113,6 +118,40 @@ export default function PlatformerLobby({ playerId, playerName, onBack }: Platfo
               style={{ padding: '0.7rem 1.5rem', background: 'linear-gradient(to bottom, #1f120c, #140b07)', border: '1px solid rgba(212,168,75,0.2)', color: 'rgba(212,168,75,0.7)' }}>
               Join Room Code
             </button>
+
+            {/* Select Level button */}
+            <button onClick={() => { soundManager.playClick(); setShowLevelSelect(true) }}
+              className="w-full flex justify-center items-center gap-2 rounded-xl text-sm font-semibold transition-all active:scale-[0.97]"
+              style={{ padding: '0.6rem 1.2rem', background: 'linear-gradient(to bottom, #1a120a, #100a06)', border: '1px solid rgba(212,168,75,0.15)', color: 'rgba(212,168,75,0.5)' }}>
+              <svg className="w-4 h-4 fill-current opacity-60" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              Start at: {levelNames[selectedLevel]}
+            </button>
+          </div>
+        )}
+
+        {/* Level selection overlay */}
+        {showLevelSelect && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setShowLevelSelect(false)}>
+            <div className="flex flex-col items-center gap-3 p-6 rounded-2xl" onClick={(e) => e.stopPropagation()}
+              style={{ background: 'rgba(20,12,8,0.95)', border: '1px solid rgba(212,168,75,0.2)', minWidth: '200px' }}>
+              <h3 className="text-sm font-black uppercase tracking-[0.15em]" style={{ color: 'rgba(212,168,75,0.6)' }}>Select Starting Level</h3>
+              <div className="w-full h-px" style={{ background: 'rgba(212,168,75,0.1)' }} />
+              {levelNames.map(function (name, idx) {
+                return (
+                  <button key={idx} onClick={() => { soundManager.playClick(); setSelectedLevel(idx); setShowLevelSelect(false) }}
+                    className="w-full flex justify-between items-center gap-3 rounded-xl text-sm font-semibold transition-all active:scale-[0.97] px-4 py-2.5"
+                    style={{
+                      background: selectedLevel === idx ? 'rgba(212,168,75,0.12)' : 'transparent',
+                      border: selectedLevel === idx ? '1px solid rgba(212,168,75,0.3)' : '1px solid transparent',
+                      color: selectedLevel === idx ? '#d4a84b' : 'rgba(212,168,75,0.5)'
+                    }}>
+                    <span>{name}</span>
+                    <span className="text-xs opacity-50">{levelLabels[idx]}</span>
+                    {selectedLevel === idx && <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
