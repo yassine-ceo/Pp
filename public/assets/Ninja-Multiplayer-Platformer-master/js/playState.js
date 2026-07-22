@@ -271,6 +271,7 @@ window.PlayState = {
           if (!keyStates.upIsDown) {
             window.sendKeyMessage({ up: 'down' });
             window.globalMyHero.jump();
+            this.sfx.jump.play();
           }
           keyStates.upIsDown = true;
         } else {
@@ -340,6 +341,7 @@ window.PlayState = {
       this._touchJump = true;
       window.sendKeyMessage({ up: 'down' });
       window.globalMyHero.jump();
+      this.sfx.jump.play();
     }
 
     if (!pointer.isDown) {
@@ -351,7 +353,7 @@ window.PlayState = {
   },
 
   _onHeroVsKey(hero, key) {
-    // this.sfx.key.play();
+    this.sfx.key.play();
     this.door.frame = 1;
     key.kill();
     keyCollected = true;
@@ -359,7 +361,7 @@ window.PlayState = {
   },
 
   _onHeroVsCoin(hero, coin) {
-    // this.sfx.coin.play();
+    this.sfx.coin.play();
     coin.kill();
     logCurrentStateCoin(this.game, coin);
     this.coinPickupCount++;
@@ -368,6 +370,7 @@ window.PlayState = {
   _onHeroVsDoor(hero, door) {
     if (this.isFinished || this._transitioning) return;
     this.isFinished = true;
+    this.sfx.door.play();
     door.frame = 1;
     hero.freeze();
 
@@ -389,6 +392,7 @@ window.PlayState = {
   _onOtherHeroVsDoor(hero, door) {
     door.frame = 1;
     hero.freeze();
+    this.sfx.door.play();
     this.game.add.tween(hero)
       .to({ x: this.door.x, alpha: 0 }, 500, null, true)
       .onComplete.addOnce(() => {
