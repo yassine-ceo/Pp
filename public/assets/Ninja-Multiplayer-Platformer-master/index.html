@@ -98,25 +98,17 @@
     /* Landscape on mobile: buttons move to side letterbox margins */
     @media (pointer: coarse) and (orientation: landscape) {
       #mobile-controls {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        pointer-events: none;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0;
-        box-sizing: border-box;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        pointer-events: none !important;
+        z-index: 99999 !important;
+        display: block !important;
       }
       #mobile-controls .ctrl-btn {
-        pointer-events: auto;
-        position: absolute;
-        bottom: auto;
-        top: 50%;
-        transform: translateY(-50%);
-        margin-top: 0;
+        pointer-events: auto !important;
         width: 48px;
         height: 72px;
         border-radius: 12px;
@@ -127,15 +119,25 @@
       }
       #mobile-controls .ctrl-btn:active,
       #mobile-controls .ctrl-btn.active {
-        transform: translateY(-50%) scale(0.92);
+        transform: scale(0.92);
       }
       #mobile-controls .ctrl-btn-left {
-        left: calc(20px - env(safe-area-inset-left, 65px));
-        right: auto;
+        position: fixed !important;
+        left: 15px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        right: auto !important;
+        bottom: auto !important;
+        pointer-events: auto !important;
       }
       #mobile-controls .ctrl-btn-right {
-        right: calc(20px - env(safe-area-inset-right, 0px));
-        left: auto;
+        position: fixed !important;
+        right: 15px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        left: auto !important;
+        bottom: auto !important;
+        pointer-events: auto !important;
       }
       canvas {
         margin-top: 0;
