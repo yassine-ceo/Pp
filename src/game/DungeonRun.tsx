@@ -21,7 +21,7 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
   const [chatText, setChatText] = useState('')
   const chatInputRef = useRef<HTMLInputElement>(null)
   const typingSentRef = useRef(false)
-  const typingTimerRef = useRef<ReturnType<typeof setTimeout>>()
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Detect touch device
   useEffect(() => {
@@ -128,7 +128,7 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
       typingSentRef.current = false
       postTyping(false)
     }
-    clearTimeout(typingTimerRef.current)
+    if (typingTimerRef.current) clearTimeout(typingTimerRef.current)
   }, [postTyping])
 
   const sendChat = useCallback(() => {
@@ -144,7 +144,7 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
       typingSentRef.current = true
       postTyping(true)
     }
-    clearTimeout(typingTimerRef.current)
+    if (typingTimerRef.current) clearTimeout(typingTimerRef.current)
     typingTimerRef.current = setTimeout(() => {
       typingSentRef.current = false
       postTyping(false)
@@ -241,15 +241,17 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
       )}
 
       {/* Chat button — bottom-left corner */}
-      <button
-        onClick={openChat}
-        className="fixed bottom-4 left-4 z-[99999] w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-md flex items-center justify-center active:bg-white/25 touch-none select-none transition-all"
-        aria-label="Chat"
-      >
-        <svg className="w-5 h-5 fill-white/80 pointer-events-none" viewBox="0 0 24 24">
-          <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-        </svg>
-      </button>
+      <div className="fixed bottom-4 left-4 z-[99999] pointer-events-none">
+        <button
+          onClick={openChat}
+          className="pointer-events-auto w-11 h-11 rounded-full bg-black/80 hover:bg-black/70 border border-white/20 backdrop-blur-md flex items-center justify-center active:scale-95 touch-none select-none transition-all shadow-lg"
+          aria-label="Chat"
+        >
+          <svg className="w-5 h-5 fill-white/90 pointer-events-none" viewBox="0 0 24 24">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+          </svg>
+        </button>
+      </div>
 
       {/* Chat input bar */}
       {chatOpen && (
