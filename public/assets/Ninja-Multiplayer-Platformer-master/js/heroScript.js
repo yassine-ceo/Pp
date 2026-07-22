@@ -37,6 +37,12 @@ window.Hero = class Hero extends window.Phaser.Sprite {
     if (this.nameText) {
       this.nameText.scale.x = this.scale.x;
     }
+    if (this._chatBubble) {
+      this._chatBubble.scale.x = this.scale.x;
+    }
+    if (this._typingText) {
+      this._typingText.scale.x = this.scale.x;
+    }
   }
 
   jump() {

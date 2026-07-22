@@ -173,7 +173,7 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
       />
 
       {/* Room Code + Copy — top of right black bar, hidden when 2/2 */}
-      {isTouchDevice && connectedPlayers < 2 && (
+      {connectedPlayers < 2 && (
         <div
           style={{ right: safeRight }}
           className="fixed top-6 z-[99999] flex flex-col items-end gap-1.5 pointer-events-none"
@@ -190,6 +190,24 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
               {copied ? 'Copied' : 'Copy'}
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Chat button — top of right black bar, shown when room is full */}
+      {connectedPlayers >= 2 && (
+        <div
+          style={{ right: safeRight }}
+          className="fixed top-6 z-[99999] pointer-events-none"
+        >
+          <button
+            onClick={openChat}
+            className="pointer-events-auto w-11 h-11 rounded-full bg-black/80 hover:bg-black/70 border border-white/20 backdrop-blur-md flex items-center justify-center active:scale-95 touch-none select-none transition-all shadow-lg"
+            aria-label="Chat"
+          >
+            <svg className="w-5 h-5 fill-white/90 pointer-events-none" viewBox="0 0 24 24">
+              <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+            </svg>
+          </button>
         </div>
       )}
 
@@ -239,19 +257,6 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
           </button>
         </div>
       )}
-
-      {/* Chat button — bottom-left corner */}
-      <div className="fixed bottom-4 left-4 z-[99999] pointer-events-none">
-        <button
-          onClick={openChat}
-          className="pointer-events-auto w-11 h-11 rounded-full bg-black/80 hover:bg-black/70 border border-white/20 backdrop-blur-md flex items-center justify-center active:scale-95 touch-none select-none transition-all shadow-lg"
-          aria-label="Chat"
-        >
-          <svg className="w-5 h-5 fill-white/90 pointer-events-none" viewBox="0 0 24 24">
-            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-          </svg>
-        </button>
-      </div>
 
       {/* Chat input bar */}
       {chatOpen && (
