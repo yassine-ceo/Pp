@@ -115,7 +115,7 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
             onPointerUp={(e) => { e.preventDefault(); postMsg('MOVE_LEFT', false) }}
             onPointerLeave={(e) => { e.preventDefault(); postMsg('MOVE_LEFT', false) }}
             onPointerCancel={(e) => { e.preventDefault(); postMsg('MOVE_LEFT', false) }}
-            style={{ left: 'max(16px, env(safe-area-inset-left, 16px))' }}
+            style={{ right: '88px' }}
             className="fixed top-1/2 -translate-y-1/2 z-[99999] w-12 h-16 rounded-xl border border-white/10 bg-white/10 backdrop-blur-md flex items-center justify-center active:bg-white/25 touch-none select-none"
           >
             <svg className="w-6 h-6 fill-white/80 pointer-events-none" viewBox="0 0 24 24">
