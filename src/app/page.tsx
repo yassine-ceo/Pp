@@ -523,38 +523,47 @@ export default function PlayOnline() {
           <div className="flex flex-col items-center gap-5 pt-36">
             {/* Structural spacer — forces first card down past the fixed header */}
             <div className="h-14 w-full block clear-both" />
-            {[1, 2, 3, 4, 5].map((i, index) => {
-              const isXOArena = index === 0
-              const isDungeonRun = index === 1
-              const isLocked = index > 1
-              const title = isXOArena ? 'XO Arena' : isDungeonRun ? 'AtlasJumper' : 'Coming Soon...'
-              const imgSrc = isXOArena ? '/avatars/xo-background.png' : isDungeonRun ? '/assets/Ninja-Multiplayer-Platformer-master/images/AtlasJumper-CardBackground.png' : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop'
-              const active = isXOArena || isDungeonRun
-              return (
-              <div key={i}
+            {[
+              { id: 'xo-arena', title: 'XO Arena', img: '/avatars/xo-background.png', active: true, onPlay: 'xo' },
+              { id: 'atlas-jumper', title: 'AtlasJumper', img: '/assets/Ninja-Multiplayer-Platformer-master/images/AtlasJumper-CardBackground.png', active: true, onPlay: 'atlas' },
+              { id: 'locked3', title: 'Coming Soon...', img: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop', active: false, onPlay: null },
+              { id: 'locked4', title: 'Coming Soon...', img: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop', active: false, onPlay: null },
+              { id: 'locked5', title: 'Coming Soon...', img: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop', active: false, onPlay: null },
+            ]
+              .map((g) => ({ ...g, count: parseInt(localStorage.getItem('playCount:' + g.id) || '0', 10) }))
+              .sort((a, b) => b.count - a.count)
+              .map((g) => {
+                const handlePlay = () => {
+                  const k = 'playCount:' + g.id
+                  localStorage.setItem(k, String(parseInt(localStorage.getItem(k) || '0', 10) + 1))
+                  if (g.onPlay === 'xo') { openSetup() }
+                  else if (g.onPlay === 'atlas') { soundManager.playClick(); setStage('PLATFORMER_LOBBY') }
+                }
+                return (
+              <div key={g.id}
                 className="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-900 border border-white/10 w-[85%] max-w-sm mx-auto"
                 style={{ aspectRatio: '16/9' }}
               >
                 <img
-                  src={imgSrc}
-                  alt={title}
+                  src={g.img}
+                  alt={g.title}
                   className="absolute inset-0 w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
                 <div className="absolute inset-x-0 bottom-2 w-full flex flex-col items-center pb-12 px-3">
-                  <h3 className="text-white font-bold text-lg w-[92%] text-left mb-2">{title}</h3>
+                  <h3 className="text-white font-bold text-lg w-[92%] text-left mb-2">{g.title}</h3>
                   <button
-                    onClick={isXOArena ? openSetup : isDungeonRun ? (() => { soundManager.playClick(); setStage('PLATFORMER_LOBBY') }) : undefined}
-                    className={`w-[92%] flex justify-center items-center gap-2 rounded-full backdrop-blur-md border text-white font-semibold text-xs shadow-lg transition-transform active:scale-95 ${active ? 'bg-white/20 border-white/20 cursor-pointer' : 'bg-white/5 border-white/5 opacity-50 cursor-not-allowed'}`}
+                    onClick={handlePlay}
+                    className={`w-[92%] flex justify-center items-center gap-2 rounded-full backdrop-blur-md border text-white font-semibold text-xs shadow-lg transition-transform active:scale-95 ${g.active ? 'bg-white/20 border-white/20 cursor-pointer' : 'bg-white/5 border-white/5 opacity-50 cursor-not-allowed'}`}
                     style={{ height: '26px' }}
-                    disabled={!active}
+                    disabled={!g.active}
                   >
                     <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                    {active ? 'Play' : 'Locked'}
+                    {g.active ? 'Play' : 'Locked'}
                   </button>
                 </div>
               </div>
-            )})}
+              )})}
           </div>
         </div>
       </main>
