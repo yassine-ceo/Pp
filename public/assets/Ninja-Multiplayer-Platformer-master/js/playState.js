@@ -174,6 +174,10 @@ window.PlayState = {
       if (this.level === 3) {
         levelData = this._generateLevel3Data();
       }
+      if (!levelData) {
+        console.warn('[playState] getJSON returned null for level ' + this.level + ', generating fallback');
+        levelData = this._generateFallbackLevelData();
+      }
       window.globalLevelState = {
         time: 0,
         coinCache: levelData
@@ -514,6 +518,11 @@ window.PlayState = {
   },
 
   _loadLevel(data) {
+    if (!data) {
+      console.error('[playState] _loadLevel received null data, cannot load level');
+      return;
+    }
+
     // console.log(data)
     // create all the groups/layers that we need
     this.bgDecoration = this.game.add.group();
@@ -524,18 +533,24 @@ window.PlayState = {
     this._spawnCharacters({ hero: data.hero, spiders: data.spiders });
 
     // spawn level decoration
-    data.decoration.forEach(function (deco) {
-      this.bgDecoration.add(
-        this.game.add.image(deco.x, deco.y, 'decoration', deco.frame));
-    }, this);
+    if (data.decoration && data.decoration.length) {
+      data.decoration.forEach(function (deco) {
+        this.bgDecoration.add(
+          this.game.add.image(deco.x, deco.y, 'decoration', deco.frame));
+      }, this);
+    }
 
     // spawn platforms
-    data.platforms.forEach(this._spawnPlatform, this);
+    if (data.platforms && data.platforms.length) {
+      data.platforms.forEach(this._spawnPlatform, this);
+    }
 
     // spawn important objects
-    data.coins.forEach(this._spawnCoin, this);
-    this._spawnKey(data.key.x, data.key.y);
-    this._spawnDoor(data.door.x, data.door.y);
+    if (data.coins && data.coins.length) {
+      data.coins.forEach(this._spawnCoin, this);
+    }
+    if (data.key) { this._spawnKey(data.key.x, data.key.y); }
+    if (data.door) { this._spawnDoor(data.door.x, data.door.y); }
 
     // Level 3: horizontal side-scroller setup
     if (this.level === 3) {
@@ -770,6 +785,7 @@ window.PlayState = {
   },
 
   _spawnPlatform(platform) {
+    if (!platform || !platform.image) return;
     const sprite = this.platforms.create(platform.x, platform.y, platform.image);
     // physics for platform sprites
     this.game.physics.enable(sprite);
@@ -779,6 +795,7 @@ window.PlayState = {
   },
 
   _spawnCoin(coin) {
+    if (!coin) return;
     const sprite = this.coins.create(coin.x, coin.y, 'coin');
     sprite.anchor.set(0.5, 0.5);
     // physics (so we can detect overlap with the hero)
@@ -870,6 +887,7 @@ window.PlayState = {
   },
 
   _spawnSpider(spiderData) {
+    if (!spiderData) return;
     const spider = this.spiders.create(spiderData.x, spiderData.y, 'spider');
     spider.anchor.setTo(0.5, 0.5);
     this.game.physics.enable(spider);
@@ -917,6 +935,7 @@ window.PlayState = {
   // Level 3: Crawler enemy
   // ===========================================================================
   _spawnCrawler(data) {
+    if (!data) return;
     var crawler = this.crawlers.create(data.x, data.y, 'crawler', 0);
     crawler.anchor.setTo(0.5, 0.5);
     this.game.physics.enable(crawler);
@@ -956,6 +975,7 @@ window.PlayState = {
   // Level 3: Bomber enemy (aerial bird)
   // ===========================================================================
   _spawnBomber(data) {
+    if (!data) return;
     var bomber = this.bombers.create(data.x, data.y, 'bomber');
     bomber.anchor.setTo(0.5, 0.5);
     this.game.physics.enable(bomber);
@@ -1024,6 +1044,7 @@ window.PlayState = {
   // Level 3: Health pickups
   // ===========================================================================
   _spawnHpPickup(data) {
+    if (!data) return;
     var pickup = this.hpPickups.create(data.x, data.y, 'hpPickup');
     pickup.anchor.setTo(0.5, 0.5);
     this.game.physics.enable(pickup);
@@ -1043,6 +1064,41 @@ window.PlayState = {
     if (!pickup.alive) return;
     hero.hp = Math.min(hero.maxHp, hero.hp + pickup.healAmount);
     pickup.kill();
+  },
+
+  // ===========================================================================
+  // Fallback level data generator (safe default if JSON fails to load)
+  // ===========================================================================
+  _generateFallbackLevelData() {
+    console.log('[playState] generating fallback level data');
+    return {
+      platforms: [
+        { image: 'ground', x: 0, y: 546 },
+        { image: 'grass:4x1', x: 80, y: 460 },
+        { image: 'grass:4x1', x: 400, y: 370 },
+        { image: 'grass:2x1', x: 600, y: 280 },
+        { image: 'grass:1x1', x: 700, y: 150 }
+      ],
+      decoration: [
+        { frame: 0, x: 84, y: 504 },
+        { frame: 1, x: 200, y: 504 },
+        { frame: 2, x: 400, y: 504 },
+        { frame: 3, x: 600, y: 504 },
+        { frame: 4, x: 800, y: 504 }
+      ],
+      coins: [
+        { x: 120, y: 440 }, { x: 160, y: 440 },
+        { x: 440, y: 350 }, { x: 480, y: 350 },
+        { x: 640, y: 260 }, { x: 740, y: 130 }
+      ],
+      hero: { x: 30, y: 510 },
+      spiders: [
+        { x: 350, y: 525, minX: 200, maxX: 500 },
+        { x: 500, y: 260, minX: 400, maxX: 700 }
+      ],
+      door: { x: 720, y: 120 },
+      key: { x: 600, y: 80 }
+    };
   },
 
   // ===========================================================================
