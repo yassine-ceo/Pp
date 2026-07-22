@@ -170,9 +170,13 @@ window.PlayState = {
     // create level entities and decoration
     this._createBackground();
     if (window.globalLevelState === null) {
+      var levelData = this.game.cache.getJSON(`level:${this.level}`);
+      if (this.level === 3) {
+        levelData = this._generateLevel3Data();
+      }
       window.globalLevelState = {
         time: 0,
-        coinCache: this.game.cache.getJSON(`level:${this.level}`)
+        coinCache: levelData
       };
     }
     this._loadLevel(window.globalLevelState.coinCache);
@@ -198,6 +202,11 @@ window.PlayState = {
     this.keyIcon.frame = keyCollected ? 1 : 0;
     // update HP bar (level 3)
     this._updateHpBar();
+    // update parallax background (level 3)
+    if (this.level === 3) {
+      this._updateParallax();
+      this._checkBirds();
+    }
   },
 
   shutdown() {
@@ -209,7 +218,8 @@ window.PlayState = {
   },
 
   _handleCollisions() {
-    for (let i = 0; i < 2; i++) { // prevent collisions for pushing thru
+    var iterations = this.level === 3 ? 4 : 2;
+    for (let i = 0; i < iterations; i++) { // prevent collisions for pushing thru
       this.game.physics.arcade.collide(this.hero, this.platforms);
       if (window.globalOtherHeros) { for (const uuid of window.globalOtherHeros.keys()) {
         const otherplayer = window.globalOtherHeros.get(uuid);
@@ -530,7 +540,7 @@ window.PlayState = {
     // Level 3: horizontal side-scroller setup
     if (this.level === 3) {
       // Set world bounds for scrolling
-      this.game.world.setBounds(0, 0, 3840, 600);
+      this.game.world.setBounds(0, 0, 15360, 600);
       this.game.camera.follow(this.hero, window.Phaser.Camera.FOLLOW_PLATFORMER);
       this.camera.deadzone = new window.Phaser.Rectangle(200, 100, 560, 200);
 
@@ -578,6 +588,13 @@ window.PlayState = {
   },
 
   _createBackground() {
+    if (this.level === 3) {
+      this._createParallaxBackground();
+      this._spawnBirds();
+      this._createWaterfall();
+      return;
+    }
+
     if (this.level === 0) {
       var bg = this.game.add.image(0, 0, 'background');
       bg.width = this.game.width;
@@ -604,16 +621,6 @@ window.PlayState = {
       sunset2.width = this.game.width;
       sunset2.height = this.game.height;
       this.game.add.tween(sunset2).to({ alpha: 0 }, 15000, window.Phaser.Easing.Linear.None, true);
-    }
-
-    if (this.level === 3) {
-      var day3 = this.game.add.image(0, 0, 'background');
-      day3.width = this.game.width;
-      day3.height = this.game.height;
-      var night3 = this.game.add.image(0, 0, 'bg2');
-      night3.width = this.game.width;
-      night3.height = this.game.height;
-      this.game.add.tween(night3).to({ alpha: 0 }, 15000, window.Phaser.Easing.Linear.None, true);
     }
   },
 
@@ -1041,14 +1048,237 @@ window.PlayState = {
     // Death screen
     this.camera.fade(0x000000, 800);
     this.camera.onFadeComplete.addOnce(function () {
-      // Reset HP
       this._level3Hp = 100;
-      // Reload level 3
       window.globalLevelState = null;
       window.gameStarted = false;
       window.globalUnsubscribe();
       window.resetPlayersFinished(function () {
         window.createMyPubNub(3);
+      });
+    }, this);
+  },
+
+  // ===========================================================================
+  // Level 3: Programmatic 15360px world generator (4 zones)
+  // ===========================================================================
+  _generateLevel3Data() {
+    var ZW = 3840;
+    var GY = 546;
+    var data = { platforms: [], decoration: [], coins: [], crawlers: [], bombers: [], hpPickups: [], hero: {x: 30, y: 510}, key: null, door: null };
+
+    function addGround(sx) {
+      for (var gx = sx; gx < sx + ZW; gx += 960) {
+        data.platforms.push({ image: 'ground', x: gx, y: GY });
+      }
+    }
+    function addPlat(x, y, w) { data.platforms.push({ image: w, x: x, y: y }); }
+    function addDeco(x, y, f) { data.decoration.push({ x: x, y: y, frame: f }); }
+    function addCoin(x, y) { data.coins.push({ x: x, y: y }); }
+    function addCrawler(x, y, minX, maxX, spd) { data.crawlers.push({ x: x, y: y, minX: minX, maxX: maxX, speed: spd || 55 }); }
+    function addBomber(x, y, spd, interval) { data.bombers.push({ x: x, y: y || 80, speedX: spd || 80, dropInterval: interval || 3000 }); }
+    function addHp(x, y, amt) { data.hpPickups.push({ x: x, y: y, amount: amt || 30 }); }
+    function addDecoRow(sx, ex) {
+      for (var dx = sx + 84; dx < ex; dx += 84) {
+        addDeco(dx, 504, (dx / 84 + 3) % 5 | 0);
+      }
+    }
+
+    // ── Zone 0: Meadow (0–3840) ──────────────────────────────────
+    addGround(0);
+    addDecoRow(0, 960);
+    addPlat(80, 460, 'grass:4x1'); addPlat(500, 370, 'grass:2x1');
+    addPlat(1000, 460, 'grass:6x1'); addPlat(1500, 290, 'grass:2x1');
+    addPlat(2000, 460, 'grass:4x1'); addPlat(2600, 370, 'grass:4x1');
+    addPlat(3200, 460, 'grass:2x1'); addPlat(3400, 200, 'grass:1x1');
+    addCoin(120, 440); addCoin(160, 440); addCoin(200, 440);
+    addCoin(540, 350); addCoin(580, 350);
+    addCoin(1050, 440); addCoin(1100, 440); addCoin(1150, 440); addCoin(1200, 440);
+    addCoin(1540, 270); addCoin(1580, 270);
+    addCoin(2050, 440); addCoin(2100, 440); addCoin(2650, 350); addCoin(2700, 350);
+    addCoin(3250, 440); addCoin(3450, 180);
+    addCrawler(400, 525, 250, 650, 50); addCrawler(1200, 525, 1000, 1550, 55); addCrawler(2200, 525, 1950, 2500, 50);
+    addBomber(500, 80, 70, 3500);
+    addHp(1050, 440, 30); addHp(2100, 440, 30);
+
+    // ── Zone 1: Cave (3840–7680) ─────────────────────────────────
+    addGround(3840);
+    addDecoRow(3840, 4800);
+    addPlat(3900, 460, 'grass:2x1'); addPlat(4200, 370, 'grass:4x1'); addPlat(4500, 290, 'grass:2x1');
+    addPlat(4900, 460, 'grass:6x1'); addPlat(5200, 370, 'grass:4x1'); addPlat(5600, 290, 'grass:2x1');
+    addPlat(6000, 460, 'grass:4x1'); addPlat(6300, 370, 'grass:2x1'); addPlat(6600, 290, 'grass:4x1');
+    addPlat(7000, 460, 'grass:2x1'); addPlat(7200, 200, 'grass:1x1');
+    addCoin(3950, 440); addCoin(4250, 350); addCoin(4550, 270);
+    addCoin(4950, 440); addCoin(5000, 440); addCoin(5250, 350); addCoin(5650, 270);
+    addCoin(6050, 440); addCoin(6350, 350); addCoin(6650, 270);
+    addCoin(7050, 440); addCoin(7250, 180);
+    addCrawler(4100, 525, 3900, 4400, 55); addCrawler(5100, 525, 4800, 5500, 60); addCrawler(6200, 525, 5900, 6600, 50);
+    addBomber(5000, 80, 90, 3000);
+    addHp(4500, 270, 30); addHp(5600, 270, 30);
+
+    // ── Zone 2: Ruins (7680–11520) ───────────────────────────────
+    addGround(7680);
+    addDecoRow(7680, 9600);
+    addPlat(7750, 460, 'grass:4x1'); addPlat(8000, 370, 'grass:2x1'); addPlat(8300, 290, 'grass:4x1');
+    addPlat(8700, 460, 'grass:6x1'); addPlat(9000, 370, 'grass:4x1'); addPlat(9300, 290, 'grass:2x1');
+    addPlat(9600, 460, 'grass:4x1'); addPlat(9900, 370, 'grass:2x1'); addPlat(10200, 290, 'grass:4x1');
+    addPlat(10600, 460, 'grass:2x1'); addPlat(10800, 200, 'grass:1x1'); addPlat(11000, 120, 'grass:1x1');
+    addCoin(7800, 440); addCoin(8050, 350); addCoin(8350, 270);
+    addCoin(8750, 440); addCoin(8800, 440); addCoin(9050, 350); addCoin(9350, 270);
+    addCoin(9650, 440); addCoin(9950, 350); addCoin(10250, 270);
+    addCoin(10650, 440); addCoin(10850, 180); addCoin(11050, 100);
+    addCrawler(7900, 525, 7700, 8300, 55); addCrawler(8900, 525, 8600, 9400, 60); addCrawler(9800, 525, 9500, 10400, 50); addCrawler(10700, 525, 10500, 11200, 55);
+    addBomber(8500, 80, 85, 3000); addBomber(10500, 80, -75, 2500);
+    addHp(8300, 270, 30); addHp(9300, 270, 30); addHp(10800, 180, 30);
+
+    // ── Zone 3: Summit (11520–15360) ─────────────────────────────
+    addGround(11520);
+    addDecoRow(11520, 13440);
+    addPlat(11600, 460, 'grass:4x1'); addPlat(11900, 370, 'grass:2x1'); addPlat(12200, 290, 'grass:4x1');
+    addPlat(12600, 460, 'grass:6x1'); addPlat(12900, 370, 'grass:4x1'); addPlat(13200, 290, 'grass:2x1');
+    addPlat(13500, 460, 'grass:4x1'); addPlat(13800, 370, 'grass:2x1'); addPlat(14100, 290, 'grass:4x1');
+    addPlat(14500, 460, 'grass:2x1'); addPlat(14800, 200, 'grass:1x1');
+    addPlat(15000, 120, 'grass:1x1'); // door platform
+    addCoin(11650, 440); addCoin(11950, 350); addCoin(12250, 270);
+    addCoin(12650, 440); addCoin(12700, 440); addCoin(12950, 350); addCoin(13250, 270);
+    addCoin(13550, 440); addCoin(13850, 350); addCoin(14150, 270);
+    addCoin(14550, 440); addCoin(14850, 180); addCoin(15050, 100);
+    addCrawler(11750, 525, 11600, 12200, 55); addCrawler(12800, 525, 12500, 13300, 60); addCrawler(13700, 525, 13400, 14200, 55);
+    addBomber(12500, 80, 90, 2500); addBomber(14500, 80, -80, 2000);
+    addHp(12200, 270, 30); addHp(13200, 270, 30); addHp(14800, 180, 30);
+
+    // Place key and door
+    data.key = { x: 11000, y: 100 };
+    data.door = { x: 15020, y: 90 };
+
+    return data;
+  },
+
+  // ===========================================================================
+  // Level 3: Parallax background system
+  // ===========================================================================
+  _createParallaxBackground() {
+    this._currentZone = -1;
+    this._parallaxLayers = [];
+
+    // Create 3 scroll layers (far, mid, near) as tileSprites
+    this._parallaxFar = this.game.add.tileSprite(0, 0, 15360, 600, 'pfar_forest');
+    this._parallaxFar.fixedToCamera = false;
+
+    this._parallaxMid = this.game.add.tileSprite(0, 0, 15360, 600, 'pmid_forest');
+    this._parallaxMid.fixedToCamera = false;
+
+    this._parallaxNear = this.game.add.tileSprite(0, 0, 15360, 600, 'pnear_forest');
+    this._parallaxNear.fixedToCamera = false;
+
+    // Determine initial zone
+    this._setParallaxZone(0);
+  },
+
+  _updateParallax() {
+    if (!this._parallaxFar) return;
+    var cx = this.game.camera.x;
+    this._parallaxFar.tilePosition.x = cx * 0.1;
+    this._parallaxMid.tilePosition.x = cx * 0.3;
+    this._parallaxNear.tilePosition.x = cx * 0.6;
+
+    // Zone switching based on camera position
+    var newZone = Math.floor(cx / 3840);
+    if (newZone !== this._currentZone && newZone >= 0 && newZone < 4) {
+      this._setParallaxZone(newZone);
+    }
+  },
+
+  _setParallaxZone(zoneIdx) {
+    var keys = ['forest', 'cave', 'ruins', 'cliff'];
+    if (zoneIdx < 0 || zoneIdx >= keys.length) return;
+    this._currentZone = zoneIdx;
+    var k = keys[zoneIdx];
+
+    // Swap textures
+    try {
+      this._parallaxFar.loadTexture('pfar_' + k);
+      this._parallaxMid.loadTexture('pmid_' + k);
+      this._parallaxNear.loadTexture('pnear_' + k);
+      console.log('[parallax] switched to zone', zoneIdx, k);
+    } catch (e) {
+      console.warn('[parallax] zone switch failed:', e);
+    }
+  },
+
+  // ===========================================================================
+  // Level 3: Interactive birds
+  // ===========================================================================
+  _spawnBirds() {
+    this.birds = this.game.add.group();
+    var birdPositions = [
+      { x: 600, y: 500 }, { x: 1400, y: 510 }, { x: 2800, y: 490 },
+      { x: 4500, y: 505 }, { x: 6000, y: 495 },
+      { x: 8500, y: 500 }, { x: 10000, y: 510 },
+      { x: 12500, y: 495 }, { x: 14000, y: 505 }
+    ];
+    birdPositions.forEach(function (pos) {
+      var bird = this.birds.create(pos.x, pos.y, 'bomber');
+      bird.anchor.setTo(0.5, 0.5);
+      bird.body.allowGravity = false;
+      bird.body.immovable = true;
+      bird.scale.setTo(0.5, 0.5);
+      bird.origX = pos.x;
+      bird.origY = pos.y;
+      bird.isFlyingAway = false;
+      // Ground pecking animation
+      bird.peckTimer = this.game.time.events.loop(1200, function () {
+        if (!bird.isFlyingAway) {
+          bird.scale.y = bird.scale.y === 0.5 ? 0.55 : 0.5;
+          bird.y = bird.y === bird.origY ? bird.origY - 2 : bird.origY;
+        }
+      }, this);
+    }, this);
+  },
+
+  _checkBirds() {
+    if (!this.birds || !this.hero) return;
+    this.birds.forEachAlive(function (bird) {
+      if (bird.isFlyingAway) return;
+      var dist = Math.abs(this.hero.x - bird.x);
+      if (dist < 250) {
+        bird.isFlyingAway = true;
+        if (bird.peckTimer) {
+          this.game.time.events.remove(bird.peckTimer);
+        }
+        // Fly away tween
+        var flyDir = this.hero.x < bird.x ? 1 : -1;
+        this.game.add.tween(bird)
+          .to({ x: bird.x + flyDir * 400, y: bird.y - 300, alpha: 0 }, 1500, null, true)
+          .onComplete.addOnce(function () {
+            bird.kill();
+          });
+        // Play flap animation via scale
+        var flapTimer = this.game.time.events.loop(80, function () {
+          bird.scale.y = bird.scale.y === 0.5 ? -0.5 : 0.5;
+        }, this);
+      }
+    }, this);
+  },
+
+  // ===========================================================================
+  // Level 3: Animated waterfall
+  // ===========================================================================
+  _createWaterfall() {
+    // Place 2 waterfalls in zone 3 (summit area)
+    this.waterfalls = this.game.add.group();
+    var wfPositions = [
+      { x: 11700, y: 400, h: 200, w: 48 },
+      { x: 14300, y: 350, h: 250, w: 48 }
+    ];
+    wfPositions.forEach(function (wf) {
+      var wfSprite = this.game.add.tileSprite(wf.x, wf.y, wf.w, wf.h, 'waterfall');
+      this.waterfalls.add(wfSprite);
+    }, this);
+
+    // Animate waterfall flow
+    this._waterfallAnimTimer = this.game.time.events.loop(100, function () {
+      this.waterfalls.forEachAlive(function (ws) {
+        ws.tilePosition.y -= 2;
       });
     }, this);
   }

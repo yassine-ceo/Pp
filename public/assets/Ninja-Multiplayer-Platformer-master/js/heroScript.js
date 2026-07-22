@@ -26,18 +26,21 @@ window.Hero = class Hero extends window.Phaser.Sprite {
   }
 
   takeDamage(amount, knockbackDir) {
-    if (this.isInvincible || this.isFrozen) return;
+    if (this.isInvincible || this.isFrozen || !this.body) return;
     this.hp = Math.max(0, this.hp - amount);
     this.isInvincible = true;
+    this.body.collideWorldBounds = true;
 
-    // knockback
+    // knockback - safe velocities that keep the body on solid ground
     if (knockbackDir !== undefined) {
-      this.body.velocity.x = knockbackDir * 300;
+      this.body.velocity.x = knockbackDir * 200;
+    } else {
+      this.body.velocity.x = 0;
     }
-    this.body.velocity.y = -200;
+    this.body.velocity.y = -180;
 
     // invincibility flash (1.5s)
-    var flashTimer = this.game.time.events.loop(100, function () {
+    var flashTimer = this.game.time.events.loop(80, function () {
       this.visible = !this.visible;
     }, this);
     this.game.time.events.add(1500, function () {

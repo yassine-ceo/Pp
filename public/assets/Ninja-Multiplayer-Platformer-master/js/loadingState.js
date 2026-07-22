@@ -74,17 +74,14 @@ window.LoadingState = { // Create an object with all of the loading information 
       bc.fillRect(10, 12, 12, 20);
       bc.fillStyle = '#2a1a06';
       bc.fillRect(8, 14, 16, 18);
-      // Head
       bc.fillStyle = '#3a2008';
       bc.fillRect(10, 10, 12, 8);
-      // Eyes
       bc.fillStyle = '#ffffff';
       bc.fillRect(12, 11, 2, 2);
       bc.fillRect(18, 11, 2, 2);
       bc.fillStyle = '#000000';
       bc.fillRect(12, 11, 1, 1);
       bc.fillRect(18, 11, 1, 1);
-      // Legs frame 0 - spread wide
       bc.strokeStyle = '#3a1c00';
       bc.lineWidth = 2;
       [-1, 1].forEach(function (side) {
@@ -119,8 +116,7 @@ window.LoadingState = { // Create an object with all of the loading information 
 
       this.game.cache.addSpriteSheet('crawler', '', bugCanvas, 32, 42);
     } catch (e) {
-      console.warn('Failed to generate crawler spritesheet, using fallback:', e);
-      this.game.load.image('crawler_0', 'images/spider.png');
+      console.warn('Failed to generate crawler spritesheet:', e);
     }
 
     // Generate bomber (bird) - single frame 48x24
@@ -128,22 +124,17 @@ window.LoadingState = { // Create an object with all of the loading information 
       var birdCanvas = document.createElement('canvas');
       birdCanvas.width = 48; birdCanvas.height = 24;
       var bic = birdCanvas.getContext('2d');
-      // Body
       bic.fillStyle = '#2a2a2a';
       bic.beginPath(); bic.ellipse(24, 12, 10, 5, 0, 0, Math.PI * 2); bic.fill();
-      // Wings
       bic.fillStyle = '#1a1a1a';
       bic.beginPath(); bic.moveTo(8, 12); bic.lineTo(20, 0); bic.lineTo(20, 24); bic.closePath(); bic.fill();
       bic.beginPath(); bic.moveTo(40, 12); bic.lineTo(28, 0); bic.lineTo(28, 24); bic.closePath(); bic.fill();
-      // Head
       bic.fillStyle = '#2a2a2a';
       bic.beginPath(); bic.arc(38, 10, 5, 0, Math.PI * 2); bic.fill();
-      // Eye
       bic.fillStyle = '#ffffff';
       bic.fillRect(40, 8, 2, 2);
       bic.fillStyle = '#000000';
       bic.fillRect(40, 8, 1, 1);
-      // Beak
       bic.fillStyle = '#cc6600';
       bic.beginPath(); bic.moveTo(44, 9); bic.lineTo(48, 10); bic.lineTo(44, 11); bic.closePath(); bic.fill();
       this.game.cache.addImage('bomber', '', birdCanvas);
@@ -156,16 +147,13 @@ window.LoadingState = { // Create an object with all of the loading information 
       var bombCanvas = document.createElement('canvas');
       bombCanvas.width = 16; bombCanvas.height = 16;
       var bomc = bombCanvas.getContext('2d');
-      // Bomb body
       bomc.fillStyle = '#222222';
       bomc.beginPath(); bomc.arc(8, 10, 6, 0, Math.PI * 2); bomc.fill();
       bomc.fillStyle = '#111111';
       bomc.beginPath(); bomc.arc(6, 8, 2, 0, Math.PI * 2); bomc.fill();
-      // Fuse
       bomc.strokeStyle = '#8B4513';
       bomc.lineWidth = 2;
       bomc.beginPath(); bomc.moveTo(8, 4); bomc.lineTo(10, 1); bomc.stroke();
-      // Spark
       bomc.fillStyle = '#ff4400';
       bomc.beginPath(); bomc.arc(10, 0, 2, 0, Math.PI * 2); bomc.fill();
       bomc.fillStyle = '#ffaa00';
@@ -180,22 +168,136 @@ window.LoadingState = { // Create an object with all of the loading information 
       var hpCanvas = document.createElement('canvas');
       hpCanvas.width = 20; hpCanvas.height = 20;
       var hpc = hpCanvas.getContext('2d');
-      // Outer glow
       hpc.fillStyle = 'rgba(0, 200, 80, 0.3)';
       hpc.beginPath(); hpc.arc(10, 10, 10, 0, Math.PI * 2); hpc.fill();
-      // Cross body
       hpc.fillStyle = '#00cc44';
       hpc.fillRect(3, 7, 14, 6);
       hpc.fillRect(7, 3, 6, 14);
-      // White border
       hpc.strokeStyle = '#ffffff';
       hpc.lineWidth = 1;
       hpc.strokeRect(3, 7, 14, 6);
       hpc.strokeRect(7, 3, 6, 14);
-      console.log('[textures] HP pickup canvas size:', hpCanvas.width, hpCanvas.height);
       this.game.cache.addImage('hpPickup', '', hpCanvas);
     } catch (e) {
       console.warn('Failed to generate hpPickup:', e);
     }
+
+    // Generate parallax background textures for each zone
+    this._generateParallaxTextures();
+  },
+
+  _generateParallaxTextures() {
+    var zones = [
+      { key: 'forest', sky: '#5b9bd5', mount: '#3a7cb3', ground: '#4a8c3a', tree: '#2d5a1e' },
+      { key: 'cave', sky: '#2a2a3a', mount: '#1a1a2a', ground: '#3a3a2a', tree: '#1a1a1a' },
+      { key: 'ruins', sky: '#c4884a', mount: '#a06830', ground: '#8a6a3a', tree: '#6a4a20' },
+      { key: 'cliff', sky: '#7ab8d4', mount: '#5a8aa0', ground: '#6a7a5a', tree: '#3a5a3a' }
+    ];
+
+    zones.forEach(function (z) {
+      // Far layer: sky gradient + mountain silhouettes
+      try {
+        var far = document.createElement('canvas');
+        far.width = 960; far.height = 600;
+        var fc = far.getContext('2d');
+        // Sky
+        var grad = fc.createLinearGradient(0, 0, 0, 600);
+        grad.addColorStop(0, z.sky);
+        grad.addColorStop(1, this._darken(z.sky, 40));
+        fc.fillStyle = grad;
+        fc.fillRect(0, 0, 960, 600);
+        // Mountains
+        fc.fillStyle = z.mount;
+        for (var i = 0; i < 6; i++) {
+          var mx = i * 180 - 40;
+          var mh = 120 + Math.sin(i * 2.1) * 60;
+          fc.beginPath();
+          fc.moveTo(mx, 600); fc.lineTo(mx + 60, 600 - mh); fc.lineTo(mx + 120, 600); fc.closePath();
+          fc.fill();
+        }
+        this.game.cache.addImage('pfar_' + z.key, '', far);
+      } catch (e) { console.warn('Far layer ' + z.key + ' failed:', e); }
+
+      // Mid layer: trees/hills with transparency
+      try {
+        var mid = document.createElement('canvas');
+        mid.width = 960; mid.height = 600;
+        var mc = mid.getContext('2d');
+        mc.fillStyle = 'rgba(0,0,0,0)';
+        mc.fillRect(0, 0, 960, 600);
+        // Hills
+        mc.fillStyle = z.ground;
+        mc.globalAlpha = 0.4;
+        for (var j = 0; j < 8; j++) {
+          var hx = j * 140 - 60;
+          var hh = 60 + Math.cos(j * 1.7) * 30;
+          mc.beginPath();
+          mc.moveTo(hx, 600); mc.quadraticCurveTo(hx + 70, 600 - hh, hx + 140, 600); mc.closePath();
+          mc.fill();
+        }
+        mc.globalAlpha = 0.6;
+        // Trees
+        mc.fillStyle = z.tree;
+        for (var t = 0; t < 10; t++) {
+          var tx = t * 100 + Math.sin(t * 3.3) * 30;
+          var th = 40 + Math.cos(t * 2.7) * 20;
+          mc.fillRect(tx - 3, 600 - th, 6, th);
+          mc.beginPath();
+          mc.moveTo(tx - 15, 600 - th); mc.lineTo(tx, 600 - th - 25); mc.lineTo(tx + 15, 600 - th); mc.closePath();
+          mc.fill();
+        }
+        this.game.cache.addImage('pmid_' + z.key, '', mid);
+      } catch (e) { console.warn('Mid layer ' + z.key + ' failed:', e); }
+
+      // Near layer: ground details
+      try {
+        var near = document.createElement('canvas');
+        near.width = 960; near.height = 600;
+        var nc = near.getContext('2d');
+        nc.fillStyle = 'rgba(0,0,0,0)';
+        nc.fillRect(0, 0, 960, 600);
+        // Ground line
+        nc.fillStyle = z.ground;
+        nc.globalAlpha = 0.3;
+        nc.fillRect(0, 530, 960, 70);
+        nc.globalAlpha = 1;
+        // Small rocks/bushes
+        nc.fillStyle = z.tree;
+        nc.globalAlpha = 0.5;
+        for (var r = 0; r < 15; r++) {
+          var rx = r * 65 + 20;
+          var ry = 500 + Math.sin(r * 4.1) * 20;
+          nc.beginPath(); nc.arc(rx, ry, 4 + Math.sin(r * 2.3) * 2, 0, Math.PI * 2); nc.fill();
+        }
+        nc.globalAlpha = 1;
+        this.game.cache.addImage('pnear_' + z.key, '', near);
+      } catch (e) { console.warn('Near layer ' + z.key + ' failed:', e); }
+    }, this);
+
+    // Waterfall texture
+    try {
+      var wf = document.createElement('canvas');
+      wf.width = 48; wf.height = 600;
+      var wfc = wf.getContext('2d');
+      wfc.fillStyle = 'rgba(150, 200, 255, 0.4)';
+      wfc.fillRect(0, 0, 48, 600);
+      wfc.fillStyle = 'rgba(200, 230, 255, 0.3)';
+      for (var w = 0; w < 15; w++) {
+        var wy = w * 40 + 10;
+        wfc.fillRect(8 + Math.sin(w) * 6, wy, 4, 25);
+        wfc.fillRect(28 + Math.cos(w) * 5, wy + 15, 3, 20);
+      }
+      this.game.cache.addImage('waterfall', '', wf);
+    } catch (e) { console.warn('Waterfall texture failed:', e); }
+  },
+
+  _darken(color, amount) {
+    var r = parseInt(color.slice(1, 3), 16);
+    var g = parseInt(color.slice(3, 5), 16);
+    var b = parseInt(color.slice(5, 7), 16);
+    r = Math.max(0, r - amount);
+    g = Math.max(0, g - amount);
+    b = Math.max(0, b - amount);
+    return '#' + [r, g, b].map(function (c) { return c.toString(16).padStart(2, '0'); }).join('');
   }
 };
