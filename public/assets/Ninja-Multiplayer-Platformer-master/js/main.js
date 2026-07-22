@@ -234,6 +234,18 @@ window.fireCoins = () => {
   }
 };
 
+// Listen for movement commands from the parent React component (outside iframe)
+window.addEventListener('message', function (e) {
+  var data = e.data || {};
+  if (data.action === 'MOVE_LEFT') {
+    window._htmlLeft = data.isDown;
+    if (window.sendKeyMessage) window.sendKeyMessage({ left: data.isDown ? 'down' : 'up' });
+  } else if (data.action === 'MOVE_RIGHT') {
+    window._htmlRight = data.isDown;
+    if (window.sendKeyMessage) window.sendKeyMessage({ right: data.isDown ? 'down' : 'up' });
+  }
+});
+
 // Load External state scripts dynamically to start the Phaser game loop
 const loadHeroScript = document.createElement('script');
 loadHeroScript.src = './js/heroScript.js';

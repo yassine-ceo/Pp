@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ref, set, update, onValue, off, remove, onDisconnect, serverTimestamp } from 'firebase/database'
 import { db } from '@/lib/firebase'
 
@@ -14,6 +14,16 @@ interface DungeonRunProps {
 
 export default function DungeonRun({ roomCode, playerId, playerName, isHost, onBack }: DungeonRunProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  const [isTouchDevice, setIsTouchDevice] = useState(false)
+
+  useEffect(() => {
+    // Check for touch-capable device
+    const mq = window.matchMedia('(pointer: coarse)')
+    setIsTouchDevice(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setIsTouchDevice(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
 
   useEffect(() => {
     // Expose database and RTDB methods to the child iframe
@@ -65,6 +75,10 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
   // Build the game URL with query parameters for room synchronization
   const gameUrl = `/assets/Ninja-Multiplayer-Platformer-master/index.html?roomCode=${encodeURIComponent(roomCode)}&playerId=${encodeURIComponent(playerId)}&playerName=${encodeURIComponent(playerName)}&isHost=${isHost ? '1' : '0'}`
 
+  const postMsg = (action: string, isDown: boolean) => {
+    iframeRef.current?.contentWindow?.postMessage({ action, isDown }, '*')
+  }
+
   return (
     <div className="relative w-screen h-screen bg-black overflow-hidden flex flex-col">
       {/* Floating Glassmorphism Header */}
@@ -91,6 +105,38 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
         allow="fullscreen; screen-wake-lock"
         style={{ display: 'block' }}
       />
+
+      {/* Touch-device overlay controls (outside the iframe, fixed to viewport) */}
+      {isTouchDevice && (
+        <>
+          <button
+            aria-label="Left"
+            onPointerDown={(e) => { e.preventDefault(); postMsg('MOVE_LEFT', true) }}
+            onPointerUp={(e) => { e.preventDefault(); postMsg('MOVE_LEFT', false) }}
+            onPointerLeave={(e) => { e.preventDefault(); postMsg('MOVE_LEFT', false) }}
+            onPointerCancel={(e) => { e.preventDefault(); postMsg('MOVE_LEFT', false) }}
+            style={{ left: 'max(16px, env(safe-area-inset-left, 16px))' }}
+            className="fixed top-1/2 -translate-y-1/2 z-[99999] w-12 h-16 rounded-xl border border-white/10 bg-white/10 backdrop-blur-md flex items-center justify-center active:bg-white/25 touch-none select-none"
+          >
+            <svg className="w-6 h-6 fill-white/80 pointer-events-none" viewBox="0 0 24 24">
+              <polygon points="16,4 6,12 16,20 14,20 4,12 14,4" />
+            </svg>
+          </button>
+          <button
+            aria-label="Right"
+            onPointerDown={(e) => { e.preventDefault(); postMsg('MOVE_RIGHT', true) }}
+            onPointerUp={(e) => { e.preventDefault(); postMsg('MOVE_RIGHT', false) }}
+            onPointerLeave={(e) => { e.preventDefault(); postMsg('MOVE_RIGHT', false) }}
+            onPointerCancel={(e) => { e.preventDefault(); postMsg('MOVE_RIGHT', false) }}
+            style={{ right: 'max(16px, env(safe-area-inset-right, 16px))' }}
+            className="fixed top-1/2 -translate-y-1/2 z-[99999] w-12 h-16 rounded-xl border border-white/10 bg-white/10 backdrop-blur-md flex items-center justify-center active:bg-white/25 touch-none select-none"
+          >
+            <svg className="w-6 h-6 fill-white/80 pointer-events-none" viewBox="0 0 24 24">
+              <polygon points="8,4 18,12 8,20 10,20 20,12 10,4" />
+            </svg>
+          </button>
+        </>
+      )}
     </div>
   )
 }
