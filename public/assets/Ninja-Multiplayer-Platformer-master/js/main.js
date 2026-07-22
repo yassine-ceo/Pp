@@ -271,6 +271,14 @@ window.setTyping = (isTyping) => {
       const myPlayerRef = ref(parentDb, `platformerRooms/${roomCode}/players/${window.UniqueID}`);
       update(myPlayerRef, { isTyping: isTyping || null });
     }
+    // Update local player indicator immediately (Firebase listener skips self)
+    if (window.globalGameState && window.globalMyHero) {
+      if (isTyping) {
+        window.globalGameState._showTypingIndicator(window.globalMyHero);
+      } else {
+        window.globalGameState._hideTypingIndicator(window.globalMyHero);
+      }
+    }
   } catch (err) {
     console.error("Error setting typing status:", err);
   }

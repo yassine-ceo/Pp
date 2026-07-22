@@ -588,17 +588,32 @@ window.PlayState = {
       hero._typingText.destroy();
       hero._typingText = null;
     }
+    if (hero._typingBg) {
+      hero._typingBg.destroy();
+      hero._typingBg = null;
+    }
 
     var dots = this.game.add.text(0, 0, '...', {
-      font: '18px Arial', fill: '#ffffff'
+      font: 'bold 16px Arial', fill: '#ffffff'
     });
-    dots.anchor.set(0.5, 1);
-    dots.y = -65;
-    hero.addChild(dots);
-    hero._typingText = dots;
+    dots.anchor.set(0.5, 0.5);
+
+    var pillW = dots.width + 16;
+    var pillH = dots.height + 8;
+    var bg = this.game.add.graphics(0, 0);
+    bg.beginFill(0x000000, 0.8);
+    bg.drawRoundedRect(-pillW / 2, -pillH / 2, pillW, pillH, 10);
+    bg.endFill();
+
+    var group = this.game.add.group();
+    group.add(bg);
+    group.add(dots);
+    group.y = -65;
+    hero.addChild(group);
+    hero._typingText = group;
 
     this.game.add.tween(dots)
-      .to({ alpha: 0.3 }, 600, null, true)
+      .to({ alpha: 0.3 }, 500, null, true)
       .yoyo(true)
       .loop()
       .start();

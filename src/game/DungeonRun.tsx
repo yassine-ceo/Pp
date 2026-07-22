@@ -266,6 +266,22 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
             type="text"
             value={chatText}
             onChange={handleChatChange}
+            onFocus={() => {
+              if (!typingSentRef.current) {
+                typingSentRef.current = true;
+                postTyping(true);
+              }
+            }}
+            onBlur={() => {
+              if (typingSentRef.current) {
+                typingSentRef.current = false;
+                postTyping(false);
+              }
+              if (typingTimerRef.current) {
+                clearTimeout(typingTimerRef.current);
+                typingTimerRef.current = null;
+              }
+            }}
             onKeyDown={handleChatKeyDown}
             placeholder="Type a message..."
             className="flex-1 bg-white/10 border border-white/10 rounded-lg px-3 py-2.5 text-white text-sm outline-none placeholder:text-white/30"
