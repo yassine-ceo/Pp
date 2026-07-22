@@ -22,6 +22,7 @@ window.LoadingState = { // Create an object with all of the loading information 
     this.game.load.json('level:0', 'data/level00.json');
     this.game.load.json('level:1', 'data/level01.json');
     this.game.load.json('level:2', 'data/level02.json');
+    this.game.load.json('level:3', 'data/level03.json');
 
 
     this.game.load.image('font:numbers', 'images/numbers.png');
@@ -37,6 +38,7 @@ window.LoadingState = { // Create an object with all of the loading information 
     this.game.load.image('grass:2x1', 'images/grass_2x1.png');
     this.game.load.image('grass:1x1', 'images/grass_1x1.png');
     this.game.load.image('key', 'images/key.png');
+    this.game.load.image('spider', 'images/spider.png');
 
     this.game.load.spritesheet('decoration', 'images/decor.png', 42, 42);
     this.game.load.spritesheet('herodude', 'images/hero.png', 36, 42);

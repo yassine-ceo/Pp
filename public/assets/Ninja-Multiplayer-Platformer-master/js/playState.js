@@ -216,6 +216,11 @@ window.PlayState = {
       // hero vs door (end level)
       this.game.physics.arcade.overlap(this.hero, this.door, this._onHeroVsDoor, this._canHeroEnterDoor, this);
       // ignore if there is no key or the player is on air
+
+      // hero vs spider (death/respawn)
+      if (this.spiders) {
+        this.game.physics.arcade.overlap(this.hero, this.spiders, this._onHeroVsSpider, null, this);
+      }
     }
   },
 
@@ -445,7 +450,7 @@ window.PlayState = {
       if (this._finishedTransition) return;
       this._finishedTransition = true;
 
-      const nextLevel = this.level >= 2 ? 0 : this.level + 1;
+      const nextLevel = this.level >= 3 ? 0 : this.level + 1;
       console.log('[transition] next level:', nextLevel);
 
       window.globalUnsubscribe();
@@ -469,7 +474,7 @@ window.PlayState = {
     window.resetPlayersFinished(function () {
       window.gameStarted = false;
       window.globalLevelState = null;
-      window.createMyPubNub(this.level >= 2 ? 0 : this.level + 1);
+      window.createMyPubNub(this.level >= 3 ? 0 : this.level + 1);
     }.bind(this));
   },
 
@@ -496,6 +501,14 @@ window.PlayState = {
     data.coins.forEach(this._spawnCoin, this);
     this._spawnKey(data.key.x, data.key.y);
     this._spawnDoor(data.door.x, data.door.y);
+
+    // spawn spiders
+    if (data.spiders && data.spiders.length > 0) {
+      this.spiders = this.game.add.group();
+      data.spiders.forEach(function (spiderData) {
+        this._spawnSpider(spiderData);
+      }, this);
+    }
 
     // enable gravity
     const GRAVITY = 1200;
@@ -529,6 +542,16 @@ window.PlayState = {
       sunset2.width = this.game.width;
       sunset2.height = this.game.height;
       this.game.add.tween(sunset2).to({ alpha: 0 }, 15000, window.Phaser.Easing.Linear.None, true);
+    }
+
+    if (this.level === 3) {
+      var day3 = this.game.add.image(0, 0, 'background');
+      day3.width = this.game.width;
+      day3.height = this.game.height;
+      var night3 = this.game.add.image(0, 0, 'bg2');
+      night3.width = this.game.width;
+      night3.height = this.game.height;
+      this.game.add.tween(night3).to({ alpha: 0 }, 15000, window.Phaser.Easing.Linear.None, true);
     }
   },
 
@@ -728,5 +751,49 @@ window.PlayState = {
     this.hud.add(coinScoreImg);
     this.hud.add(this.keyIcon);
     this.hud.position.set(10, 10);
+  },
+
+  _spawnSpider(spiderData) {
+    const spider = this.spiders.create(spiderData.x, spiderData.y, 'spider');
+    spider.anchor.setTo(0.5, 0.5);
+    this.game.physics.enable(spider);
+    spider.body.allowGravity = false;
+    spider.body.immovable = true;
+
+    const speed = 60;
+    spider.patrolMinX = spiderData.minX;
+    spider.patrolMaxX = spiderData.maxX;
+    spider.patrolDirection = 1;
+
+    // Create patrol tween - ping-pong between minX and maxX
+    const patrolDuration = Math.abs(spider.patrolMaxX - spider.patrolMinX) / speed * 1000;
+    const targetX = spider.patrolMaxX;
+    spider.patrolTween = this.game.add.tween(spider.body.velocity)
+      .to({ x: targetX > spiderData.x ? speed : -speed }, 100)
+    spider.body.velocity.x = speed;
+    spider.patrolTween = null;
+
+    // Use a timed event for patrol
+    spider.patrolTimer = this.game.time.events.loop(patrolDuration, function () {
+      spider.patrolDirection *= -1;
+      spider.body.velocity.x = speed * spider.patrolDirection;
+      spider.scale.x = -spider.patrolDirection;
+    }, this);
+  },
+
+  _onHeroVsSpider(hero, spider) {
+    if (!hero.alive) return;
+    hero.alive = false;
+    hero.visible = false;
+    hero.body.velocity.y = 0;
+    hero.body.velocity.x = 0;
+    hero.body.allowGravity = false;
+
+    this.game.time.events.add(1000, function () {
+      hero.reset(30, 510);
+      hero.body.allowGravity = true;
+      hero.alive = true;
+      hero.visible = true;
+    }, this);
   }
 };
