@@ -130,11 +130,11 @@
         transform: translateY(-50%) scale(0.92);
       }
       #mobile-controls .ctrl-btn-left {
-        left: 20px;
+        left: calc(20px - env(safe-area-inset-left, 65px));
         right: auto;
       }
       #mobile-controls .ctrl-btn-right {
-        right: 20px;
+        right: calc(20px - env(safe-area-inset-right, 0px));
         left: auto;
       }
       canvas {
