@@ -513,7 +513,7 @@ window.PlayState = {
       var day = this.game.add.image(0, 0, 'background');
       day.width = this.game.width;
       day.height = this.game.height;
-      this.game.add.tween(day).to({ alpha: 0 }, 3000, window.Phaser.Easing.Linear.None, true);
+      this.game.add.tween(day).to({ alpha: 0 }, 15000, window.Phaser.Easing.Linear.None, true);
       return;
     }
 
@@ -524,7 +524,7 @@ window.PlayState = {
       var sunset2 = this.game.add.image(0, 0, 'bg1');
       sunset2.width = this.game.width;
       sunset2.height = this.game.height;
-      this.game.add.tween(sunset2).to({ alpha: 0 }, 3000, window.Phaser.Easing.Linear.None, true);
+      this.game.add.tween(sunset2).to({ alpha: 0 }, 15000, window.Phaser.Easing.Linear.None, true);
     }
   },
 
