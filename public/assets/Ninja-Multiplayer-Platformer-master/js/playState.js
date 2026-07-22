@@ -486,7 +486,7 @@ window.PlayState = {
     // console.log('_addOtherCharacter', uuid);
     this.hero2 = new window.Hero(this.game, 10, 10);
     this.hero2.lastKeyFrame = 0;
-    const playerText = this.game.add.text(this.hero2.position.x - 10, this.hero2.position.y - 550, '', { fill: '#000000', fontSize: '15px' });
+    const playerText = this.game.add.text(0, -32, '', { fill: '#000000', fontSize: '15px' });
     playerText.anchor.set(0.5);
     this.hero2.addChild(playerText);
     this.game.add.existing(this.hero2);
@@ -502,7 +502,7 @@ window.PlayState = {
   _spawnCharacters(data) {
     this.hero = new window.Hero(this.game, 10, 10);
     this.hero.body.bounce.setTo(0);
-    const playerText = this.game.add.text(this.hero.position.x - 10, this.hero.position.y - 550, 'me', { fill: '#000000', fontSize: '15px' });
+    const playerText = this.game.add.text(0, -32, 'me', { fill: '#000000', fontSize: '15px' });
     playerText.anchor.set(0.5);
     this.hero.addChild(playerText);
     // console.log(playerText.position.x, playerText.position.y);
