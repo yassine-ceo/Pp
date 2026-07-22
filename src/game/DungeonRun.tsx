@@ -163,12 +163,9 @@ export default function DungeonRun({ roomCode, playerId, playerName, isHost, onB
         >
           <button
             onClick={onBack}
-            className="pointer-events-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-red-950/30 hover:bg-red-500/20 border border-red-500/25 hover:border-red-500/40 backdrop-blur-md text-red-400 rounded-xl text-xs font-semibold tracking-wider transition-all active:scale-95 shadow-lg shadow-red-950/20 touch-none select-none"
+            className="pointer-events-auto flex items-center justify-center px-7 py-2.5 bg-red-950/30 hover:bg-red-500/20 border border-red-500/30 backdrop-blur-md text-red-400 rounded-full text-xs font-bold tracking-widest transition-all active:scale-95 shadow-lg shadow-red-950/20 touch-none select-none"
           >
-            <svg className="w-3.5 h-3.5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            <span>EXIT</span>
+            EXIT
           </button>
         </div>
       )}
