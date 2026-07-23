@@ -909,6 +909,7 @@ window.PlayState = {
     const spider = this.spiders.create(spiderData.x, spiderData.y, 'spider');
     spider.anchor.setTo(0.5, 0.5);
     this.game.physics.enable(spider);
+    if (!spider.body) return;
     spider.body.allowGravity = false;
     spider.body.immovable = true;
 
@@ -956,6 +957,7 @@ window.PlayState = {
     var crawler = this.crawlers.create(data.x, data.y, 'crawler', 0);
     crawler.anchor.setTo(0.5, 0.5);
     this.game.physics.enable(crawler);
+    if (!crawler.body) return;
     crawler.body.allowGravity = false;
     crawler.body.immovable = true;
 
@@ -995,6 +997,7 @@ window.PlayState = {
     var bomber = this.bombers.create(data.x, data.y, 'bomber');
     bomber.anchor.setTo(0.5, 0.5);
     this.game.physics.enable(bomber);
+    if (!bomber.body) return;
     bomber.body.allowGravity = false;
     bomber.body.immovable = true;
     bomber.body.velocity.x = data.speedX || 80;
@@ -1017,6 +1020,7 @@ window.PlayState = {
     var bomb = this.bombs.create(x, y, 'bomb');
     bomb.anchor.setTo(0.5, 0.5);
     this.game.physics.enable(bomb);
+    if (!bomb.body) return;
     bomb.body.gravity.y = 400;
     bomb.body.velocity.x = this.game.rnd.realInRange(-30, 30);
     bomb.checkWorldBounds = true;
@@ -1063,6 +1067,7 @@ window.PlayState = {
     var pickup = this.hpPickups.create(data.x, data.y, 'hpPickup');
     pickup.anchor.setTo(0.5, 0.5);
     this.game.physics.enable(pickup);
+    if (!pickup.body) return;
     pickup.body.allowGravity = false;
     pickup.healAmount = data.amount || 25;
 
@@ -1262,6 +1267,8 @@ window.PlayState = {
     birdPositions.forEach(function (pos) {
       var bird = this.birds.create(pos.x, pos.y, 'bomber');
       bird.anchor.setTo(0.5, 0.5);
+      this.game.physics.enable(bird);
+      if (!bird.body) return;
       bird.body.allowGravity = false;
       bird.body.immovable = true;
       bird.scale.setTo(0.5, 0.5);
