@@ -204,6 +204,13 @@ window.PlayState = {
 
   update() {
     window.frameCounter++;
+    // Ground collide must run every frame, even during hurt/invincible
+    if (this.hero && this.hero.body && this.platforms) {
+      this.game.physics.arcade.collide(this.hero, this.platforms);
+    }
+    if (this.level === 3 && this.bombs && this.platforms) {
+      this.game.physics.arcade.collide(this.bombs, this.platforms, this._onBombHitGround, null, this);
+    }
     this._handleCollisions();
     this._handleInput();
     // update scoreboards
@@ -227,7 +234,7 @@ window.PlayState = {
   },
 
   _handleCollisions() {
-    var iterations = this.level === 3 ? 4 : 2;
+    var iterations = this.level === 3 ? 8 : 2;
     for (let i = 0; i < iterations; i++) { // prevent collisions for pushing thru
       this.game.physics.arcade.collide(this.hero, this.platforms);
       if (window.globalOtherHeros) { for (const uuid of window.globalOtherHeros.keys()) {
@@ -1108,10 +1115,17 @@ window.PlayState = {
 
   // ===========================================================================
   // Level 3: Programmatic 15360px world generator (4 zones)
+  // Physics constants: SPEED=200, JUMP=-600, GRAVITY=1200
+  //   Max jump height: 600^2/(2*1200) = 150px
+  //   Max jump width:  200*(2*600/1200) = 200px
+  //   Max safe gap:    200*0.8 = 160px
+  //   Max safe climb:  150*0.9 = 135px
   // ===========================================================================
   _generateLevel3Data() {
     var ZW = 3840;
     var GY = 546;
+    var MG = 160;
+    var MH = 135;
     var data = { platforms: [], decoration: [], coins: [], crawlers: [], bombers: [], hpPickups: [], hero: {x: 30, y: 510}, key: null, door: null };
 
     function addGround(sx) {
@@ -1125,7 +1139,25 @@ window.PlayState = {
     function addCrawler(x, y, minX, maxX, spd) { data.crawlers.push({ x: x, y: y, minX: minX, maxX: maxX, speed: spd || 55 }); }
     function addBomber(x, y, spd, interval) { data.bombers.push({ x: x, y: y || 80, speedX: spd || 80, dropInterval: interval || 3000 }); }
     function addHp(x, y, amt) { data.hpPickups.push({ x: x, y: y, amount: amt || 30 }); }
-    function addDecoRow(sx, ex) {
+
+    // Generate a chain of platforms from (startX, startY) left to right
+    // Each platform is reachable from the previous (max gap MG, max climb MH)
+    function genChain(startX, startY, count, zoneEnd) {
+      var x = startX, y = startY;
+      for (var i = 0; i < count; i++) {
+        var gap = 90 + (i * 7) % 60;
+        var climb = -60 + (i * 11) % (MH - 20);
+        x += gap;
+        y = Math.max(180, Math.min(520, y + climb));
+        if (x + 80 > zoneEnd) break;
+        var img = y > 450 ? 'grass:4x1' : (y > 350 ? 'grass:2x1' : 'grass:1x1');
+        addPlat(x, y, img);
+        addCoin(x + 20, y - 30);
+        if (i > 0) addCoin(x + 60, y - 30);
+      }
+    }
+
+    function genDecoRow(sx, ex) {
       for (var dx = sx + 84; dx < ex; dx += 84) {
         addDeco(dx, 504, (dx / 84 + 3) % 5 | 0);
       }
@@ -1133,93 +1165,119 @@ window.PlayState = {
 
     // ── Zone 0: Meadow (0–3840) ──────────────────────────────────
     addGround(0);
-    addDecoRow(0, 960);
-    addPlat(80, 460, 'grass:4x1'); addPlat(500, 370, 'grass:2x1');
-    addPlat(1000, 460, 'grass:6x1'); addPlat(1500, 290, 'grass:2x1');
-    addPlat(2000, 460, 'grass:4x1'); addPlat(2600, 370, 'grass:4x1');
-    addPlat(3200, 460, 'grass:2x1'); addPlat(3400, 200, 'grass:1x1');
-    addCoin(120, 440); addCoin(160, 440); addCoin(200, 440);
-    addCoin(540, 350); addCoin(580, 350);
-    addCoin(1050, 440); addCoin(1100, 440); addCoin(1150, 440); addCoin(1200, 440);
-    addCoin(1540, 270); addCoin(1580, 270);
-    addCoin(2050, 440); addCoin(2100, 440); addCoin(2650, 350); addCoin(2700, 350);
-    addCoin(3250, 440); addCoin(3450, 180);
-    addCrawler(400, 525, 250, 650, 50); addCrawler(1200, 525, 1000, 1550, 55); addCrawler(2200, 525, 1950, 2500, 50);
-    addBomber(500, 80, 70, 3500);
-    addHp(1050, 440, 30); addHp(2100, 440, 30);
+    genDecoRow(0, 960);
+    // Tier 1 (low, 460-500): start → platforms reachable from ground
+    genChain(120, 490, 4, 960);
+    genChain(1000, 480, 4, 1920);
+    genChain(2000, 490, 3, 2880);
+    genChain(3000, 470, 3, 3840);
+    // Bomber patrols across the zone
+    addBomber(600, 80, 70, 4000);
+    addBomber(2000, 100, -65, 3500);
+    // Crawlers on ground
+    addCrawler(400, 525, 200, 700, 50);
+    addCrawler(1500, 525, 1200, 2000, 55);
+    addCrawler(2600, 525, 2300, 3100, 50);
+    // HP
+    addHp(200, 470, 30);
+    addHp(2000, 470, 30);
 
     // ── Zone 1: Cave (3840–7680) ─────────────────────────────────
     addGround(3840);
-    addDecoRow(3840, 4800);
-    addPlat(3900, 460, 'grass:2x1'); addPlat(4200, 370, 'grass:4x1'); addPlat(4500, 290, 'grass:2x1');
-    addPlat(4900, 460, 'grass:6x1'); addPlat(5200, 370, 'grass:4x1'); addPlat(5600, 290, 'grass:2x1');
-    addPlat(6000, 460, 'grass:4x1'); addPlat(6300, 370, 'grass:2x1'); addPlat(6600, 290, 'grass:4x1');
-    addPlat(7000, 460, 'grass:2x1'); addPlat(7200, 200, 'grass:1x1');
-    addCoin(3950, 440); addCoin(4250, 350); addCoin(4550, 270);
-    addCoin(4950, 440); addCoin(5000, 440); addCoin(5250, 350); addCoin(5650, 270);
-    addCoin(6050, 440); addCoin(6350, 350); addCoin(6650, 270);
-    addCoin(7050, 440); addCoin(7250, 180);
-    addCrawler(4100, 525, 3900, 4400, 55); addCrawler(5100, 525, 4800, 5500, 60); addCrawler(6200, 525, 5900, 6600, 50);
-    addBomber(5000, 80, 90, 3000);
-    addHp(4500, 270, 30); addHp(5600, 270, 30);
+    genDecoRow(3840, 4800);
+    genChain(3960, 480, 3, 4600);
+    genChain(4700, 460, 4, 5500);
+    genChain(5600, 470, 3, 6400);
+    genChain(6600, 440, 4, 7680);
+    addBomber(4500, 80, 85, 3500);
+    addBomber(6500, 90, -75, 3000);
+    addCrawler(4100, 525, 3900, 4600, 55);
+    addCrawler(5100, 525, 4800, 5700, 60);
+    addCrawler(6400, 525, 6100, 7000, 50);
+    addHp(4000, 460, 30);
+    addHp(6400, 450, 30);
 
     // ── Zone 2: Ruins (7680–11520) ───────────────────────────────
     addGround(7680);
-    addDecoRow(7680, 9600);
-    addPlat(7750, 460, 'grass:4x1'); addPlat(8000, 370, 'grass:2x1'); addPlat(8300, 290, 'grass:4x1');
-    addPlat(8700, 460, 'grass:6x1'); addPlat(9000, 370, 'grass:4x1'); addPlat(9300, 290, 'grass:2x1');
-    addPlat(9600, 460, 'grass:4x1'); addPlat(9900, 370, 'grass:2x1'); addPlat(10200, 290, 'grass:4x1');
-    addPlat(10600, 460, 'grass:2x1'); addPlat(10800, 200, 'grass:1x1'); addPlat(11000, 120, 'grass:1x1');
-    addCoin(7800, 440); addCoin(8050, 350); addCoin(8350, 270);
-    addCoin(8750, 440); addCoin(8800, 440); addCoin(9050, 350); addCoin(9350, 270);
-    addCoin(9650, 440); addCoin(9950, 350); addCoin(10250, 270);
-    addCoin(10650, 440); addCoin(10850, 180); addCoin(11050, 100);
-    addCrawler(7900, 525, 7700, 8300, 55); addCrawler(8900, 525, 8600, 9400, 60); addCrawler(9800, 525, 9500, 10400, 50); addCrawler(10700, 525, 10500, 11200, 55);
-    addBomber(8500, 80, 85, 3000); addBomber(10500, 80, -75, 2500);
-    addHp(8300, 270, 30); addHp(9300, 270, 30); addHp(10800, 180, 30);
+    genDecoRow(7680, 9600);
+    genChain(7800, 480, 4, 8700);
+    genChain(8800, 460, 3, 9600);
+    genChain(9700, 470, 4, 10600);
+    genChain(10700, 440, 3, 11520);
+    addBomber(8500, 80, 80, 3500);
+    addBomber(10500, 85, -75, 3000);
+    addCrawler(8000, 525, 7700, 8700, 55);
+    addCrawler(9200, 525, 8900, 10000, 60);
+    addCrawler(10400, 525, 10100, 11200, 55);
+    addHp(8000, 460, 30);
+    addHp(10000, 450, 30);
 
     // ── Zone 3: Summit (11520–15360) ─────────────────────────────
     addGround(11520);
-    addDecoRow(11520, 13440);
-    addPlat(11600, 460, 'grass:4x1'); addPlat(11900, 370, 'grass:2x1'); addPlat(12200, 290, 'grass:4x1');
-    addPlat(12600, 460, 'grass:6x1'); addPlat(12900, 370, 'grass:4x1'); addPlat(13200, 290, 'grass:2x1');
-    addPlat(13500, 460, 'grass:4x1'); addPlat(13800, 370, 'grass:2x1'); addPlat(14100, 290, 'grass:4x1');
-    addPlat(14500, 460, 'grass:2x1'); addPlat(14800, 200, 'grass:1x1');
-    addPlat(15000, 120, 'grass:1x1'); // door platform
-    addCoin(11650, 440); addCoin(11950, 350); addCoin(12250, 270);
-    addCoin(12650, 440); addCoin(12700, 440); addCoin(12950, 350); addCoin(13250, 270);
-    addCoin(13550, 440); addCoin(13850, 350); addCoin(14150, 270);
-    addCoin(14550, 440); addCoin(14850, 180); addCoin(15050, 100);
-    addCrawler(11750, 525, 11600, 12200, 55); addCrawler(12800, 525, 12500, 13300, 60); addCrawler(13700, 525, 13400, 14200, 55);
-    addBomber(12500, 80, 90, 2500); addBomber(14500, 80, -80, 2000);
-    addHp(12200, 270, 30); addHp(13200, 270, 30); addHp(14800, 180, 30);
-
-    // Place key and door
-    data.key = { x: 11000, y: 100 };
+    genDecoRow(11520, 13440);
+    genChain(11650, 480, 4, 12600);
+    genChain(12700, 460, 3, 13600);
+    genChain(13700, 470, 4, 14600);
+    genChain(14700, 440, 3, 15300);
+    // Door at the very end on a high platform
     data.door = { x: 15020, y: 90 };
+    // Key on a mid-height platform before the door
+    data.key = { x: 14100, y: 100 };
+    addBomber(12500, 80, 90, 3000);
+    addBomber(14500, 85, -80, 2500);
+    addCrawler(11800, 525, 11550, 12500, 55);
+    addCrawler(13100, 525, 12800, 14000, 60);
+    addCrawler(14300, 525, 14000, 15200, 55);
+    addHp(12000, 460, 30);
+    addHp(14000, 450, 30);
 
     return data;
   },
 
   // ===========================================================================
-  // Level 3: Parallax background system
+  // Level 3: Dynamic parallax background system (smooth color interpolation)
   // ===========================================================================
   _createParallaxBackground() {
-    this._currentZone = -1;
-    this._parallaxLayers = [];
+    this._currentBgProgress = -1;
+    this._bgColorStops = [
+      { pos: 0,    sky: '#5b9bd5', mount: '#3a7cb3', ground: '#4a8c3a', tree: '#2d5a1e' },
+      { pos: 0.25, sky: '#2a2a3a', mount: '#1a1a2a', ground: '#3a3a2a', tree: '#1a1a1a' },
+      { pos: 0.5,  sky: '#c4884a', mount: '#a06830', ground: '#8a6a3a', tree: '#6a4a20' },
+      { pos: 0.75, sky: '#7ab8d4', mount: '#5a8aa0', ground: '#6a7a5a', tree: '#3a5a3a' },
+      { pos: 1,    sky: '#b088d8', mount: '#8a60a8', ground: '#6a4a7a', tree: '#3a2050' }
+    ];
 
-    // Create 3 scroll layers (far, mid, near) as tileSprites
-    this._parallaxFar = this.game.add.tileSprite(0, 0, 15360, 600, 'pfar_forest');
+    // Create canvases for dynamic texture generation
+    this._bgFarCanvas = document.createElement('canvas');
+    this._bgFarCanvas.width = 960; this._bgFarCanvas.height = 600;
+    this._bgFarCtx = this._bgFarCanvas.getContext('2d');
+    this._bgMidCanvas = document.createElement('canvas');
+    this._bgMidCanvas.width = 960; this._bgMidCanvas.height = 600;
+    this._bgMidCtx = this._bgMidCanvas.getContext('2d');
+    this._bgNearCanvas = document.createElement('canvas');
+    this._bgNearCanvas.width = 960; this._bgNearCanvas.height = 600;
+    this._bgNearCtx = this._bgNearCanvas.getContext('2d');
+
+    // Initial render at progress 0
+    var initColors = this._getBgColorsAt(0);
+    this._drawBgFarLayer(this._bgFarCtx, initColors);
+    this._drawBgMidLayer(this._bgMidCtx, initColors);
+    this._drawBgNearLayer(this._bgNearCtx, initColors);
+
+    // Add to cache and create tileSprites
+    this.game.cache.addImage('_bgfar', '', this._bgFarCanvas);
+    this.game.cache.addImage('_bgmid', '', this._bgMidCanvas);
+    this.game.cache.addImage('_bgnear', '', this._bgNearCanvas);
+
+    this._parallaxFar = this.game.add.tileSprite(0, 0, 15360, 600, '_bgfar');
     this._parallaxFar.fixedToCamera = false;
-
-    this._parallaxMid = this.game.add.tileSprite(0, 0, 15360, 600, 'pmid_forest');
+    this._parallaxMid = this.game.add.tileSprite(0, 0, 15360, 600, '_bgmid');
     this._parallaxMid.fixedToCamera = false;
-
-    this._parallaxNear = this.game.add.tileSprite(0, 0, 15360, 600, 'pnear_forest');
+    this._parallaxNear = this.game.add.tileSprite(0, 0, 15360, 600, '_bgnear');
     this._parallaxNear.fixedToCamera = false;
 
-    // Determine initial zone
-    this._setParallaxZone(0);
+    // Decorative background birds (layer 4)
+    this._spawnBgBirds();
   },
 
   _updateParallax() {
@@ -1229,28 +1287,136 @@ window.PlayState = {
     this._parallaxMid.tilePosition.x = cx * 0.3;
     this._parallaxNear.tilePosition.x = cx * 0.6;
 
-    // Zone switching based on camera position
-    var newZone = Math.floor(cx / 3840);
-    if (newZone !== this._currentZone && newZone >= 0 && newZone < 4) {
-      this._setParallaxZone(newZone);
+    // Smooth color interpolation based on camera progress across the map
+    var progress = Math.min(1, Math.max(0, cx / 15360));
+    if (Math.abs(progress - this._currentBgProgress) > 0.005) {
+      this._currentBgProgress = progress;
+      var colors = this._getBgColorsAt(progress);
+      this._drawBgFarLayer(this._bgFarCtx, colors);
+      this._drawBgMidLayer(this._bgMidCtx, colors);
+      this._drawBgNearLayer(this._bgNearCtx, colors);
+      // Mark textures dirty to force re-upload to WebGL
+      this._parallaxFar.texture.baseTexture.dirty();
+      this._parallaxMid.texture.baseTexture.dirty();
+      this._parallaxNear.texture.baseTexture.dirty();
     }
   },
 
-  _setParallaxZone(zoneIdx) {
-    var keys = ['forest', 'cave', 'ruins', 'cliff'];
-    if (zoneIdx < 0 || zoneIdx >= keys.length) return;
-    this._currentZone = zoneIdx;
-    var k = keys[zoneIdx];
-
-    // Swap textures
-    try {
-      this._parallaxFar.loadTexture('pfar_' + k);
-      this._parallaxMid.loadTexture('pmid_' + k);
-      this._parallaxNear.loadTexture('pnear_' + k);
-      console.log('[parallax] switched to zone', zoneIdx, k);
-    } catch (e) {
-      console.warn('[parallax] zone switch failed:', e);
+  // === Color interpolation helpers ===
+  _getBgColorsAt(progress) {
+    var stops = this._bgColorStops;
+    progress = Math.max(0, Math.min(1, progress));
+    for (var i = 0; i < stops.length - 1; i++) {
+      if (progress >= stops[i].pos && progress <= stops[i + 1].pos) {
+        var t = (progress - stops[i].pos) / (stops[i + 1].pos - stops[i].pos);
+        return {
+          sky: this._lerpColor(stops[i].sky, stops[i + 1].sky, t),
+          mount: this._lerpColor(stops[i].mount, stops[i + 1].mount, t),
+          ground: this._lerpColor(stops[i].ground, stops[i + 1].ground, t),
+          tree: this._lerpColor(stops[i].tree, stops[i + 1].tree, t)
+        };
+      }
     }
+    return stops[stops.length - 1];
+  },
+
+  _lerpColor(c1, c2, t) {
+    var r1 = parseInt(c1.slice(1, 3), 16), g1 = parseInt(c1.slice(3, 5), 16), b1 = parseInt(c1.slice(5, 7), 16);
+    var r2 = parseInt(c2.slice(1, 3), 16), g2 = parseInt(c2.slice(3, 5), 16), b2 = parseInt(c2.slice(5, 7), 16);
+    var r = Math.round(r1 + (r2 - r1) * t);
+    var g = Math.round(g1 + (g2 - g1) * t);
+    var b = Math.round(b1 + (b2 - b1) * t);
+    return '#' + [r, g, b].map(function (c) { return c.toString(16).padStart(2, '0'); }).join('');
+  },
+
+  // === Background layer drawing functions ===
+  _drawBgFarLayer(ctx, colors) {
+    var w = 960, h = 600;
+    var grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, colors.sky);
+    grad.addColorStop(1, this._darken(colors.sky, 40));
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+    // Mountain silhouettes
+    ctx.fillStyle = colors.mount;
+    for (var i = 0; i < 10; i++) {
+      var mx = i * 110 - 40;
+      var mh = 90 + Math.sin(i * 2.1 + 1) * 45 + Math.sin(i * 0.7 + 2) * 25;
+      ctx.beginPath();
+      ctx.moveTo(mx, h); ctx.lineTo(mx + 55, h - mh); ctx.lineTo(mx + 110, h);
+      ctx.closePath();
+      ctx.fill();
+    }
+  },
+
+  _drawBgMidLayer(ctx, colors) {
+    var w = 960, h = 600;
+    ctx.clearRect(0, 0, w, h);
+    // Rolling hills
+    ctx.fillStyle = colors.ground;
+    ctx.globalAlpha = 0.35;
+    for (var j = 0; j < 12; j++) {
+      var hx = j * 90 - 40;
+      var hh = 45 + Math.cos(j * 1.7 + 0.5) * 20;
+      ctx.beginPath();
+      ctx.moveTo(hx, h); ctx.quadraticCurveTo(hx + 45, h - hh, hx + 90, h);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.globalAlpha = 0.55;
+    // Trees
+    ctx.fillStyle = colors.tree;
+    for (var t = 0; t < 14; t++) {
+      var tx = t * 75 + Math.sin(t * 3.3 + 1) * 15;
+      var th = 30 + Math.cos(t * 2.7 + 2) * 12;
+      ctx.fillRect(tx - 2, h - th, 4, th);
+      ctx.beginPath();
+      ctx.moveTo(tx - 10, h - th); ctx.lineTo(tx, h - th - 18); ctx.lineTo(tx + 10, h - th);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  },
+
+  _drawBgNearLayer(ctx, colors) {
+    var w = 960, h = 600;
+    ctx.clearRect(0, 0, w, h);
+    // Ground strip
+    ctx.fillStyle = colors.ground;
+    ctx.globalAlpha = 0.25;
+    ctx.fillRect(0, h - 60, w, 60);
+    ctx.globalAlpha = 0.45;
+    // Rocks and bushes
+    ctx.fillStyle = colors.tree;
+    for (var r = 0; r < 20; r++) {
+      var rx = r * 50 + 5;
+      var ry = h - 80 + Math.sin(r * 4.1 + 0.5) * 12;
+      ctx.beginPath();
+      ctx.arc(rx, ry, 2.5 + Math.sin(r * 2.3) * 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  },
+
+  // === Decorative background birds (Layer 4, camera-fixed) ===
+  _spawnBgBirds() {
+    if (this._bgBirdTimer) this.game.time.events.remove(this._bgBirdTimer);
+    this._bgBirdGroup = this.game.add.group();
+    this._bgBirdGroup.fixedToCamera = true;
+    this._bgBirdTimer = this.game.time.events.loop(2500, function () {
+      if (!this._parallaxFar) return;
+      var fromLeft = Math.random() > 0.5;
+      var bird = this._bgBirdGroup.create(fromLeft ? -50 : 1010, 50 + Math.random() * 200, 'bomber');
+      bird.anchor.setTo(0.5, 0.5);
+      bird.scale.setTo(0.25, 0.25);
+      bird.alpha = 0.3;
+      bird.tint = 0x888888;
+      if (fromLeft) bird.scale.x = -0.25;
+      var targetX = fromLeft ? 1060 : -60;
+      this.game.add.tween(bird)
+        .to({ x: targetX, alpha: 0 }, 12000 + Math.random() * 4000, window.Phaser.Easing.Linear.None, true)
+        .onComplete.addOnce(function () { bird.destroy(); });
+    }, this);
   },
 
   // ===========================================================================
