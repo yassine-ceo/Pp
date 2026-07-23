@@ -1329,6 +1329,16 @@ window.PlayState = {
     return '#' + [r, g, b].map(function (c) { return c.toString(16).padStart(2, '0'); }).join('');
   },
 
+  _darken(color, amount) {
+    var r = parseInt(color.slice(1, 3), 16);
+    var g = parseInt(color.slice(3, 5), 16);
+    var b = parseInt(color.slice(5, 7), 16);
+    r = Math.max(0, r - amount);
+    g = Math.max(0, g - amount);
+    b = Math.max(0, b - amount);
+    return '#' + [r, g, b].map(function (c) { return c.toString(16).padStart(2, '0'); }).join('');
+  },
+
   // === Background layer drawing functions ===
   _drawBgFarLayer(ctx, colors) {
     var w = 960, h = 600;
