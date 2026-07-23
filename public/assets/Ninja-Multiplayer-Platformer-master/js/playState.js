@@ -578,10 +578,6 @@ window.PlayState = {
       this.game.world.setBounds(0, 0, 15360, 600);
       this.game.camera.follow(this.hero, window.Phaser.Camera.FOLLOW_PLATFORMER);
       this.camera.deadzone = new window.Phaser.Rectangle(200, 100, 560, 200);
-    } else {
-      // Reset world bounds for standard levels
-      this.game.world.setBounds(0, 0, 960, 600);
-    }
 
       // Spawn crawlers
       if (data.crawlers && data.crawlers.length > 0) {
@@ -612,6 +608,8 @@ window.PlayState = {
       this.hero.hp = this._level3Hp || 100;
       this.hero.maxHp = 100;
     } else {
+      // Reset world bounds for standard levels
+      this.game.world.setBounds(0, 0, 960, 600);
       // Standard spiders for non-level-3
       if (data.spiders && data.spiders.length > 0) {
         this.spiders = this.game.add.group();
