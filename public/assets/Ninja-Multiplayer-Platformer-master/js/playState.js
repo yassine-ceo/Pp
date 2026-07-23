@@ -152,49 +152,54 @@ window.PlayState = {
   },
 
   create() {
-    window.globalGameState = this;
-    // HP system setup for level 3
-    if (this.level === 3) {
-      this._level3Hp = 100;
-    }
-    // fade in  (from black)
-    this.camera.flash(0x000000, 500);
-    // create sound entities
-    this.sfx = {
-      jump: this.game.add.audio('sfx:jump'),
-      coin: this.game.add.audio('sfx:coin'),
-      key: this.game.add.audio('sfx:key'),
-      stomp: this.game.add.audio('sfx:stomp'),
-      door: this.game.add.audio('sfx:door')
-    };
-    // create level entities and decoration
-    this._createBackground();
-    if (window.globalLevelState === null) {
-      var levelData = this.game.cache.getJSON(`level:${this.level}`);
-      if (!levelData) {
-        console.warn('[create] null JSON for level:', this.level, '- using fallback');
-        levelData = { platforms: [], decoration: [], coins: [], hero: { x: 30, y: 510 }, key: { x: 100, y: 100 }, door: { x: 200, y: 100 }, spiders: [] };
-      }
+    try {
+      window.globalGameState = this;
+      // HP system setup for level 3
       if (this.level === 3) {
-        levelData = this._generateLevel3Data();
+        this._level3Hp = 100;
       }
-      window.globalLevelState = {
-        time: 0,
-        coinCache: levelData
+      // fade in  (from black)
+      this.camera.flash(0x000000, 500);
+      // create sound entities
+      this.sfx = {
+        jump: this.game.add.audio('sfx:jump'),
+        coin: this.game.add.audio('sfx:coin'),
+        key: this.game.add.audio('sfx:key'),
+        stomp: this.game.add.audio('sfx:stomp'),
+        door: this.game.add.audio('sfx:door')
       };
+      // create level entities and decoration
+      this._createBackground();
+      if (window.globalLevelState === null) {
+        var levelData = this.game.cache.getJSON(`level:${this.level}`);
+        if (!levelData) {
+          console.warn('[create] null JSON for level:', this.level, '- using fallback');
+          levelData = { platforms: [], decoration: [], coins: [], hero: { x: 30, y: 510 }, key: { x: 100, y: 100 }, door: { x: 200, y: 100 }, spiders: [], crawlers: [], bombers: [], hpPickups: [] };
+        }
+        if (this.level === 3) {
+          levelData = this._generateLevel3Data();
+        }
+        window.globalLevelState = {
+          time: 0,
+          coinCache: levelData
+        };
+      }
+      this._loadLevel(window.globalLevelState.coinCache);
+      // this._loadLevel(window.globalLevelState.value);
+      // create UI score boards
+      this._createHud();
+
+      // Mobile touch controls are handled via HTML overlay buttons in index.html
+      // (No Phaser-rendered buttons needed)
+
+      // Callback invoked by main.js Firebase listener when both players finish
+      window.onBothPlayersFinished = () => {
+        this._performTransition();
+      };
+    } catch (e) {
+      console.error('[CRASH] PlayState.create() failed for level:', this.level, e);
+      if (e.stack) console.error(e.stack);
     }
-    this._loadLevel(window.globalLevelState.coinCache);
-    // this._loadLevel(window.globalLevelState.value);
-    // create UI score boards
-    this._createHud();
-
-    // Mobile touch controls are handled via HTML overlay buttons in index.html
-    // (No Phaser-rendered buttons needed)
-
-    // Callback invoked by main.js Firebase listener when both players finish
-    window.onBothPlayersFinished = () => {
-      this._performTransition();
-    };
   },
 
   update() {
@@ -202,8 +207,8 @@ window.PlayState = {
     this._handleCollisions();
     this._handleInput();
     // update scoreboards
-    this.coinFont.text = `x${this.coinPickupCount}`;
-    this.keyIcon.frame = keyCollected ? 1 : 0;
+    if (this.coinFont) this.coinFont.text = `x${this.coinPickupCount}`;
+    if (this.keyIcon) this.keyIcon.frame = keyCollected ? 1 : 0;
     // update HP bar (level 3)
     this._updateHpBar();
     // update parallax background (level 3)
@@ -580,29 +585,23 @@ window.PlayState = {
       this.camera.deadzone = new window.Phaser.Rectangle(200, 100, 560, 200);
 
       // Spawn crawlers
-      if (data.crawlers && data.crawlers.length > 0) {
-        this.crawlers = this.game.add.group();
-        data.crawlers.forEach(function (cd) {
-          this._spawnCrawler(cd);
-        }, this);
-      }
+      (data.crawlers || []).forEach(function (cd) {
+        if (!this.crawlers) this.crawlers = this.game.add.group();
+        this._spawnCrawler(cd);
+      }, this);
 
       // Spawn bombers
-      if (data.bombers && data.bombers.length > 0) {
-        this.bombers = this.game.add.group();
-        this.bombs = this.game.add.group();
-        data.bombers.forEach(function (bd) {
-          this._spawnBomber(bd);
-        }, this);
-      }
+      (data.bombers || []).forEach(function (bd) {
+        if (!this.bombers) this.bombers = this.game.add.group();
+        if (!this.bombs) this.bombs = this.game.add.group();
+        this._spawnBomber(bd);
+      }, this);
 
       // Spawn HP pickups
-      if (data.hpPickups && data.hpPickups.length > 0) {
-        this.hpPickups = this.game.add.group();
-        data.hpPickups.forEach(function (hd) {
-          this._spawnHpPickup(hd);
-        }, this);
-      }
+      (data.hpPickups || []).forEach(function (hd) {
+        if (!this.hpPickups) this.hpPickups = this.game.add.group();
+        this._spawnHpPickup(hd);
+      }, this);
 
       // Set hero HP
       this.hero.hp = this._level3Hp || 100;
@@ -611,12 +610,10 @@ window.PlayState = {
       // Reset world bounds for standard levels
       this.game.world.setBounds(0, 0, 960, 600);
       // Standard spiders for non-level-3
-      if (data.spiders && data.spiders.length > 0) {
-        this.spiders = this.game.add.group();
-        data.spiders.forEach(function (spiderData) {
-          this._spawnSpider(spiderData);
-        }, this);
-      }
+      (data.spiders || []).forEach(function (spiderData) {
+        if (!this.spiders) this.spiders = this.game.add.group();
+        this._spawnSpider(spiderData);
+      }, this);
     }
 
     // enable gravity
