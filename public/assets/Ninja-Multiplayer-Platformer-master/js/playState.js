@@ -204,8 +204,8 @@ window.PlayState = {
 
   update() {
     window.frameCounter++;
-    // Ground collide must run every frame, even during hurt/invincible
-    if (this.hero && this.hero.body && this.platforms) {
+    // Ground collide — every single frame, unconditional state check, at the very top
+    if (this.hero && this.platforms) {
       this.game.physics.arcade.collide(this.hero, this.platforms);
     }
     if (this.level === 3 && this.bombs && this.platforms) {
@@ -990,7 +990,7 @@ window.PlayState = {
 
   _onHeroVsCrawler(hero, crawler) {
     if (!hero.alive || hero.isInvincible) return;
-    hero.takeDamage(15, hero.x < crawler.x ? -1 : 1);
+    hero.takeDamage(15, crawler.x);
     // Check death
     if (hero.hp <= 0) {
       this._restartLevel3();
@@ -1038,7 +1038,7 @@ window.PlayState = {
     if (!hero.alive || hero.isInvincible) return;
     this._spawnExplosion(bomb.x, bomb.y);
     bomb.kill();
-    hero.takeDamage(25, hero.x < bomb.x ? -1 : 1);
+    hero.takeDamage(25, bomb.x);
     if (hero.hp <= 0) {
       this._restartLevel3();
     }
@@ -1116,16 +1116,13 @@ window.PlayState = {
   // ===========================================================================
   // Level 3: Programmatic 15360px world generator (4 zones)
   // Physics constants: SPEED=200, JUMP=-600, GRAVITY=1200
-  //   Max jump height: 600^2/(2*1200) = 150px
-  //   Max jump width:  200*(2*600/1200) = 200px
-  //   Max safe gap:    200*0.8 = 160px
-  //   Max safe climb:  150*0.9 = 135px
+  // Hard constraints (mathematically guaranteed reachable):
+  //   Max horizontal gap between platform edges: 110px
+  //   Max vertical climb between platforms:       70px
   // ===========================================================================
   _generateLevel3Data() {
     var ZW = 3840;
     var GY = 546;
-    var MG = 160;
-    var MH = 135;
     var data = { platforms: [], decoration: [], coins: [], crawlers: [], bombers: [], hpPickups: [], hero: {x: 30, y: 510}, key: null, door: null };
 
     function addGround(sx) {
@@ -1140,20 +1137,26 @@ window.PlayState = {
     function addBomber(x, y, spd, interval) { data.bombers.push({ x: x, y: y || 80, speedX: spd || 80, dropInterval: interval || 3000 }); }
     function addHp(x, y, amt) { data.hpPickups.push({ x: x, y: y, amount: amt || 30 }); }
 
-    // Generate a chain of platforms from (startX, startY) left to right
-    // Each platform is reachable from the previous (max gap MG, max climb MH)
+    // Generate a chain of platforms left to right.
+    // Every platform[i] is generated relative to platform[i-1].
+    //   nextX = prevX + prevWidth + random(40, 110)
+    //   nextY = prevY + random(-70, 70)
     function genChain(startX, startY, count, zoneEnd) {
-      var x = startX, y = startY;
+      var prevX = startX, prevY = startY, prevW = 168;
       for (var i = 0; i < count; i++) {
-        var gap = 90 + (i * 7) % 60;
-        var climb = -60 + (i * 11) % (MH - 20);
-        x += gap;
-        y = Math.max(180, Math.min(520, y + climb));
-        if (x + 80 > zoneEnd) break;
-        var img = y > 450 ? 'grass:4x1' : (y > 350 ? 'grass:2x1' : 'grass:1x1');
-        addPlat(x, y, img);
-        addCoin(x + 20, y - 30);
-        if (i > 0) addCoin(x + 60, y - 30);
+        var gap = 40 + Math.floor(Math.random() * 71);
+        var climb = -70 + Math.floor(Math.random() * 141);
+        var nx = prevX + prevW + gap;
+        if (nx + 42 > zoneEnd) break;
+        var ny = Math.max(200, Math.min(520, prevY + climb));
+        var w = ny > 450 ? 'grass:4x1' : (ny > 350 ? 'grass:2x1' : 'grass:1x1');
+        var wPx = ny > 450 ? 168 : (ny > 350 ? 84 : 42);
+        addPlat(nx, ny, w);
+        addCoin(nx + 20, ny - 30);
+        if (i > 0) addCoin(nx + wPx / 2, ny - 30);
+        prevX = nx;
+        prevY = ny;
+        prevW = wPx;
       }
     }
 

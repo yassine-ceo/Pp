@@ -25,19 +25,16 @@ window.Hero = class Hero extends window.Phaser.Sprite {
     this.isInvincible = false;
   }
 
-  takeDamage(amount, knockbackDir) {
+  takeDamage(amount, enemyX) {
     if (this.isInvincible || this.isFrozen || !this.body) return;
     this.hp = Math.max(0, this.hp - amount);
     this.isInvincible = true;
     this.body.collideWorldBounds = true;
+    this.body.checkCollision = { top: true, bottom: true, left: true, right: true };
 
-    // knockback - safe velocities that keep the body on solid ground
-    if (knockbackDir !== undefined) {
-      this.body.velocity.x = knockbackDir * 200;
-    } else {
-      this.body.velocity.x = 0;
-    }
-    this.body.velocity.y = -180;
+    // Hardcoded knockback: strictly upward bounce + backward push, never downward
+    this.body.velocity.y = -300;
+    this.body.velocity.x = (this.x < enemyX) ? -150 : 150;
 
     // invincibility flash (1.5s)
     var flashTimer = this.game.time.events.loop(80, function () {
