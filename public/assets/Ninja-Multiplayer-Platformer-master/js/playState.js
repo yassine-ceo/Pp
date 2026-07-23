@@ -523,6 +523,16 @@ window.PlayState = {
       this.game.camera.unfollow();
     }
 
+    // Reset camera position for non-level-3 levels
+    if (this.level !== 3 && this.game.camera) {
+      this.game.camera.x = 0;
+      this.game.camera.y = 0;
+      // Reset camera deadzone if it was set
+      if (this.game.camera.deadzone) {
+        this.game.camera.deadzone = null;
+      }
+    }
+
     // Guard against null data (e.g. missing JSON or generator failure)
     if (!data) {
       console.error('[loadLevel] null data for level:', this.level);
@@ -568,6 +578,10 @@ window.PlayState = {
       this.game.world.setBounds(0, 0, 15360, 600);
       this.game.camera.follow(this.hero, window.Phaser.Camera.FOLLOW_PLATFORMER);
       this.camera.deadzone = new window.Phaser.Rectangle(200, 100, 560, 200);
+    } else {
+      // Reset world bounds for standard levels
+      this.game.world.setBounds(0, 0, 960, 600);
+    }
 
       // Spawn crawlers
       if (data.crawlers && data.crawlers.length > 0) {
